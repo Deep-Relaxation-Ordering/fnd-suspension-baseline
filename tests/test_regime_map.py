@@ -11,6 +11,7 @@ script, not the unit suite.
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 from regime_map import (
     HOMOGENEOUS_RATIO_THRESHOLD,
@@ -19,6 +20,8 @@ from regime_map import (
     RegimeResult,
     _classify_from_ratio_and_bmf,
     classify_cell,
+    results_from_csv,
+    results_to_csv,
     walk_grid,
 )
 from scan_grid import DEPTHS_M, N_T_OBS, radii_m, temperatures_k
@@ -184,3 +187,51 @@ def test_walk_grid_smoke_diversity() -> None:
     )
     regimes = {r.regime for r in results}
     assert regimes == {"homogeneous", "stratified", "sedimented"}
+
+
+# ---------------------------------------------------------------------------
+# CSV cache round-trip
+# ---------------------------------------------------------------------------
+
+
+def test_results_csv_round_trip_is_lossless(tmp_path: Path) -> None:
+    """CSV round-trip preserves every RegimeResult field bit-exactly.
+
+    This is what lets the deliverable notebooks consume the precomputed
+    grid cache without re-walking — an 18-min operation otherwise.
+    """
+    original = walk_grid(
+        radii=(5e-9, 1e-7, 1e-6),
+        temperatures=(298.15, 308.15),
+        depths=(1e-4, 1e-3),
+        t_obs=(60.0, 3600.0),
+    )
+    path = tmp_path / "cache.csv"
+    results_to_csv(original, path)
+    restored = results_from_csv(path)
+
+    assert len(restored) == len(original)
+    for orig, back in zip(original, restored, strict=True):
+        # Floats: bit-exact via repr round-trip.
+        assert orig.radius_m == back.radius_m
+        assert orig.temperature_kelvin == back.temperature_kelvin
+        assert orig.sample_depth_m == back.sample_depth_m
+        assert orig.t_obs_s == back.t_obs_s
+        assert orig.top_to_bottom_ratio == back.top_to_bottom_ratio
+        assert orig.bottom_mass_fraction == back.bottom_mass_fraction
+        # Strings and bools: identity.
+        assert orig.regime == back.regime
+        assert orig.used_homogeneous_short_circuit == back.used_homogeneous_short_circuit
+        assert orig.used_equilibrated_short_circuit == back.used_equilibrated_short_circuit
+        assert orig.used_method_c_fallback == back.used_method_c_fallback
+
+
+def test_results_from_csv_rejects_mismatched_header(tmp_path: Path) -> None:
+    """Wrong header raises rather than silently mis-mapping fields."""
+    path = tmp_path / "broken.csv"
+    path.write_text("foo,bar,baz\n1,2,3\n")
+    try:
+        results_from_csv(path)
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError on bad header")

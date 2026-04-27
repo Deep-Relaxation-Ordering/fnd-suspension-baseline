@@ -34,8 +34,10 @@ of t_obs. This skip cuts the homogeneous corner of the grid (~half the
 
 from __future__ import annotations
 
+import csv
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
+from pathlib import Path
 from typing import Literal
 
 from analytical import scale_height, settling_velocity
@@ -308,3 +310,92 @@ def walk_grid(
                         )
                     )
     return results
+
+
+# ---------------------------------------------------------------------------
+# CSV round-trip — cache for the deliverable notebooks
+# ---------------------------------------------------------------------------
+#
+# The full §5 grid walk is ~18 min single-threaded. Running it once and
+# pickling the results to disk lets the deliverable-3 / deliverable-5
+# notebooks rebuild figures in O(seconds) without re-walking. CSV (not
+# pickle) for human-readability and portability — the file is the
+# authoritative form of the design table.
+
+_CSV_FIELDS: tuple[str, ...] = tuple(f.name for f in fields(RegimeResult))
+
+
+def results_to_csv(results: list[RegimeResult], path: str | Path) -> None:
+    """Write a list of `RegimeResult` to CSV at `path`.
+
+    Columns are exactly the `RegimeResult` field names, in declaration
+    order. Booleans are written as ``True``/``False`` strings; floats
+    are written via Python's repr to preserve round-trip precision.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # Force Unix line endings: Python's csv default of `\r\n` triggers
+    # ``git diff --check`` "trailing whitespace" warnings on every row.
+    with path.open("w", newline="\n") as fh:
+        writer = csv.writer(fh, lineterminator="\n")
+        writer.writerow(_CSV_FIELDS)
+        for r in results:
+            writer.writerow([_format_csv_value(getattr(r, name)) for name in _CSV_FIELDS])
+
+
+def results_from_csv(path: str | Path) -> list[RegimeResult]:
+    """Read a CSV written by `results_to_csv` back into RegimeResult objects."""
+    path = Path(path)
+    with path.open(newline="") as fh:
+        reader = csv.reader(fh)
+        header = next(reader)
+        if tuple(header) != _CSV_FIELDS:
+            raise ValueError(
+                f"CSV header {header} does not match RegimeResult fields {_CSV_FIELDS}"
+            )
+        out: list[RegimeResult] = []
+        for row in reader:
+            kwargs: dict[str, object] = {}
+            for field, raw in zip(_CSV_FIELDS, row, strict=True):
+                kwargs[field] = _parse_csv_value(field, raw)
+            out.append(RegimeResult(**kwargs))  # type: ignore[arg-type]
+    return out
+
+
+def _format_csv_value(value: object) -> str:
+    if isinstance(value, bool):
+        return "True" if value else "False"
+    # numpy scalars are not Python `bool`/`float` in isinstance terms; coerce.
+    # `radii_m()` and similar return NDArrays whose elements are numpy scalars,
+    # and `repr(np.float64(5e-9))` is the string ``'np.float64(5e-09)'`` —
+    # not round-trippable through `float()`. Map to a Python float first.
+    if hasattr(value, "item") and callable(value.item):  # numpy scalar
+        value = value.item()
+        if isinstance(value, bool):
+            return "True" if value else "False"
+    if isinstance(value, float):
+        # repr() preserves bit-exact float round-trip (Python 3 guarantee).
+        return repr(value)
+    return str(value)
+
+
+_BOOL_FIELDS: frozenset[str] = frozenset(
+    f.name for f in fields(RegimeResult) if f.type is bool or f.type == "bool"
+)
+_STR_FIELDS: frozenset[str] = frozenset({"regime"})
+
+
+def _parse_csv_value(field: str, raw: str) -> object:
+    if field in _BOOL_FIELDS:
+        if raw == "True":
+            return True
+        if raw == "False":
+            return False
+        raise ValueError(f"Unparseable bool {raw!r} in field {field}")
+    if field in _STR_FIELDS:
+        return raw
+    # Tolerate legacy CSVs where numpy scalars were repr'd as
+    # ``'np.float64(5e-09)'`` before the writer learned to coerce.
+    if raw.startswith("np.float64(") and raw.endswith(")"):
+        raw = raw[len("np.float64(") : -1]
+    return float(raw)

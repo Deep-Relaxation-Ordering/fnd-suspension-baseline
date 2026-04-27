@@ -64,13 +64,15 @@ fnd-suspension-baseline/
 
 ## Status
 
-Phase 5 orchestration in — full §5 grid (30 × 7 × 5 × 6 = 6300 cells of
-(r, T, h, t_obs)) is now classifiable end-to-end. Methods A and C are
-composed by `regime_map.classify_cell` and `walk_grid` per the §5.1
-rules; Method B remains in place as the cross-validation harness for
-Method C inside its feasibility envelope (`tests/test_method_consistency.py`).
-Test suite: `86 passed`. Notebook deliverables (2-4 figures, 5 design
-table) are the next session.
+Phase 6 in — the §5 grid is walked, cached, and visualised. The full
+6300-cell sweep is checked into `notebooks/data/regime_map_grid.csv`;
+notebook 02 reads from that cache to produce the deliverable-3 regime
+map (room-T panel, t_obs evolution panels, execution-path provenance
+panel). Methods A and C are composed by `regime_map.classify_cell` and
+`walk_grid` per the §5.1 rules; Method B remains in place as the
+cross-validation harness for Method C inside its feasibility envelope.
+Test suite: `88 passed`. Notebooks 03/04 (parameter scans, polished
+deliverable-5 design table) are the next session.
 
 | Phase | Surface | State |
 |---|---|---|
@@ -85,7 +87,8 @@ table) are the next session.
 | 4.1 | review-driven fixes (boundary top/bottom ratio, resolved-mesh A↔C, raw-operator mass conservation) | done — [phase-4.1 note](lab_notes/2026-04-27-phase4-1-review-driven-fixes.md) |
 | 5 | `regime_map.py` orchestration (t_obs axis, classify_cell, walk_grid) | done — [phase-5 note](lab_notes/2026-04-27-phase5-regime-map-orchestration.md) |
 | 5.1 | review fixes (t_obs wording, homogeneous-bmf semantics, A/B/C scope) | done — [phase-5.1 note](lab_notes/2026-04-27-phase5-1-review-driven-fixes.md) |
-| 6 | deliverable notebooks 02-04 + design table 5 | next |
+| 6 | grid cache + notebook 02 (deliverable-3 regime map) | done — [phase-6 note](lab_notes/2026-04-27-phase6-grid-cache-and-notebook-02.md) |
+| 7 | notebooks 03/04 (parameter scans + design-table polish) | next |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
