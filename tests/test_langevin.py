@@ -177,3 +177,60 @@ def test_simulate_snapshots_recorded_at_evenly_spaced_times() -> None:
     assert res.snapshot_times is not None
     diffs = np.diff(res.snapshot_times)
     assert np.allclose(diffs, diffs[0])
+
+
+def test_simulate_snapshots_span_full_run_in_awkward_divisibility() -> None:
+    """Regression: previously the interval-based snapshot scheduler
+    front-loaded indices when n_steps was not cleanly divisible by
+    n_snapshots (e.g. n_steps=10, n_snapshots=6 → steps 1..6, missing
+    the back half). The linspace-based scheduler must hit the final step.
+    """
+    res = simulate(
+        v_sed=0.0, diff=2.45e-12, h=1e-6, t_total=1.0,
+        n_trajectories=20, seed=0, n_snapshots=6, dt=0.1,
+    )
+    assert res.n_steps == 10  # ceil(1.0 / 0.1)
+    assert res.snapshot_times is not None
+    # Final snapshot should sit at (or extremely close to) t_total.
+    assert math.isclose(float(res.snapshot_times[-1]), res.t_total, rel_tol=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# t_total honouring (regression — previously rounded up to a full policy step)
+# ---------------------------------------------------------------------------
+
+
+def test_simulate_honours_requested_t_total_when_dt_auto() -> None:
+    """Auto-dt path: result.t_total must equal the requested t_total
+    exactly, even when policy dt would have been larger.
+
+    Previously: pure-Brownian h=1mm, D=2.45e-12 has dt_policy ≈ 4080 s;
+    requesting t_total=1 s ran for 4080 s. After the fix, n_steps is set
+    so that t_total/n_steps ≤ dt_policy and the run covers exactly t_total.
+    """
+    requested = 1.0
+    res = simulate(
+        v_sed=0.0, diff=2.45e-12, h=1e-3, t_total=requested,
+        n_trajectories=10, seed=0,
+    )
+    assert math.isclose(res.t_total, requested, rel_tol=1e-12)
+    # Sanity: the policy upper bound is still respected.
+    assert res.dt <= adaptive_timestep(0.0, 2.45e-12, 1e-3) + 1e-15
+
+
+def test_simulate_zero_t_total_returns_initial_condition() -> None:
+    res = simulate(
+        v_sed=1e-7, diff=2.45e-12, h=1e-4, t_total=0.0,
+        n_trajectories=20, seed=0,
+    )
+    assert res.n_steps == 0
+    assert res.t_total == 0.0
+    assert np.array_equal(res.final_z, res.initial_z)
+
+
+def test_simulate_negative_t_total_raises() -> None:
+    with pytest.raises(ValueError):
+        simulate(
+            v_sed=1e-7, diff=2.45e-12, h=1e-4, t_total=-1.0,
+            n_trajectories=10,
+        )

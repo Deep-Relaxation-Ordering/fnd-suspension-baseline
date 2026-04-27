@@ -99,16 +99,20 @@ Replaced 3 skips with real assertions (5 still pending Method C):
 
 ## Physics-validation snapshot (for cross-reference)
 
+Production runs at the committed N and seed=42. All five inside the
+§4.4 2 % tolerance.
+
 | Test | Method-A reference | Method-B (seed 42) | Rel err |
 |---|---|---|---|
-| Long-time mean height (100 nm, 25 °C, 100 µm) | 31.04 µm | 31.72 µm | 2.2 % |
-| Position variance (h = 1 µm, pure-Brownian) | 8.333·10⁻¹⁴ m² | 8.843·10⁻¹⁴ m² | 6.1 % * |
-| Unbounded MSD at t = 1 s (D = 2.45·10⁻¹²) | 4.90·10⁻¹² m² | (within 2 %) | < 2 % |
-| Bounded MSD long-lag (h = 1 µm) | 1.667·10⁻¹³ m² | (within 2 %) | < 2 % |
-| Pure-sed mean first-passage (h = 1 mm, v = 1 µm/s) | 500 s | ~502 s | 0.5 % |
+| Long-time mean height (100 nm, 25 °C, 100 µm; N = 10⁴) | 3.1009·10⁻⁵ m | 3.1573·10⁻⁵ m | 1.82 % |
+| Position variance (h = 1 µm, pure-Brownian; N = 2·10⁴) | 8.333·10⁻¹⁴ m² | 8.298·10⁻¹⁴ m² | 0.43 % |
+| Unbounded MSD at t = 1 s (D = 2.45·10⁻¹², dt = 1 ms; N = 2·10⁴) | 4.900·10⁻¹² m² | 4.972·10⁻¹² m² | 1.47 % |
+| Bounded MSD long-lag (h = 1 µm; N = 2·10⁴) | 1.667·10⁻¹³ m² | 1.660·10⁻¹³ m² | 0.43 % |
+| Pure-sed mean first-passage (h = 1 mm, v = 1 µm/s; N = 5·10³) | 500.0 s | 500.6 s | 0.13 % |
 
-\* Smoke-test value at N = 1000 from the bring-up; the production
-test at N = 2·10⁴ is comfortably inside 2 %.
+The barometric mean-height test is the closest to the threshold; with
+N = 10⁴ rather than the spec's N = 10⁵ it's a CI-friendly surrogate
+for the full §4.4 validation, not the production statistic.
 
 ## Verification
 
@@ -157,3 +161,10 @@ exponential-fitting FV at high/low Pe, the asymptotic-sedimentation
 fallback (round-4), Method-A↔C equilibrium agreement outside Method
 B's envelope, and Method-B↔C time-dependent moments inside it.
 Effort estimate per breakout-note §9: 2–3 days.
+
+## Errata
+
+Two bugs in the Phase 3 simulator and one numerical typo in the
+validation table above were caught in a post-merge review and are
+fixed in [`2026-04-27-phase3-1-review-driven-fixes.md`](2026-04-27-phase3-1-review-driven-fixes.md).
+The corrected table above already reflects the post-fix seeded runs.

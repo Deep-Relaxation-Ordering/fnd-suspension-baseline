@@ -223,7 +223,12 @@ def simulate(
     ----------
     v_sed, diff, h, t_total
         Cell physics. ``h`` is unused when ``bounded=False`` but is
-        still recorded on the result for provenance.
+        still recorded on the result for provenance. ``t_total`` must
+        be ≥ 0; ``t_total = 0`` short-circuits to the initial condition.
+        When ``dt`` is auto-derived from the policy, ``t_total`` is
+        honoured exactly — the policy dt is treated as an upper bound
+        and the actual dt is collapsed to ``t_total / n_steps`` so that
+        the run covers exactly the requested time.
     n_trajectories
         Ensemble size N.
     z0
@@ -234,6 +239,10 @@ def simulate(
     dt
         Override the adaptive timestep policy. Required when
         ``bounded=False`` (no length scale to derive a default from).
+        When set explicitly, ``n_steps = ceil(t_total / dt)`` and
+        ``result.t_total`` may exceed the requested ``t_total`` by less
+        than one ``dt`` — the auto-derived path is preferred when an
+        exact duration matters.
     n_snapshots
         If > 0, store ``n_snapshots`` evenly-spaced positions across
         the run (in addition to ``initial_z`` and ``final_z``). For an
@@ -258,33 +267,78 @@ def simulate(
     if not bounded and dt is None:
         raise ValueError("dt must be supplied explicitly when bounded=False.")
 
+    if t_total < 0.0:
+        raise ValueError(f"t_total must be non-negative; got {t_total}.")
+
+    rng = np.random.default_rng(seed)
+    z_init = _resolve_initial_z(z0, n_trajectories, h, rng)
+
+    # Zero-time short-circuit: return the initial condition without taking a step.
+    # Requested by the t_total-honouring contract — a zero-length run advances
+    # nothing rather than rounding up to one full dt.
+    if t_total == 0.0:
+        return LangevinResult(
+            final_z=z_init.copy(),
+            initial_z=z_init,
+            dt=0.0 if dt is None else dt,
+            n_steps=0,
+            t_total=0.0,
+            v_sed=v_sed,
+            diffusivity=diff,
+            h=h,
+            n_trajectories=n_trajectories,
+            bounded=bounded,
+            snapshots=None,
+            snapshot_times=None,
+            first_passage_times=(
+                np.full(n_trajectories, np.nan, dtype=np.float64)
+                if track_first_passage_to_bottom
+                else None
+            ),
+        )
+
+    # Resolve dt and step count.
+    #
+    # Auto-dt path: the policy gives an *upper bound* dt_policy. We pick
+    # n_steps = ceil(t_total / dt_policy) and then collapse dt = t_total / n_steps
+    # so the integration covers exactly the requested t_total. This fixes a
+    # bug where short t_obs values were rounded *up* to a full policy step
+    # (e.g. requested 1 s in a quiet box where dt_policy ≈ 4080 s ran for
+    # 4080 s, reported as result.t_total).
+    #
+    # Explicit-dt path: user wants tight control of the integrator step;
+    # we honour their dt and round n_steps up. result.t_total may then
+    # exceed the requested t_total by < dt — flagged in the docstring.
     if dt is None:
-        dt = adaptive_timestep(v_sed, diff, h, alpha=alpha, beta=beta)
+        dt_policy = adaptive_timestep(v_sed, diff, h, alpha=alpha, beta=beta)
+        n_steps = max(1, int(math.ceil(t_total / dt_policy)))
+        dt = t_total / n_steps
+    else:
+        if dt <= 0.0:
+            raise ValueError(f"dt must be positive; got {dt}.")
+        n_steps = max(1, int(math.ceil(t_total / dt)))
 
-    if dt <= 0.0:
-        raise ValueError(f"dt must be positive; got {dt}.")
-
-    n_steps = max(1, int(math.ceil(t_total / dt)))
     if n_steps > max_steps:
         raise ValueError(
             f"Cell out of feasibility envelope: needs {n_steps} steps "
             f"(max {max_steps}). Use Methods A/C for this cell."
         )
 
-    rng = np.random.default_rng(seed)
-    z_init = _resolve_initial_z(z0, n_trajectories, h, rng)
     z = z_init.copy()
 
     sigma = math.sqrt(2.0 * diff * dt) if diff > 0.0 else 0.0
 
-    # Snapshots
+    # Snapshots — evenly spaced indices that span [1, n_steps] inclusive of
+    # the final step. The previous interval-based logic front-loaded snapshots
+    # (e.g. for n_steps=10, n_snapshots=6 it recorded steps 1..6 and missed
+    # the back half of the trajectory).
     if n_snapshots > 0:
-        snapshot_step_interval = max(1, n_steps // n_snapshots)
-        snapshot_indices = list(range(snapshot_step_interval, n_steps + 1, snapshot_step_interval))
-        if len(snapshot_indices) > n_snapshots:
-            snapshot_indices = snapshot_indices[:n_snapshots]
+        snapshot_indices_arr = np.unique(
+            np.linspace(1, n_steps, n_snapshots, dtype=np.int64)
+        )
+        snapshot_indices = snapshot_indices_arr.tolist()
         snapshots = np.empty((len(snapshot_indices), n_trajectories), dtype=np.float64)
-        snapshot_times = np.array(snapshot_indices, dtype=np.float64) * dt
+        snapshot_times = snapshot_indices_arr.astype(np.float64) * dt
     else:
         snapshot_indices = []
         snapshots = None
