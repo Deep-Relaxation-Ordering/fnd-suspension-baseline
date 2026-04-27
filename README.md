@@ -64,9 +64,8 @@ fnd-suspension-baseline/
 
 ## Status
 
-Phase 3 complete — Methods A (analytical) and B (Langevin) implemented;
-Method C (Smoluchowski) pending. Test suite: `63 passed, 5 skipped`
-(skipped tests are Method C dependencies).
+Phase 4 complete — Methods A (analytical), B (Langevin), and C
+(Smoluchowski) implemented. Test suite: `70 passed`.
 
 | Phase | Surface | State |
 |---|---|---|
@@ -77,8 +76,8 @@ Method C (Smoluchowski) pending. Test suite: `63 passed, 5 skipped`
 | 3 | `langevin.py` (Method B) + §4.4 stochastic checks | done — [phase-3 note](lab_notes/2026-04-27-phase3-method-b-langevin.md) |
 | 3.1 | review-driven fixes (t_total honouring, snapshot scheduling) | done — [phase-3.1 note](lab_notes/2026-04-27-phase3-1-review-driven-fixes.md) |
 | 3.2 | architecture polish (mean-height promotion, feasibility provenance) | done — [phase-3.2 note](lab_notes/2026-04-27-phase3-2-architecture-polish.md) |
-| 4 | `fokker_planck.py` (Method C) + regime map | next |
-| 5 | `regime_map.py` orchestration, deliverables 3 & 5 | pending |
+| 4 | `fokker_planck.py` (Method C) + §4.4 PDE checks | done — [phase-4 note](lab_notes/2026-04-27-phase4-method-c-smoluchowski.md) |
+| 5 | `regime_map.py` orchestration, deliverables 3 & 5 | next |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in

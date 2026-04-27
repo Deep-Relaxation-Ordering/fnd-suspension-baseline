@@ -21,20 +21,53 @@ Spec: breakout-note §4.4 validation strategy.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
-import pytest
 
-from langevin import simulate
+from analytical import barometric_mean_height, scale_height
+from fokker_planck import equilibrium_cell, make_mesh, sg_flux_coefficients, solve, solve_cell
+from langevin import simulate, simulate_cell
 
 
-@pytest.mark.skip(reason="Awaiting Method C implementation.")
 def test_method_b_c_time_dependent_moments_agree() -> None:
-    pass
+    """Method B and Method C agree on time-dependent moments inside B's envelope."""
+    r = 1e-7
+    temperature_kelvin = 298.15
+    h = 1e-4
+    t_total = 200.0
+
+    method_b = simulate_cell(
+        r,
+        temperature_kelvin,
+        h,
+        t_total=t_total,
+        n_trajectories=30_000,
+        seed=42,
+    )
+    method_c = solve_cell(r, temperature_kelvin, h, t_total=t_total, n_cells=180)
+
+    mean_b = float(np.mean(method_b.final_z))
+    var_b = float(np.var(method_b.final_z))
+
+    assert abs(mean_b - method_c.mean_height()) / h < 0.03
+    assert abs(var_b - method_c.variance_height()) / h**2 < 0.03
 
 
-@pytest.mark.skip(reason="Awaiting Method C implementation.")
 def test_method_a_c_equilibrium_outside_b_envelope() -> None:
-    pass
+    """High-r cells outside Method B's envelope use Method C's asymptotic fallback."""
+    r = 1e-5
+    temperature_kelvin = 298.15
+    h = 1e-4
+
+    ell_g = scale_height(r, temperature_kelvin)
+    expected_mean = barometric_mean_height(h, ell_g)
+    method_c = equilibrium_cell(r, temperature_kelvin, h)
+
+    assert method_c.used_asymptotic_fallback
+    assert method_c.top_to_bottom_ratio() == 0.0
+    assert method_c.bottom_mass_fraction() > 0.99
+    assert math.isclose(method_c.mean_height(), expected_mean, rel_tol=1e-12)
 
 
 def test_unbounded_msd_linear_in_time() -> None:
@@ -117,16 +150,75 @@ def test_pure_sedimentation_arrival_times() -> None:
     assert max_arrival > 0.95 * t_arrival_max
 
 
-@pytest.mark.skip(reason="Awaiting Method C implementation.")
 def test_method_c_high_pe_upwind_limit() -> None:
-    pass
+    """At high Pe, Scharfetter-Gummel flux becomes drift-upwind."""
+    diff = 1.0
+    v_sed = 100.0
+    dx = 1.0
+    a_left, a_right = sg_flux_coefficients(diff, v_sed, dx)
+
+    assert abs(a_left) < 1e-35
+    assert math.isclose(a_right, -v_sed, rel_tol=1e-12)
 
 
-@pytest.mark.skip(reason="Awaiting Method C implementation.")
 def test_method_c_low_pe_central_limit() -> None:
-    pass
+    """At low Pe, Scharfetter-Gummel flux recovers central drift-diffusion."""
+    diff = 1.0
+    v_sed = 1e-6
+    dx = 0.25
+    c_left = 2.0
+    c_right = 1.0
+
+    a_left, a_right = sg_flux_coefficients(diff, v_sed, dx)
+    flux = a_left * c_left + a_right * c_right
+    central = -diff * (c_right - c_left) / dx - v_sed * 0.5 * (c_left + c_right)
+
+    assert math.isclose(flux, central, rel_tol=1e-10, abs_tol=1e-12)
 
 
-@pytest.mark.skip(reason="Awaiting Method C implementation.")
+def test_method_c_refined_mesh_resolves_bottom_scale_height() -> None:
+    """When a uniform mesh would be too coarse, Method C refines toward z=0."""
+    h = 1e-4
+    ell_g = 4e-8
+    edges, unresolved, reason = make_mesh(h, ell_g=ell_g)
+    widths = np.diff(edges)
+
+    assert unresolved is False
+    assert reason is None
+    assert widths[0] <= ell_g / 5.0
+    assert widths[-1] > widths[0]
+
+
 def test_method_c_asymptotic_sedimentation_fallback() -> None:
-    pass
+    """Unresolved sub-nanometric scale heights are tagged, not meshed fictionally."""
+    result = solve(
+        v_sed=1e-3,
+        diff=1e-14,
+        h=1e-3,
+        t_total=1.0,
+    )
+
+    assert result.used_asymptotic_fallback
+    assert result.method == "asymptotic-sedimentation"
+    assert result.fallback_reason is not None
+    assert result.pe_global > 1e7
+
+
+def test_method_c_asymptotic_fallback_keeps_finite_time_transient() -> None:
+    """Before h/v_sed, fallback follows the pure-sedimentation transient."""
+    v_sed = 1e-3
+    h = 1e-3
+    t_total = 0.25 * h / v_sed
+    result = solve(
+        v_sed=v_sed,
+        diff=1e-14,
+        h=h,
+        t_total=t_total,
+    )
+
+    front = h - v_sed * t_total
+    expected_mean = front**2 / (2.0 * h)
+
+    assert result.method == "asymptotic-sedimentation-transient"
+    assert result.bottom_mass_fraction() < 0.35
+    assert math.isclose(result.mean_height(), expected_mean, rel_tol=1e-12)

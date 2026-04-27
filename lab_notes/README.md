@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-27 | [Phase 4 — Method C (Smoluchowski finite volume)](2026-04-27-phase4-method-c-smoluchowski.md) | 4 |
 | 2026-04-27 | [Phase 3.2 — architecture polish (barometric_mean_height promotion, feasibility provenance, snapshot contract)](2026-04-27-phase3-2-architecture-polish.md) | 3.2 |
 | 2026-04-27 | [Phase 3.1 — review-driven fixes (t_total honouring, snapshot scheduling, table errata)](2026-04-27-phase3-1-review-driven-fixes.md) | 3.1 |
 | 2026-04-27 | [Phase 3 — Method B (Langevin)](2026-04-27-phase3-method-b-langevin.md) | 3 |
