@@ -83,3 +83,16 @@ A short, pilot-specific layer on top of cd-rules:
   a corresponding `tests/test_*.py` module before the implementation
   lands; the test starts skipped and is un-skipped when the implementation
   is in place.
+- **Notebooks as jupytext `.py` (percent format)**: the canonical source
+  of every notebook in `notebooks/` is a `.py` file with `# %%` cell
+  markers (jupytext "percent" format). This keeps git diffs human-readable
+  and avoids the pickled-output noise of raw `.ipynb` files. The breakout
+  note's §4.3 sketch lists `.ipynb` filenames; in this repo those names
+  refer to the paired `.py` files of the same stem, and conversion to
+  `.ipynb` is on demand via `jupytext --to ipynb 01_baseline_validation.py`.
+  Static figure outputs from each notebook are saved under
+  `notebooks/figures/<notebook-stem>/` as both PNG (preview) and PDF
+  (paper-ready). Run a notebook directly with
+  `PYTHONPATH=src python notebooks/<notebook>.py` from the repo root,
+  or open the `.py` in VS Code / PyCharm / Jupyter for cell-by-cell
+  execution.
