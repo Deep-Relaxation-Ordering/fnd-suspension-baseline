@@ -37,7 +37,9 @@ Two new tests in `tests/test_regime_map.py`:
 
 ### `notebooks/data/regime_map_grid.csv` — the §5 cache
 
-The full 6300-cell sweep, computed once and checked in. 770 KB.
+The full 6300-cell sweep, computed once and checked in. 612 530 bytes
+(≈ 598 KiB; the original Phase-6 commit message rounded as "770 KB"
+which was wrong — corrected in Phase 7).
 Distribution:
 
 | Quantity | Count |

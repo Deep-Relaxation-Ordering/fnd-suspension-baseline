@@ -40,6 +40,9 @@ from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Literal
 
+import numpy as np
+from numpy.typing import NDArray
+
 from analytical import scale_height, settling_velocity
 from fokker_planck import solve_cell
 from parameters import RHO_P_DIAMOND, diffusivity
@@ -316,11 +319,13 @@ def walk_grid(
 # CSV round-trip — cache for the deliverable notebooks
 # ---------------------------------------------------------------------------
 #
-# The full §5 grid walk is ~18 min single-threaded. Running it once and
-# pickling the results to disk lets the deliverable-3 / deliverable-5
-# notebooks rebuild figures in O(seconds) without re-walking. CSV (not
-# pickle) for human-readability and portability — the file is the
-# authoritative form of the design table.
+# The full §5 grid walk takes ~150 min single-threaded (8836 s measured
+# on the Phase 6 commit; the Phase 5 extrapolation of 18 min was off by
+# ~8× because the timing slice missed the slow Method-C-resolved corner).
+# Running it once and pickling the results to disk lets the deliverable-3
+# / deliverable-5 notebooks rebuild figures in O(seconds) without
+# re-walking. CSV (not pickle) for human-readability and portability —
+# the file is the authoritative form of the design table.
 
 _CSV_FIELDS: tuple[str, ...] = tuple(f.name for f in fields(RegimeResult))
 
@@ -399,3 +404,115 @@ def _parse_csv_value(field: str, raw: str) -> object:
     if raw.startswith("np.float64(") and raw.endswith(")"):
         raw = raw[len("np.float64(") : -1]
     return float(raw)
+
+
+# ---------------------------------------------------------------------------
+# Coordinate-indexed reshape — for notebook consumption
+# ---------------------------------------------------------------------------
+
+
+_REGIME_INT: dict[Regime, int] = {"homogeneous": 0, "stratified": 1, "sedimented": 2}
+"""Integer encoding for regime labels; used as `regime` channel in `results_to_grid`."""
+
+_PATH_HOMOGENEOUS_SC: int = 0
+_PATH_EQUILIBRATED_SC: int = 1
+_PATH_METHOD_C_FALLBACK: int = 2
+_PATH_METHOD_C_RESOLVED: int = 3
+
+
+@dataclass(frozen=True)
+class RegimeGrid:
+    """Coordinate-indexed reshape of a list of `RegimeResult`.
+
+    Each ``(ri, ti, hi, oi)`` index in the four channel arrays
+    corresponds to ``(radii[ri], temperatures[ti], depths[hi],
+    t_obs[oi])`` — *not* to the position in the original results list.
+    Built by `results_to_grid`, which raises if any cell in the
+    Cartesian product is missing or duplicated.
+
+    Channels:
+
+    - ``regime``: int8 with 0 = homogeneous, 1 = stratified, 2 = sedimented.
+    - ``ratio``: float64 c(h)/c(0).
+    - ``bmf``: float64 ∫₀^{0.05 h} c dz.
+    - ``path``: int8 with 0 = homogeneous SC, 1 = equilibrated SC,
+      2 = Method C fallback, 3 = Method C resolved mesh.
+    """
+
+    radii: tuple[float, ...]
+    temperatures: tuple[float, ...]
+    depths: tuple[float, ...]
+    t_obs: tuple[float, ...]
+    regime: NDArray[np.int8]
+    ratio: NDArray[np.float64]
+    bmf: NDArray[np.float64]
+    path: NDArray[np.int8]
+
+
+def results_to_grid(results: list[RegimeResult]) -> RegimeGrid:
+    """Reshape a flat results list into a coordinate-indexed 4-D grid.
+
+    The reshape is by *coordinate value*, not by row position, so a
+    sorted or shuffled CSV produces the same result as the original
+    walk_grid order. Raises ValueError if the cells don't form a
+    rectangular Cartesian product (any cell missing or duplicated).
+    """
+    rs = sorted({r.radius_m for r in results})
+    ts = sorted({r.temperature_kelvin for r in results})
+    hs = sorted({r.sample_depth_m for r in results})
+    os = sorted({r.t_obs_s for r in results})
+
+    expected = len(rs) * len(ts) * len(hs) * len(os)
+    if len(results) != expected:
+        raise ValueError(
+            f"results length {len(results)} does not match Cartesian product "
+            f"{len(rs)}×{len(ts)}×{len(hs)}×{len(os)} = {expected}; "
+            "the cells do not form a rectangular grid."
+        )
+
+    r_idx = {v: i for i, v in enumerate(rs)}
+    t_idx = {v: i for i, v in enumerate(ts)}
+    h_idx = {v: i for i, v in enumerate(hs)}
+    o_idx = {v: i for i, v in enumerate(os)}
+
+    shape = (len(rs), len(ts), len(hs), len(os))
+    regime = np.full(shape, -1, dtype=np.int8)
+    ratio = np.full(shape, np.nan, dtype=np.float64)
+    bmf = np.full(shape, np.nan, dtype=np.float64)
+    path = np.full(shape, -1, dtype=np.int8)
+
+    for r in results:
+        ri = r_idx[r.radius_m]
+        ti = t_idx[r.temperature_kelvin]
+        hi = h_idx[r.sample_depth_m]
+        oi = o_idx[r.t_obs_s]
+        if regime[ri, ti, hi, oi] != -1:
+            raise ValueError(
+                f"duplicate cell at (r={r.radius_m}, T={r.temperature_kelvin}, "
+                f"h={r.sample_depth_m}, t_obs={r.t_obs_s})"
+            )
+        regime[ri, ti, hi, oi] = _REGIME_INT[r.regime]
+        ratio[ri, ti, hi, oi] = r.top_to_bottom_ratio
+        bmf[ri, ti, hi, oi] = r.bottom_mass_fraction
+        if r.used_homogeneous_short_circuit:
+            path[ri, ti, hi, oi] = _PATH_HOMOGENEOUS_SC
+        elif r.used_equilibrated_short_circuit:
+            path[ri, ti, hi, oi] = _PATH_EQUILIBRATED_SC
+        elif r.used_method_c_fallback:
+            path[ri, ti, hi, oi] = _PATH_METHOD_C_FALLBACK
+        else:
+            path[ri, ti, hi, oi] = _PATH_METHOD_C_RESOLVED
+
+    if (regime == -1).any():
+        raise ValueError("incomplete grid: some cells of the Cartesian product are missing")
+
+    return RegimeGrid(
+        radii=tuple(rs),
+        temperatures=tuple(ts),
+        depths=tuple(hs),
+        t_obs=tuple(os),
+        regime=regime,
+        ratio=ratio,
+        bmf=bmf,
+        path=path,
+    )

@@ -13,15 +13,19 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from regime_map import (
     HOMOGENEOUS_RATIO_THRESHOLD,
     SEDIMENTED_BOTTOM_MASS_THRESHOLD,
     SEDIMENTED_RATIO_THRESHOLD,
+    RegimeGrid,
     RegimeResult,
     _classify_from_ratio_and_bmf,
     classify_cell,
     results_from_csv,
     results_to_csv,
+    results_to_grid,
     walk_grid,
 )
 from scan_grid import DEPTHS_M, N_T_OBS, radii_m, temperatures_k
@@ -235,3 +239,77 @@ def test_results_from_csv_rejects_mismatched_header(tmp_path: Path) -> None:
     except ValueError:
         return
     raise AssertionError("expected ValueError on bad header")
+
+
+# ---------------------------------------------------------------------------
+# Coordinate-indexed reshape (`results_to_grid`)
+# ---------------------------------------------------------------------------
+
+
+def test_results_to_grid_recovers_axes_and_shape() -> None:
+    """The grid axes and shape match the input cells' Cartesian product."""
+    results = walk_grid(
+        radii=(5e-9, 1e-7),
+        temperatures=(298.15, 308.15),
+        depths=(1e-4, 1e-3),
+        t_obs=(60.0, 3600.0),
+    )
+    grid = results_to_grid(results)
+    assert isinstance(grid, RegimeGrid)
+    assert grid.radii == (5e-9, 1e-7)
+    assert grid.temperatures == (298.15, 308.15)
+    assert grid.depths == (1e-4, 1e-3)
+    assert grid.t_obs == (60.0, 3600.0)
+    assert grid.regime.shape == (2, 2, 2, 2)
+
+
+def test_results_to_grid_is_order_independent() -> None:
+    """Reshape is by coordinate value, not row position — shuffling the
+    input list reproduces an identical grid. This is the contract that
+    notebook 02 / 03 / 04 rely on so a sorted or otherwise-reordered
+    cache cannot silently mis-map axes onto figures.
+    """
+    import random
+
+    results = walk_grid(
+        radii=(5e-9, 1e-7),
+        temperatures=(298.15, 308.15),
+        depths=(1e-4, 1e-3),
+        t_obs=(60.0, 3600.0),
+    )
+    grid_in_order = results_to_grid(results)
+
+    shuffled = list(results)
+    random.Random(42).shuffle(shuffled)
+    grid_shuffled = results_to_grid(shuffled)
+
+    assert (grid_in_order.regime == grid_shuffled.regime).all()
+    assert (grid_in_order.ratio == grid_shuffled.ratio).all()
+    assert (grid_in_order.bmf == grid_shuffled.bmf).all()
+    assert (grid_in_order.path == grid_shuffled.path).all()
+
+
+def test_results_to_grid_rejects_missing_cell() -> None:
+    """A non-rectangular set of cells is rejected rather than silently
+    leaving sentinel values in the grid."""
+    results = walk_grid(
+        radii=(5e-9, 1e-7),
+        temperatures=(298.15,),
+        depths=(1e-4, 1e-3),
+        t_obs=(60.0,),
+    )
+    # Drop one cell to break the Cartesian product.
+    with pytest.raises(ValueError, match="rectangular"):
+        results_to_grid(results[:-1])
+
+
+def test_results_to_grid_rejects_duplicate_cell() -> None:
+    """A cell repeated for the same coordinates is rejected."""
+    results = walk_grid(
+        radii=(5e-9, 1e-7),
+        temperatures=(298.15,),
+        depths=(1e-4, 1e-3),
+        t_obs=(60.0,),
+    )
+    with pytest.raises(ValueError, match="(rectangular|duplicate)"):
+        results_to_grid(results + [results[0]])

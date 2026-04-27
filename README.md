@@ -64,15 +64,17 @@ fnd-suspension-baseline/
 
 ## Status
 
-Phase 6 in — the §5 grid is walked, cached, and visualised. The full
-6300-cell sweep is checked into `notebooks/data/regime_map_grid.csv`;
-notebook 02 reads from that cache to produce the deliverable-3 regime
-map (room-T panel, t_obs evolution panels, execution-path provenance
-panel). Methods A and C are composed by `regime_map.classify_cell` and
-`walk_grid` per the §5.1 rules; Method B remains in place as the
-cross-validation harness for Method C inside its feasibility envelope.
-Test suite: `88 passed`. Notebooks 03/04 (parameter scans, polished
-deliverable-5 design table) are the next session.
+Phase 7 in — all five §6 deliverables exist. Notebook 02 produces
+deliverable 3 (regime map), notebook 03 produces the parameter-scan
+support figures (Method-A primitives across temperature, regime maps
+per-temperature, homogeneous-radius envelope vs T), and notebook 04
+produces deliverable 5 (the design table at room T as Markdown plus
+multi-T full-precision CSVs). All driven from the §5 grid cache
+(`notebooks/data/regime_map_grid.csv`) via the new coordinate-indexed
+`regime_map.results_to_grid` helper. Methods A and C are composed by
+`regime_map.classify_cell` and `walk_grid` per the §5.1 rules; Method
+B remains in place as the cross-validation harness for Method C inside
+its feasibility envelope. Test suite: `92 passed`.
 
 | Phase | Surface | State |
 |---|---|---|
@@ -88,7 +90,8 @@ deliverable-5 design table) are the next session.
 | 5 | `regime_map.py` orchestration (t_obs axis, classify_cell, walk_grid) | done — [phase-5 note](lab_notes/2026-04-27-phase5-regime-map-orchestration.md) |
 | 5.1 | review fixes (t_obs wording, homogeneous-bmf semantics, A/B/C scope) | done — [phase-5.1 note](lab_notes/2026-04-27-phase5-1-review-driven-fixes.md) |
 | 6 | grid cache + notebook 02 (deliverable-3 regime map) | done — [phase-6 note](lab_notes/2026-04-27-phase6-grid-cache-and-notebook-02.md) |
-| 7 | notebooks 03/04 (parameter scans + design-table polish) | next |
+| 7 | results_to_grid + notebooks 03/04 (parameter scans + deliverable-5 design table) | done — [phase-7 note](lab_notes/2026-04-27-phase7-parameter-scans-and-design-table.md) |
+| 8 | release tag, paper-draft hooks (breakout-note §9 wrap) | next |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in

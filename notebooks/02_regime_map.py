@@ -42,16 +42,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import ListedColormap
 
-from regime_map import results_from_csv, walk_grid
+from regime_map import results_from_csv, results_to_grid, walk_grid
 from scan_grid import DEPTHS_M, T_OBS_LABELS, T_OBS_S
 
 # %% [markdown]
-# ## Load the §5 grid cache
+# ## Load the §5 grid cache and reshape
 #
-# Iteration order from `walk_grid` is radius → temperature → depth →
-# t_obs (pinned by `tests/test_regime_map.py::test_walk_grid_subset_iteration_order`).
-# The reshape below relies on that order — change the walker and the
-# notebook's view changes silently.
+# `regime_map.results_to_grid` does the reshape by *coordinate value*,
+# not by row position — a sorted or shuffled CSV produces the same
+# RegimeGrid as a freshly-walked one. Missing or duplicate cells raise
+# rather than silently leaving sentinel values, so the figures below
+# can't accidentally render a non-rectangular slice.
 
 # %%
 CACHE_PATH = Path(__file__).parent / "data" / "regime_map_grid.csv"
@@ -70,63 +71,27 @@ else:
     )
     cache_source = "fallback (coarse) walk"
 
-# Recover axis lengths from the actual cache contents — the cache might
-# have been generated with a coarser grid than scan_grid's defaults.
-unique_radii = sorted({r.radius_m for r in results})
-unique_temps = sorted({r.temperature_kelvin for r in results})
-unique_depths = sorted({r.sample_depth_m for r in results})
-unique_t_obs = sorted({r.t_obs_s for r in results})
-n_r, n_T, n_h, n_t = (
-    len(unique_radii),
-    len(unique_temps),
-    len(unique_depths),
-    len(unique_t_obs),
-)
+grid = results_to_grid(results)
+unique_radii = list(grid.radii)
+unique_temps = list(grid.temperatures)
+unique_depths = list(grid.depths)
+unique_t_obs = list(grid.t_obs)
+n_r, n_T, n_h, n_t = grid.regime.shape
 
 print(f"loaded {len(results)} cells from {cache_source}")
 print(f"axes: r={n_r}, T={n_T}, h={n_h}, t_obs={n_t}  (total = {n_r*n_T*n_h*n_t})")
-assert len(results) == n_r * n_T * n_h * n_t, "non-rectangular cache"
 print("regime distribution:", dict(Counter(r.regime for r in results)))
 
-# %% [markdown]
-# ## Reshape into a 4-D array
-#
-# Walk-order is r → T → h → t_obs (outermost to innermost), so the flat
-# list reshapes directly into `(n_r, n_T, n_h, n_t)`.
-
-# %%
-REGIME_INT = {"homogeneous": 0, "stratified": 1, "sedimented": 2}
+# Channel views (preserves the names notebook 02 already uses).
 REGIME_LABELS = ["homogeneous", "stratified", "sedimented"]
 # Colour-blind-friendly: blue (homog), yellow (stratified), brown (sedim).
 REGIME_COLOURS = ["#4575b4", "#fee090", "#a50026"]
 
-regime_grid = np.empty((n_r, n_T, n_h, n_t), dtype=np.int8)
-ratio_grid = np.empty((n_r, n_T, n_h, n_t), dtype=np.float64)
-bmf_grid = np.empty((n_r, n_T, n_h, n_t), dtype=np.float64)
-path_grid = np.empty((n_r, n_T, n_h, n_t), dtype=np.int8)
-# Path codes: 0 = homogeneous short-circuit, 1 = equilibrated short-circuit,
-# 2 = Method C asymptotic fallback, 3 = Method C resolved mesh.
+regime_grid = grid.regime
+ratio_grid = grid.ratio
+bmf_grid = grid.bmf
+path_grid = grid.path
 
-for i, res in enumerate(results):
-    ri = i // (n_T * n_h * n_t)
-    ti = (i // (n_h * n_t)) % n_T
-    hi = (i // n_t) % n_h
-    oi = i % n_t
-    regime_grid[ri, ti, hi, oi] = REGIME_INT[res.regime]
-    ratio_grid[ri, ti, hi, oi] = res.top_to_bottom_ratio
-    bmf_grid[ri, ti, hi, oi] = res.bottom_mass_fraction
-    if res.used_homogeneous_short_circuit:
-        path_grid[ri, ti, hi, oi] = 0
-    elif res.used_equilibrated_short_circuit:
-        path_grid[ri, ti, hi, oi] = 1
-    elif res.used_method_c_fallback:
-        path_grid[ri, ti, hi, oi] = 2
-    else:
-        path_grid[ri, ti, hi, oi] = 3
-
-# Sanity: the radius / depth / etc axes recovered from results should
-# match the sorted unique values we computed earlier (no surprises in
-# which (ri, ti, hi, oi) indices map to which physical values).
 ti_room = unique_temps.index(298.15) if 298.15 in unique_temps else len(unique_temps) // 2
 T_room = unique_temps[ti_room]
 print(f"using T = {T_room:.2f} K (index {ti_room}) as the 'room temperature' slice")
