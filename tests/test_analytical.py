@@ -16,6 +16,7 @@ import math
 import numpy as np
 
 from analytical import (
+    barometric_mean_height,
     barometric_profile,
     cell_summary,
     equilibration_time,
@@ -127,6 +128,42 @@ def test_top_to_bottom_ratio_at_5pct_threshold_corresponds_to_h_over_lg_about_3(
 
 
 # ---------------------------------------------------------------------------
+# Barometric mean height
+# ---------------------------------------------------------------------------
+
+
+def test_barometric_mean_height_homogeneous_limit_is_h_over_2() -> None:
+    """For ℓ_g ≫ h the profile is uniform, so ⟨z⟩ → h / 2.
+
+    5 nm at 25 °C gives ℓ_g ≈ 32 cm; with h = 100 µm we sit at
+    h / ℓ_g ≈ 3·10⁻⁴, well inside the homogeneous band.
+    """
+    ell_g = scale_height(5e-9, _T_ANCHOR)
+    h = 1e-4
+    assert h / ell_g < 1e-3, "test premise: homogeneous limit"
+    z_mean = barometric_mean_height(h, ell_g)
+    assert math.isclose(z_mean, h / 2.0, rel_tol=1e-3)
+
+
+def test_barometric_mean_height_sedimented_limit_is_ell_g() -> None:
+    """For h ≫ ℓ_g the profile is a decaying exponential confined near
+    z = 0, so ⟨z⟩ → ℓ_g.
+
+    1 µm at 25 °C gives ℓ_g ≈ 40 nm; with h = 1 mm we sit at
+    h / ℓ_g ≈ 2.5·10⁴, well inside the sedimented band.
+    """
+    ell_g = scale_height(1e-6, _T_ANCHOR)
+    h = 1e-3
+    assert h / ell_g > 1e4, "test premise: sedimented limit"
+    z_mean = barometric_mean_height(h, ell_g)
+    assert math.isclose(z_mean, ell_g, rel_tol=1e-3)
+
+
+def test_barometric_mean_height_zero_depth_is_zero() -> None:
+    assert barometric_mean_height(0.0, 1e-5) == 0.0
+
+
+# ---------------------------------------------------------------------------
 # Barometric profile
 # ---------------------------------------------------------------------------
 
@@ -189,9 +226,18 @@ def test_cell_summary_contains_all_expected_keys() -> None:
         "ell_g_m",
         "t_eq_s",
         "t_settle_s",
+        "z_mean_m",
         "ratio_top_bottom",
     }
     assert set(summary.keys()) == expected_keys
+
+
+def test_cell_summary_z_mean_matches_standalone_function() -> None:
+    """`cell_summary['z_mean_m']` and `barometric_mean_height` must agree
+    — pins the public Method-A API as the single source of truth."""
+    summary = cell_summary(_R_ANCHOR, _T_ANCHOR, _H_ANCHOR)
+    direct = barometric_mean_height(_H_ANCHOR, scale_height(_R_ANCHOR, _T_ANCHOR))
+    assert math.isclose(summary["z_mean_m"], direct, rel_tol=1e-15)
 
 
 def test_cell_summary_einstein_relation_internal_consistency() -> None:

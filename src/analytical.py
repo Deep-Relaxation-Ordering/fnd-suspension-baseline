@@ -125,6 +125,35 @@ def top_to_bottom_ratio(
     return math.exp(-sample_depth_m / ell_g)
 
 
+def barometric_mean_height(
+    sample_depth_m: float,
+    scale_height_m: float,
+) -> float:
+    """Mean height ⟨z⟩ of the normalised barometric profile on [0, h].
+
+        ⟨z⟩ = ℓ_g − h / (exp(h / ℓ_g) − 1)
+
+    Uses ``math.expm1`` so the homogeneous limit (h / ℓ_g → 0) is
+    recovered without catastrophic cancellation: ⟨z⟩ → h / 2 −
+    h²/(12 ℓ_g) + O(h⁴/ℓ_g³). The deeply-sedimented branch
+    (h / ℓ_g ≳ 700, where ``expm1`` overflows) returns ℓ_g directly —
+    the missing correction term is h · exp(-h/ℓ_g), which is below
+    double-precision floor at that point.
+
+    This is the analytic reference value the long-time Method-B
+    ensemble mean is compared against in
+    `tests/test_equilibrium.py::test_method_b_long_time_matches_barometric`.
+    Promoted from a private test helper to a public Method-A
+    quantity in Phase 3.2 so notebooks and `regime_map.py` can reuse it.
+    """
+    if sample_depth_m == 0.0:
+        return 0.0
+    h_over_ell = sample_depth_m / scale_height_m
+    if h_over_ell > 700.0:
+        return scale_height_m
+    return scale_height_m - sample_depth_m / math.expm1(h_over_ell)
+
+
 # ---------------------------------------------------------------------------
 # Equilibrium concentration profile
 # ---------------------------------------------------------------------------
@@ -182,6 +211,10 @@ def cell_summary(
         ),
         "t_settle_s": settling_time(
             radius_m, temperature_kelvin, sample_depth_m, rho_particle_kg_per_m3
+        ),
+        "z_mean_m": barometric_mean_height(
+            sample_depth_m,
+            scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3),
         ),
         "ratio_top_bottom": top_to_bottom_ratio(
             radius_m, temperature_kelvin, sample_depth_m, rho_particle_kg_per_m3

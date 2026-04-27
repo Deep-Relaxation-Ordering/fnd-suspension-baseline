@@ -11,11 +11,9 @@ Spec: breakout-note §4.4 validation strategy, first bullet.
 
 from __future__ import annotations
 
-import math
-
 import numpy as np
 
-from analytical import equilibration_time, scale_height
+from analytical import barometric_mean_height, equilibration_time, scale_height
 from langevin import simulate, simulate_cell
 
 # 100-nm diamond at 25 °C in a 100-µm cell: stratified (h/ℓ_g ≈ 2.5),
@@ -23,22 +21,11 @@ from langevin import simulate, simulate_cell
 _R, _T, _H = 1e-7, 298.15, 1e-4
 
 
-def _barometric_mean_height(h: float, ell_g: float) -> float:
-    """⟨z⟩ for the normalised barometric profile on [0, h]:
-
-        ⟨z⟩ = ℓ_g − h / (exp(h/ℓ_g) − 1)
-
-    Stable for both stratified (h/ℓ_g ≳ 1) and homogeneous (h/ℓ_g → 0)
-    limits via expm1 (which gives h/2 + O(h²/ℓ_g) at small argument).
-    """
-    return ell_g - h / math.expm1(h / ell_g)
-
-
 def test_method_b_long_time_matches_barometric() -> None:
     """N = 1e4 (rather than 1e5) buys ~5× test runtime; with seeded RNG
     the 2 % tolerance is comfortably met."""
     ell_g = scale_height(_R, _T)
-    z_mean_method_a = _barometric_mean_height(_H, ell_g)
+    z_mean_method_a = barometric_mean_height(_H, ell_g)
 
     t_eq = equilibration_time(_R, _T, _H)
     result = simulate_cell(

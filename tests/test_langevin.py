@@ -86,17 +86,27 @@ def test_feasibility_envelope_rejects_micron_cells_at_long_t() -> None:
     """r = 10 µm cells need sub-nanosecond steps; round-3 fix flags them out."""
     v = settling_velocity(1e-5, 298.15)
     d = diffusivity(1e-5, 298.15)
-    ok, _, _ = is_feasible(v, d, 1e-3, t_total=1e4)
-    assert ok is False
+    check = is_feasible(v, d, 1e-3, t_total=1e4)
+    assert check.feasible is False
 
 
 def test_feasibility_envelope_accepts_100nm_cells() -> None:
     v = settling_velocity(1e-7, 298.15)
     d = diffusivity(1e-7, 298.15)
-    ok, n_steps, dt = is_feasible(v, d, 1e-4, t_total=1000.0)
-    assert ok is True
-    assert n_steps > 0
-    assert dt > 0.0
+    check = is_feasible(v, d, 1e-4, t_total=1000.0)
+    assert check.feasible is True
+    assert check.n_steps > 0
+    assert check.dt_policy > 0.0
+
+
+def test_feasibility_dt_policy_matches_adaptive_timestep() -> None:
+    """``dt_policy`` is the round-2 upper bound, not the simulator's
+    actual step. Pin that contract so callers don't confuse them."""
+    v = settling_velocity(1e-7, 298.15)
+    d = diffusivity(1e-7, 298.15)
+    h = 1e-4
+    check = is_feasible(v, d, h, t_total=1000.0)
+    assert check.dt_policy == adaptive_timestep(v, d, h)
 
 
 # ---------------------------------------------------------------------------
@@ -193,6 +203,19 @@ def test_simulate_snapshots_span_full_run_in_awkward_divisibility() -> None:
     assert res.snapshot_times is not None
     # Final snapshot should sit at (or extremely close to) t_total.
     assert math.isclose(float(res.snapshot_times[-1]), res.t_total, rel_tol=1e-12)
+
+
+def test_simulate_snapshots_capped_at_n_steps_when_oversubscribed() -> None:
+    """When n_snapshots > n_steps the unique-integer-index dedupe means
+    we get exactly n_steps snapshots, not n_snapshots — pin that
+    contract so callers know not to rely on the requested count."""
+    res = simulate(
+        v_sed=0.0, diff=2.45e-12, h=1e-6, t_total=1.0,
+        n_trajectories=10, seed=0, n_snapshots=50, dt=0.25,
+    )
+    assert res.n_steps == 4
+    assert res.snapshots is not None
+    assert res.snapshots.shape == (4, 10)
 
 
 # ---------------------------------------------------------------------------
