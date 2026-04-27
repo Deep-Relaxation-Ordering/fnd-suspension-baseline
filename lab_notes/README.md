@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-27 | [Phase 5.1 — review-driven fixes (t_obs wording, homogeneous-bmf semantics, A/B/C scope, test counts)](2026-04-27-phase5-1-review-driven-fixes.md) | 5.1 |
 | 2026-04-27 | [Phase 5 — regime-map orchestration (t_obs axis, classify_cell, walk_grid)](2026-04-27-phase5-regime-map-orchestration.md) | 5 |
 | 2026-04-27 | [Phase 4.1 — review-driven fixes (boundary-value top/bottom ratio, resolved-mesh A↔C, raw-operator mass conservation)](2026-04-27-phase4-1-review-driven-fixes.md) | 4.1 |
 | 2026-04-27 | [Phase 4 — Method C (Smoluchowski finite volume)](2026-04-27-phase4-method-c-smoluchowski.md) | 4 |

@@ -65,10 +65,12 @@ fnd-suspension-baseline/
 ## Status
 
 Phase 5 orchestration in — full §5 grid (30 × 7 × 5 × 6 = 6300 cells of
-(r, T, h, t_obs)) is now classifiable end-to-end. Methods A / B / C all
-implemented; `regime_map.classify_cell` and `walk_grid` compose them
-per the §5.1 rules. Test suite: `86 passed`. Notebook deliverables
-(2-4 figures, 5 design table) are the next session.
+(r, T, h, t_obs)) is now classifiable end-to-end. Methods A and C are
+composed by `regime_map.classify_cell` and `walk_grid` per the §5.1
+rules; Method B remains in place as the cross-validation harness for
+Method C inside its feasibility envelope (`tests/test_method_consistency.py`).
+Test suite: `86 passed`. Notebook deliverables (2-4 figures, 5 design
+table) are the next session.
 
 | Phase | Surface | State |
 |---|---|---|
@@ -82,6 +84,7 @@ per the §5.1 rules. Test suite: `86 passed`. Notebook deliverables
 | 4 | `fokker_planck.py` (Method C) + §4.4 PDE checks | done — [phase-4 note](lab_notes/2026-04-27-phase4-method-c-smoluchowski.md) |
 | 4.1 | review-driven fixes (boundary top/bottom ratio, resolved-mesh A↔C, raw-operator mass conservation) | done — [phase-4.1 note](lab_notes/2026-04-27-phase4-1-review-driven-fixes.md) |
 | 5 | `regime_map.py` orchestration (t_obs axis, classify_cell, walk_grid) | done — [phase-5 note](lab_notes/2026-04-27-phase5-regime-map-orchestration.md) |
+| 5.1 | review fixes (t_obs wording, homogeneous-bmf semantics, A/B/C scope) | done — [phase-5.1 note](lab_notes/2026-04-27-phase5-1-review-driven-fixes.md) |
 | 6 | deliverable notebooks 02-04 + design table 5 | next |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.

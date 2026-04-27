@@ -78,13 +78,17 @@ ad-hoc literal in the notebook.
 
 
 # ---------------------------------------------------------------------------
-# Observation-time axis — breakout-note §5 (six log-spaced t_obs values)
+# Observation-time axis — breakout-note §5 (six hand-picked t_obs values)
 # ---------------------------------------------------------------------------
 #
 # The §5 grid declares 6 observation times spanning the experimentally
 # meaningful range from a single-frame microscopy capture (~1 min) up to
-# a several-day session. The values pinned here are the
-# physically-motivated set Phase 5 uses:
+# a several-day session. The values pinned here are *not* strictly
+# log-spaced — they are physically-motivated experimental durations
+# whose ratios vary (e.g. 600s → 3600s is 6×, 14400s → 86400s is 6×, but
+# 60s → 600s is 10×). If a strict log spacing is preferred for plotting
+# axes, callers should use `np.geomspace` over the range. The committed
+# values are:
 #
 #   - 1 min      (fast microscopy)
 #   - 10 min     (slow microscopy / equilibration check)

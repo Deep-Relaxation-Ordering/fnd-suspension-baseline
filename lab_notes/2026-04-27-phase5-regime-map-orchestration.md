@@ -19,8 +19,9 @@ the next session — this commit is just the orchestration core.
 Added the fourth scan-grid axis:
 
 - `T_OBS_S = (60, 600, 3600, 14400, 86400, 604800)` s — six
-  log-spaced values spanning 1 minute (fast microscopy) to 1 week
-  (long observation).
+  hand-picked experimental durations from 1 minute (fast microscopy)
+  to 1 week (long observation). Not strictly log-spaced — ratios
+  vary from 4× to 10× (see Phase 5.1 errata).
 - `T_OBS_LABELS` and `N_T_OBS = 6` aligned with the values.
 - Module docstring updated to drop the "t_obs deferred" caveat that
   Phase 2.5 left as a TODO.
@@ -74,7 +75,7 @@ the spec contract (1 minute → 1 week).
 
 ### `tests/test_regime_map.py` (new file)
 
-20 tests covering:
+12 tests covering:
 
 - §5.1 threshold logic (homogeneous, sedimented requires both
   criteria, stratified default).
@@ -143,8 +144,10 @@ $ ruff check src/ tests/ notebooks/
 All checks passed!
 ```
 
-The +14 passing tests over Phase 4.1 are 3 t_obs axis tests on
-scan_grid, 11 classifier tests in `test_regime_map.py`. Skipped
+The +14 passing tests over Phase 4.1 are 2 t_obs axis tests on
+scan_grid and 12 classifier tests in `test_regime_map.py` (corrected
+in Phase 5.1 — the original note conflated subsections of
+`test_regime_map.py` and miscounted scan_grid additions). Skipped
 count remains at 0.
 
 ## Cross-references
@@ -168,3 +171,15 @@ produce the deliverable-3 figure (regime grid coloured by classification
 across (r, h) at fixed (T, t_obs) slices). Subsequent notebooks
 03/04 for the parameter-scan plots and the deliverable-5 design
 table.
+
+## Errata
+
+Four wording / arithmetic corrections to this note's first revision
+are addressed in
+[`2026-04-27-phase5-1-review-driven-fixes.md`](2026-04-27-phase5-1-review-driven-fixes.md):
+the "log-spaced" misnomer for the t_obs axis, an over-broad
+"Methods A/B/C" claim that didn't match the code (the regime walker
+composes A and C; B remains as a Phase-3 cross-validation harness),
+the homogeneous short-circuit's reported bottom-mass fraction (now
+the analytic equilibrium value rather than the 0.05 layer-fraction
+constant), and the test-count breakdown above.

@@ -84,15 +84,33 @@ expm_multiply that would otherwise cost 10-20 s per cell."""
 class RegimeResult:
     """One cell of the §5.1 classification.
 
-    The numerical inputs to the §5.1 thresholds are kept on the result
-    so downstream callers (deliverable-5 design table, regime-map
-    figures) don't have to re-run Method C to recover them.
+    The two numerical inputs to the §5.1 thresholds —
+    `top_to_bottom_ratio` and `bottom_mass_fraction` — are kept on the
+    result so downstream callers can rebuild the design table and the
+    regime figure without re-running Method C. Their *interpretation*
+    depends on which path produced them:
 
-    The three short-circuit flags record *which* path produced the
-    classification — useful both for debugging the orchestration and
-    for the deliverable-3 figure annotations that distinguish
-    analytically-determined cells from those that needed the full
-    PDE solve.
+    - `used_homogeneous_short_circuit = True`:
+      `top_to_bottom_ratio` is the analytic equilibrium value
+      ``exp(-h/ℓ_g)`` — a lower bound on the finite-time ratio,
+      which lives in ``[eq_ratio, 1.0]`` from uniform IC.
+      `bottom_mass_fraction` is the analytic equilibrium bmf — an
+      upper bound on the finite-time bmf, which rises monotonically
+      from 0.05 (uniform IC) toward equilibrium.
+    - `used_equilibrated_short_circuit = True`:
+      both quantities are analytic equilibrium values; the residual
+      finite-time transient is within e⁻⁵ ≈ 0.7 % of these.
+    - `used_method_c_fallback = True`:
+      finite-time values from the asymptotic-sedimentation transient
+      branch (pre-arrival) or the analytic equilibrium fallback
+      (post-arrival).
+    - none of the above (full Method C):
+      finite-time values from the resolved-mesh `expm_multiply`.
+
+    Plot consumers that want the *exact* finite-time ratio for the
+    homogeneous corner should re-run Method C with `min_resolvable_dz_m`
+    matching their fidelity needs; the regime label itself is correct
+    in all four cases.
     """
 
     radius_m: float
@@ -178,7 +196,16 @@ def classify_cell(
     eq_ratio = math.exp(-sample_depth_m / ell_g) if ell_g > 0.0 else 0.0
 
     # Short-circuit 1: homogeneous corner.
+    #
+    # Reported ratio and bmf are the analytic equilibrium values — the
+    # *bound*, not the finite-time value. For the homogeneous corner
+    # (eq_ratio ≥ 0.95) the equilibrium bmf is ≈ 0.05 + (small h/ℓ_g
+    # correction); the finite-time bmf at uniform IC starts at exactly
+    # 0.05 and rises monotonically toward the equilibrium value. The
+    # regime label is correct regardless. See `RegimeResult` for the
+    # full interpretation table of the four execution paths.
     if eq_ratio >= HOMOGENEOUS_RATIO_THRESHOLD:
+        eq_bmf = _equilibrium_bottom_mass_fraction(sample_depth_m, ell_g)
         return RegimeResult(
             radius_m=radius_m,
             temperature_kelvin=temperature_kelvin,
@@ -186,7 +213,7 @@ def classify_cell(
             t_obs_s=t_obs_s,
             regime="homogeneous",
             top_to_bottom_ratio=eq_ratio,
-            bottom_mass_fraction=SEDIMENTED_BOTTOM_LAYER_FRACTION,
+            bottom_mass_fraction=eq_bmf,
             used_homogeneous_short_circuit=True,
             used_equilibrated_short_circuit=False,
             used_method_c_fallback=False,
