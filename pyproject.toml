@@ -19,12 +19,12 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
-    "Development Status :: 1 - Planning",
+    "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-    "numpy>=1.26",
+    "numpy>=2.0",
     "scipy>=1.12",
     "matplotlib>=3.8",
 ]
@@ -38,6 +38,7 @@ dev = [
 notebooks = [
     "jupyterlab>=4",
     "ipywidgets>=8",
+    "jupytext>=1.16",
 ]
 
 [project.urls]

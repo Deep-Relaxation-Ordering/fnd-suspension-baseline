@@ -29,7 +29,7 @@ def test_method_b_c_time_dependent_moments_agree() -> None:
     pass
 
 
-@pytest.mark.skip(reason="Awaiting Method A and Method C implementations.")
+@pytest.mark.skip(reason="Awaiting Method C implementation.")
 def test_method_a_c_equilibrium_outside_b_envelope() -> None:
     pass
 

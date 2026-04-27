@@ -69,12 +69,12 @@ def test_viscosity_at_20C_within_1pct_of_iapws() -> None:
     assert math.isclose(eta, 1.0016e-3, rel_tol=1e-2)
 
 
-def test_viscosity_at_5C_within_1pct_of_iapws() -> None:
+def test_viscosity_at_5C_within_2pct_of_iapws() -> None:
     eta = eta_water(278.15)
     assert math.isclose(eta, 1.5188e-3, rel_tol=2e-2)
 
 
-def test_viscosity_at_35C_within_1pct_of_iapws() -> None:
+def test_viscosity_at_35C_within_2pct_of_iapws() -> None:
     eta = eta_water(308.15)
     assert math.isclose(eta, 7.1909e-4, rel_tol=2e-2)
 

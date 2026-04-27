@@ -64,7 +64,19 @@ fnd-suspension-baseline/
 
 ## Status
 
-Day 0 — repository scaffold only. No methods are implemented yet. The first
-lab note is at [`lab_notes/2026-04-27-scaffold.md`](lab_notes/2026-04-27-scaffold.md).
+Phase 2 complete — Method A (analytical, equilibrium quantities) implemented;
+Methods B (Langevin) and C (Smoluchowski) pending. Test suite: `27 passed,
+10 skipped` (skipped tests are Method B / Method C dependencies).
+
+| Phase | Surface | State |
+|---|---|---|
+| 0 | scaffold (repo, conventions, skipped test stubs) | done — [scaffold note](lab_notes/2026-04-27-scaffold.md) |
+| 1 | `parameters.py`, water properties, Einstein–Smoluchowski check | done — [phase-1 note](lab_notes/2026-04-27-phase1-parameters-and-water-properties.md) |
+| 2 | `analytical.py`, notebook 01 baseline-validation | done — [phase-2 note](lab_notes/2026-04-27-phase2-method-a-and-notebook-01.md) |
+| 3 | `langevin.py` (Method B) + cross-method tests | next |
+| 4 | `fokker_planck.py` (Method C) + regime map | pending |
+| 5 | `regime_map.py` orchestration, deliverables 3 & 5 | pending |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
+A reverse-chronological index of session lab notes is in
+[`lab_notes/README.md`](lab_notes/README.md).

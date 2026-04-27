@@ -64,9 +64,12 @@ sibling repo. Pinned reference:
 | Source repo | `Deep-Relaxation-Ordering/diamonds_in_water` |
 | Document | `breakout-note-brownian-sedimentation.md` |
 | Status at scaffold | v0.2 (round-3 + round-4 follow-ups, plus cd-rules cross-reference) |
+| Pinned commit | `3b7b18af7bd1739f3cb7b3360d2b75264dd5ad07` |
+| Pinned date | 2026-04-27 (PR #2 merge into `main`) |
 
-The pinned commit hash will be added once the breakout note's v0.2 PR
-chain merges.
+When the breakout note moves forward, this pin updates within one
+working session and the bump is logged as a lab note (parallel to the
+cd-rules drift rule above).
 
 ## Authoring conventions for this repo
 
@@ -91,8 +94,12 @@ A short, pilot-specific layer on top of cd-rules:
   refer to the paired `.py` files of the same stem, and conversion to
   `.ipynb` is on demand via `jupytext --to ipynb 01_baseline_validation.py`.
   Static figure outputs from each notebook are saved under
-  `notebooks/figures/<notebook-stem>/` as both PNG (preview) and PDF
-  (paper-ready). Run a notebook directly with
+  `notebooks/figures/<notebook-stem>/`. PNG previews are tracked in
+  git as the canonical reviewable artefact; PDFs (paper-ready) are
+  written by the notebook on every run but are gitignored, because
+  matplotlib embeds `/CreationDate` and the bytes churn on every
+  re-run even when the plotted data is identical. Regenerate PDFs on
+  demand by re-running the notebook. Run a notebook directly with
   `PYTHONPATH=src python notebooks/<notebook>.py` from the repo root,
   or open the `.py` in VS Code / PyCharm / Jupyter for cell-by-cell
   execution.

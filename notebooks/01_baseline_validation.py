@@ -43,10 +43,16 @@ import numpy as np
 from analytical import (
     barometric_profile,
     cell_summary,
-    diffusivity,
     scale_height,
     settling_velocity,
     top_to_bottom_ratio,
+)
+from parameters import diffusivity
+from scan_grid import (
+    DEPTH_LABELS,
+    DEPTHS_M,
+    NOTEBOOK_PREVIEW_DEPTH_INDICES,
+    radii_m,
 )
 
 # %% [markdown]
@@ -81,7 +87,7 @@ for key, value in anchor.items():
 
 # %%
 T_ROOM = 298.15
-radii = np.geomspace(5e-9, 1e-5, 30)
+radii = radii_m()
 v_sed = np.array([settling_velocity(r, T_ROOM) for r in radii])
 d_brownian = np.array([diffusivity(r, T_ROOM) for r in radii])
 ell_g = np.array([scale_height(r, T_ROOM) for r in radii])
@@ -112,12 +118,17 @@ plt.show()
 # %% [markdown]
 # ## Regime preview at fixed h — top-to-bottom equilibrium ratio
 #
-# c(h)/c(0) = exp(-h / ℓ_g) at room temperature, for the four sample
-# depths planned in breakout-note §5 (Ibidi µ-slide → standard Hellma).
+# c(h)/c(0) = exp(-h / ℓ_g) at room temperature. The breakout-note §5
+# scan defines five sample depths (`scan_grid.DEPTHS_M`); this preview
+# shows the four short-path depths (≤ 2 mm,
+# `scan_grid.NOTEBOOK_PREVIEW_DEPTH_INDICES`) for legibility — the
+# 10 mm curve sits in the deeply-sedimented corner across most of the
+# radius range and would crowd the threshold lines. The full five-depth
+# sweep is the deliverable-3 figure produced by `regime_map.py`.
 # Horizontal dashed lines mark the §5.1 thresholds (0.95 and 0.05).
 
 # %%
-sample_depths = [(1e-4, "0.1 mm"), (5e-4, "0.5 mm"), (1e-3, "1 mm"), (2e-3, "2 mm")]
+sample_depths = [(DEPTHS_M[i], DEPTH_LABELS[i]) for i in NOTEBOOK_PREVIEW_DEPTH_INDICES]
 fig, ax = plt.subplots(figsize=(7.5, 5.0))
 for h, label in sample_depths:
     ratio = np.array([top_to_bottom_ratio(r, T_ROOM, h) for r in radii])

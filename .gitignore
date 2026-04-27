@@ -41,3 +41,8 @@ runs/
 *.npz
 *.h5
 *.parquet
+
+# Generated figure PDFs — matplotlib embeds /CreationDate, so PDFs churn
+# byte-for-byte on every notebook re-run even when the plotted data is
+# identical. PNG previews stay tracked; PDFs are regenerated on demand.
+notebooks/figures/**/*.pdf

@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 
 
-@pytest.mark.skip(reason="Awaiting Method A and Method B implementations.")
+@pytest.mark.skip(reason="Awaiting Method B implementation.")
 def test_method_b_long_time_matches_barometric() -> None:
     pass
 
