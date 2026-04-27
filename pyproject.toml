@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fnd-suspension-baseline"
+version = "0.0.0"
+description = "Numerical pilot: Brownian motion and sedimentation of diamond particles in aqueous suspension as a function of particle size."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENCE" }
+authors = [
+    { name = "U. Warring", email = "u.j.warring@gmail.com" },
+]
+keywords = ["langevin", "smoluchowski", "sedimentation", "brownian", "fnd", "diamond"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.12",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "ruff>=0.4",
+]
+notebooks = [
+    "jupyterlab>=4",
+    "ipywidgets>=8",
+]
+
+[project.urls]
+"Specification" = "https://github.com/Deep-Relaxation-Ordering/diamonds_in_water/blob/main/breakout-note-brownian-sedimentation.md"
+"Project rules" = "https://github.com/threehouse-plus-ec/cd-rules"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
