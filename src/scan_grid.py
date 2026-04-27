@@ -3,16 +3,15 @@
 Spec: breakout-note §5 (parameter scan), §5.1 (regime classification).
 
 The full scan declared in §5 is 30 (radii) × 7 (temperatures) × 5 (depths)
-× 6 (observation times) = 6300 cells. This module exposes the first three
-axes; the observation-time axis is deferred until Method B / Method C
-land and the t_obs grid stops being a stub in `regime_map.py`.
+× 6 (observation times) = 6300 cells. This module owns all four axes.
+Phase 5 added the t_obs axis once Method C had landed and `regime_map.py`
+needed it for finite-time regime classification.
 
-Until then, both `notebooks/01_baseline_validation.py` and
-`src/regime_map.py` should read radius / temperature / depth axes from
-*here* rather than restating the bounds with their own `np.geomspace`.
-This is the centralisation called out in the 2026-04-27 review-fixes
-lab note: a single edit to the scan widens or narrows every consumer,
-which is what the §5 framing actually wants.
+Both `notebooks/01_baseline_validation.py` and `src/regime_map.py`
+should read all four axes from *here* rather than restating bounds with
+their own `np.geomspace`. This is the centralisation called out in the
+2026-04-27 review-fixes lab note: a single edit to the scan widens or
+narrows every consumer, which is what the §5 framing actually wants.
 """
 
 from __future__ import annotations
@@ -76,3 +75,33 @@ corner across most of the radius range and would crowd the threshold
 lines. This index list is the explicit, auditable subset — not an
 ad-hoc literal in the notebook.
 """
+
+
+# ---------------------------------------------------------------------------
+# Observation-time axis — breakout-note §5 (six log-spaced t_obs values)
+# ---------------------------------------------------------------------------
+#
+# The §5 grid declares 6 observation times spanning the experimentally
+# meaningful range from a single-frame microscopy capture (~1 min) up to
+# a several-day session. The values pinned here are the
+# physically-motivated set Phase 5 uses:
+#
+#   - 1 min      (fast microscopy)
+#   - 10 min     (slow microscopy / equilibration check)
+#   - 1 h        (typical experiment session)
+#   - 4 h        (single-day half-experiment / settling check)
+#   - 1 day      (overnight)
+#   - 1 week     (long observation / shelf life)
+#
+# Confirm these against the breakout-note §5 table at the next spec
+# drift — same audit-gap pattern as the depth grid (tracked in the
+# 2026-04-27 review-fixes lab note).
+
+T_OBS_S: Final[tuple[float, ...]] = (60.0, 600.0, 3600.0, 14400.0, 86400.0, 604800.0)
+"""Observation times t_obs, in seconds: 1 min, 10 min, 1 h, 4 h, 1 d, 1 w."""
+
+T_OBS_LABELS: Final[tuple[str, ...]] = ("1 min", "10 min", "1 h", "4 h", "1 d", "1 w")
+"""Human-readable labels aligned with `T_OBS_S`."""
+
+N_T_OBS: Final[int] = 6
+"""Length of the t_obs axis."""

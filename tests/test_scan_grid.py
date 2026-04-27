@@ -15,10 +15,13 @@ from scan_grid import (
     DEPTH_LABELS,
     DEPTHS_M,
     N_RADII,
+    N_T_OBS,
     N_TEMPERATURES,
     NOTEBOOK_PREVIEW_DEPTH_INDICES,
     RADIUS_MAX_M,
     RADIUS_MIN_M,
+    T_OBS_LABELS,
+    T_OBS_S,
     TEMPERATURE_MAX_K,
     TEMPERATURE_MIN_K,
     radii_m,
@@ -62,3 +65,16 @@ def test_notebook_preview_depth_subset_is_well_formed() -> None:
     assert len(indices) == 4
     assert all(0 <= i < len(DEPTHS_M) for i in indices)
     assert len(set(indices)) == len(indices)
+
+
+def test_t_obs_axis_has_six_points_strictly_increasing() -> None:
+    assert len(T_OBS_S) == N_T_OBS == 6
+    assert len(T_OBS_LABELS) == 6
+    diffs = [b - a for a, b in zip(T_OBS_S[:-1], T_OBS_S[1:], strict=True)]
+    assert all(d > 0 for d in diffs)
+
+
+def test_t_obs_axis_spans_minutes_to_a_week() -> None:
+    """Spec contract: §5 t_obs grid covers fast-microscopy through long-observation."""
+    assert T_OBS_S[0] == 60.0  # 1 min
+    assert T_OBS_S[-1] == 7 * 24 * 3600.0  # 1 week
