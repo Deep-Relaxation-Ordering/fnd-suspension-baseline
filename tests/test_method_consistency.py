@@ -24,14 +24,28 @@ from __future__ import annotations
 import math
 
 import numpy as np
+from scipy.sparse.linalg import expm_multiply
 
-from analytical import barometric_mean_height, scale_height
-from fokker_planck import equilibrium_cell, make_mesh, sg_flux_coefficients, solve, solve_cell
+from analytical import barometric_mean_height, scale_height, settling_velocity
+from fokker_planck import (
+    build_operator,
+    equilibrium_cell,
+    make_mesh,
+    sg_flux_coefficients,
+    solve,
+    solve_cell,
+)
 from langevin import simulate, simulate_cell
+from parameters import diffusivity
 
 
 def test_method_b_c_time_dependent_moments_agree() -> None:
-    """Method B and Method C agree on time-dependent moments inside B's envelope."""
+    """Method B and Method C agree on time-dependent moments inside B's envelope.
+
+    Tolerance is keyed to the *value*, not h: a 3 %-of-h slop on the mean
+    is effectively a 7-10 % relative tolerance for a stratified cell, which
+    is much looser than the actual 0.4 % seeded agreement.
+    """
     r = 1e-7
     temperature_kelvin = 298.15
     h = 1e-4
@@ -49,9 +63,72 @@ def test_method_b_c_time_dependent_moments_agree() -> None:
 
     mean_b = float(np.mean(method_b.final_z))
     var_b = float(np.var(method_b.final_z))
+    mean_c = method_c.mean_height()
+    var_c = method_c.variance_height()
 
-    assert abs(mean_b - method_c.mean_height()) / h < 0.03
-    assert abs(var_b - method_c.variance_height()) / h**2 < 0.03
+    assert abs(mean_b - mean_c) / mean_c < 0.01
+    assert abs(var_b - var_c) / var_c < 0.02
+
+
+def test_method_a_c_equilibrium_inside_b_envelope_resolved_mesh() -> None:
+    """Method A ↔ Method C equilibrium agreement on a *resolved-mesh* cell
+    (i.e. without the asymptotic fallback). This is the gap left by the
+    Phase 4 test set, which only validated the fallback path.
+
+    100-nm diamond at 25 °C in a 100-µm cell sits at h/ℓ_g ≈ 2.5 — clearly
+    stratified, fully resolved by a uniform mesh.
+
+    `n_cells = 60` and `t_factor = 10` are CI-time settings: at these
+    values the test runs in well under a second while still resolving
+    each Method-A reference to better than ~2·10⁻⁴ relative error.
+    Production scans (`regime_map.py`) should use the
+    `equilibrium_cell` defaults.
+    """
+    r, temperature_kelvin, h = 1e-7, 298.15, 1e-4
+    ell_g = scale_height(r, temperature_kelvin)
+
+    method_c = equilibrium_cell(
+        r, temperature_kelvin, h,
+        n_cells=60,
+        t_factor=10.0,
+    )
+    assert not method_c.used_asymptotic_fallback
+
+    z_mean_a = barometric_mean_height(h, ell_g)
+    ratio_a = math.exp(-h / ell_g)
+    bmf_a = (1.0 - math.exp(-0.05 * h / ell_g)) / (1.0 - math.exp(-h / ell_g))
+
+    assert abs(method_c.mean_height() - z_mean_a) / z_mean_a < 1e-3
+    # Log-linear extrapolation is exact for exponential profiles, modulo
+    # the tiny finite-time correction from t = 10·t_relax.
+    assert abs(method_c.top_to_bottom_ratio() - ratio_a) / ratio_a < 1e-6
+    # bottom_mass_fraction is exact integration over the equilibrium profile.
+    assert abs(method_c.bottom_mass_fraction(0.05) - bmf_a) / bmf_a < 1e-3
+
+
+def test_method_c_operator_conserves_mass_to_machine_precision() -> None:
+    """The Scharfetter-Gummel finite-volume operator is mass-conservative
+    by construction; verify the raw expm_multiply output (before
+    `_normalise_density` clips and renormalises) preserves total mass to
+    well below 1 ppb. Pinning this protects against silent operator
+    bugs whose drift could otherwise be hidden by the renormalisation.
+    """
+    r, temperature_kelvin, h = 1e-7, 298.15, 1e-4
+    v = settling_velocity(r, temperature_kelvin)
+    d = diffusivity(r, temperature_kelvin)
+
+    edges, unresolved, _ = make_mesh(h, ell_g=d / v, n_cells=240)
+    assert not unresolved
+    widths = np.diff(edges)
+    operator = build_operator(edges, diff=d, v_sed=v)
+
+    c0 = np.full(widths.size, 1.0 / h)
+    initial_mass = float(np.sum(c0 * widths))
+
+    c_t = expm_multiply(operator * 100.0, c0)
+    final_mass = float(np.sum(c_t * widths))
+
+    assert abs(final_mass - initial_mass) / initial_mass < 1e-9
 
 
 def test_method_a_c_equilibrium_outside_b_envelope() -> None:

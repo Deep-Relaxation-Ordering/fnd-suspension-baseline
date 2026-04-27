@@ -65,7 +65,7 @@ fnd-suspension-baseline/
 ## Status
 
 Phase 4 complete — Methods A (analytical), B (Langevin), and C
-(Smoluchowski) implemented. Test suite: `70 passed`.
+(Smoluchowski) implemented. Test suite: `72 passed`.
 
 | Phase | Surface | State |
 |---|---|---|
@@ -77,6 +77,7 @@ Phase 4 complete — Methods A (analytical), B (Langevin), and C
 | 3.1 | review-driven fixes (t_total honouring, snapshot scheduling) | done — [phase-3.1 note](lab_notes/2026-04-27-phase3-1-review-driven-fixes.md) |
 | 3.2 | architecture polish (mean-height promotion, feasibility provenance) | done — [phase-3.2 note](lab_notes/2026-04-27-phase3-2-architecture-polish.md) |
 | 4 | `fokker_planck.py` (Method C) + §4.4 PDE checks | done — [phase-4 note](lab_notes/2026-04-27-phase4-method-c-smoluchowski.md) |
+| 4.1 | review-driven fixes (boundary top/bottom ratio, resolved-mesh A↔C, raw-operator mass conservation) | done — [phase-4.1 note](lab_notes/2026-04-27-phase4-1-review-driven-fixes.md) |
 | 5 | `regime_map.py` orchestration, deliverables 3 & 5 | next |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.

@@ -89,11 +89,52 @@ class FokkerPlanckResult:
         return float(np.sum((self.z - mean) ** 2 * probs))
 
     def top_to_bottom_ratio(self) -> float:
-        """Return c(h) / c(0) using the top and bottom cell averages."""
-        bottom = float(self.concentration[0])
-        if bottom <= 0.0:
+        """Return c(h) / c(0), the §5.1 regime-classification quantity.
+
+        Implementation: log-linear extrapolation from the two cells nearest
+        each boundary. This is *exact* for an exponential profile (the
+        equilibrium barometric form), reduces to 1 for a uniform profile,
+        and degrades gracefully for arbitrary cell-centre interpolations
+        in between.
+
+        Edge cases:
+        - ``concentration[-1] == 0`` (asymptotic-sedimentation fallback):
+          returns 0.0 immediately. The fallback equilibrium has all mass
+          in the bottom cell, so c(h) is structurally zero.
+        - ``concentration[0] <= 0``: returns +inf.
+        - Either of the two interpolation neighbours has a non-positive
+          concentration (rare numerical pathology): falls back to the
+          bare cell-average ratio, which preserves the API contract
+          without log-of-zero crashes.
+        """
+        c_bot_0 = float(self.concentration[0])
+        c_bot_1 = float(self.concentration[1])
+        c_top_0 = float(self.concentration[-1])
+        c_top_1 = float(self.concentration[-2])
+
+        if c_top_0 == 0.0:
+            return 0.0
+        if c_bot_0 <= 0.0:
             return math.inf
-        return float(self.concentration[-1] / bottom)
+
+        # Log-linear extrapolation requires positive neighbours; otherwise
+        # fall back to the cell-average ratio (still a defined number).
+        if c_bot_1 <= 0.0 or c_top_1 <= 0.0:
+            return c_top_0 / c_bot_0
+
+        z_bot_0 = float(self.z[0])
+        z_bot_1 = float(self.z[1])
+        z_top_0 = float(self.z[-1])
+        z_top_1 = float(self.z[-2])
+
+        log_c_at_zero = math.log(c_bot_0) + (math.log(c_bot_1) - math.log(c_bot_0)) * (
+            0.0 - z_bot_0
+        ) / (z_bot_1 - z_bot_0)
+        log_c_at_h = math.log(c_top_0) + (math.log(c_top_1) - math.log(c_top_0)) * (
+            self.h - z_top_0
+        ) / (z_top_1 - z_top_0)
+
+        return math.exp(log_c_at_h - log_c_at_zero)
 
     def bottom_mass_fraction(self, layer_fraction: float = 0.05) -> float:
         """Return mass in the bottom `layer_fraction` of the sample."""
