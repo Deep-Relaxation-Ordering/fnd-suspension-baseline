@@ -89,6 +89,11 @@ not addressed at v0.1:
   grid-snapped, not interpolated thresholds. Continuous analytic
   equilibrium boundaries are in notebook 03's overlay (Phase 7.1
   lab note).
+- **Method-C regime-map fidelity envelope** — resolved transient cells
+  use a 120-cell first pass, with 240-cell refinement for cells near
+  the `c(h)/c(0)` thresholds. The high-Pe bottom-mass boundary is still
+  governed by the 10-nm regime-map fallback policy, not by a full
+  1-nm resolved-mesh convergence sweep.
 - **`equilibrium_cell` `t_factor = 50` magic constant** — works for
   every cell tested; not formally derived (Phase 4.1 lab note).
 
@@ -102,6 +107,8 @@ tightenings are:
 - Replace the §5 grid-snapped design-table entries with continuous
   interpolated thresholds via root-finding on `top_to_bottom_ratio
   = 0.95` and `bottom_mass_fraction = 0.95`.
+- Add a formal mesh-convergence audit around the finite-time
+  bottom-mass threshold.
 - Reduce the §5 grid walk wall time via either parallel walks
   (joblib / multiprocessing) or an analytic short-circuit on the
   remaining ~33 % of cells that go through Method C resolved-mesh.

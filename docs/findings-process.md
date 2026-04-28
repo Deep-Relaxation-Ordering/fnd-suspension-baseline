@@ -105,6 +105,13 @@ determined analytically; only 33 % (2061 / 6300) goes through
 Method C resolved-mesh. The walk takes 150 min instead of an
 estimated 6+ hours without these.
 
+Post-release adversarial review added one extra guard to this pattern:
+the resolved-Method-C path now keeps the 120-cell first pass for
+runtime, but reruns cells near the `c(h)/c(0)` thresholds at the
+240-cell Method-C default before assigning labels. That repaired 8
+near-boundary `homogeneous` labels without forcing the whole §5 cache
+through a pathological all-240-cell sweep.
+
 **Pattern signature:** every short-circuit is a *physics* statement
 about the regime in which the analytic answer dominates the
 numerical correction. They're not engineering hacks — each one is a
@@ -145,10 +152,11 @@ Three test layers, each with its own runtime and concern:
 | Physics validation | `test_method_b_long_time_matches_barometric` | ~0.4 s | Method against analytic limit |
 | Cross-method consistency | `test_method_b_c_time_dependent_moments_agree` | ~1 s | Two methods on the same cell |
 
-The full pilot suite (92 tests) runs in ~3 s. Slow physics tests
-use *CI-time* parameter overrides (e.g. `n_cells=60`, `t_factor=10`)
-with an explicit comment that production scans should use the
-defaults — the test pins the contract, not the resolution.
+The current post-release pilot suite (94 tests; 92 at `pilot-v0.1`)
+runs in ~3 s. Slow physics tests use *CI-time* parameter overrides
+(e.g. `n_cells=60`, `t_factor=10`) with an explicit comment that
+production scans should use the defaults — the test pins the
+contract, not the resolution.
 
 **Pattern signature:** if a test is slower than ~5 s, it's probably
 testing the wrong thing. Either the contract is at the wrong layer

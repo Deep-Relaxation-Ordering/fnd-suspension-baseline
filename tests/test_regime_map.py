@@ -16,8 +16,11 @@ from pathlib import Path
 
 import pytest
 
+from fokker_planck import DEFAULT_N_CELLS
 from regime_map import (
     HOMOGENEOUS_RATIO_THRESHOLD,
+    REGIME_MAP_N_CELLS,
+    REGIME_MAP_REFINEMENT_N_CELLS,
     SEDIMENTED_BOTTOM_MASS_THRESHOLD,
     SEDIMENTED_RATIO_THRESHOLD,
     RegimeGrid,
@@ -87,6 +90,32 @@ def test_method_c_runs_for_genuine_transients() -> None:
     assert not res.used_equilibrated_short_circuit
     # The transient ratio is between eq_ratio and 1.
     assert math.exp(-2.5) <= res.top_to_bottom_ratio <= 1.0
+
+
+def test_regime_map_refines_threshold_adjacent_cells_at_method_c_default() -> None:
+    """Threshold-adjacent transient labels use Method C's production resolution.
+
+    A previous 120-cell regime-map override was fast but could put
+    near-threshold transient cells on the wrong side of the homogeneous
+    boundary.
+    """
+    assert REGIME_MAP_N_CELLS < DEFAULT_N_CELLS
+    assert REGIME_MAP_REFINEMENT_N_CELLS == DEFAULT_N_CELLS
+
+
+def test_resolved_threshold_cell_stays_on_converged_side_of_boundary() -> None:
+    """Regression for a resolved transient that flipped at 120 cells.
+
+    The first pass reports c(h)/c(0) just above 0.95, then the
+    threshold-adjacent refinement moves it below the threshold.
+    """
+    res = classify_cell(2.41e-8, 298.15, 1e-2, t_obs_s=600.0)
+
+    assert not res.used_homogeneous_short_circuit
+    assert not res.used_equilibrated_short_circuit
+    assert not res.used_method_c_fallback
+    assert res.top_to_bottom_ratio < HOMOGENEOUS_RATIO_THRESHOLD
+    assert res.regime == "stratified"
 
 
 def test_method_c_fallback_fires_in_high_pe_corner() -> None:

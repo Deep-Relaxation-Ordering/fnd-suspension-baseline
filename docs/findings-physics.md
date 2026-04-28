@@ -18,15 +18,31 @@ observation times):
 
 | Regime | Cells | Fraction |
 |---|---|---|
-| homogeneous | 1166 | 18.5 % |
-| stratified | 2293 | 36.4 % |
+| homogeneous | 1158 | 18.4 % |
+| stratified | 2301 | 36.5 % |
 | sedimented | 2841 | 45.1 % |
 
-Roughly half of the parameter space sediments at some observation
-time within a week; only one-fifth stays mixed throughout. The
-diamond-density / aqueous-suspension regime is dominated by gravity
-across most of the (r, h, t_obs) space the breakout note sets out
-to scan.
+By row count, roughly half of the sampled `(r, T, h, t_obs)` cells
+are sedimented. By unique experimental cell `(r, T, h)`, 595 of 1050
+cells (56.7 %) sediment at least once along the t_obs axis within a
+week, while 140 of 1050 (13.3 %) stay homogeneous at every sampled
+observation time. The diamond-density / aqueous-suspension regime is
+therefore gravity-dominated across most of the (r, h, t_obs) space
+the breakout note sets out to scan.
+
+## Model validity envelope
+
+The quantitative brackets below are predictions of the pilot model,
+not a full experimental protocol. The implementation assumes dilute,
+monodisperse, non-interacting spherical particles in pure water, with
+bulk-diamond density, Stokes drag, Stokes-Einstein diffusivity, a
+one-dimensional vertical coordinate, no aggregation, no adsorption,
+no wall-hydrodynamic correction, and reflecting top/bottom boundaries.
+For r ≲ 20 nm, the material radius used for buoyant mass may differ
+from the hydrodynamic radius that controls drag; surface chemistry,
+functionalisation, polydispersity, and container-wall effects should
+therefore be treated as follow-on experimental corrections rather
+than as resolved by this sweep.
 
 ## The homogeneous-edge boundary follows `r ∝ h^{-1/3}`
 
@@ -196,9 +212,11 @@ For a typical room-temperature experiment in a 1 mm cuvette:
 - **Sedimented within 1 h**: r ≳ 255 nm.
 - **Sedimented within 1 minute**: r ≳ 1.6 µm.
 
-Doubling the cell depth roughly halves each radius bracket; halving
-it doubles. Temperature is a secondary knob within the
-breakout-note's 5 → 35 °C range.
+Changing cell depth shifts these brackets downward: the long-time
+homogeneous edge follows the analytic `h^{-1/3}` scaling, while the
+finite-time sedimented edge is controlled by travel and relaxation
+times and moves more steeply with depth. Temperature is a secondary
+knob within the breakout-note's 5 → 35 °C range.
 
 ## Where the orchestration leans
 
@@ -218,6 +236,12 @@ short-circuits or by the asymptotic-sedimentation fallback. Only the
 remaining one-third needs the Scharfetter-Gummel finite-volume
 solver. The 147-min wall-time observed for the cache walk is set
 almost entirely by these 2061 Method-C-resolved cells.
+
+The resolved-Method-C path uses a 120-cell first pass and reruns
+ratio-threshold-adjacent cells at the Method-C production resolution
+(240 cells). In the repaired cache, 90 resolved rows were refined this
+way and 8 labels moved from `homogeneous` to `stratified`; no
+`sedimented` labels changed.
 
 The implication for any future tightening of the §5 axis: doubling
 the radius axis from 30 → 60 points roughly doubles the

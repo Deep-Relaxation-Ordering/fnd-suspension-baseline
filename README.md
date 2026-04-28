@@ -72,11 +72,30 @@ implemented and cross-validated; the §5 grid (30 × 7 × 5 × 6 = 6300
 cells) is walked and checked into git as
 [`notebooks/data/regime_map_grid.csv`](notebooks/data/regime_map_grid.csv);
 notebooks 01–04 produce the deliverables on top of that cache. Test
-suite: `92 passed, 0 skipped`. Findings narrative is split into
+suite: `94 passed, 0 skipped` on the current post-release branch
+(`92 passed` at the `pilot-v0.1` tag). Findings narrative is split into
 [physics](docs/findings-physics.md) (what the §5 sweep shows) and
 [process](docs/findings-process.md) (engineering patterns the pilot
 converged on). Known caveats are documented in the deliverable
 index.
+
+## Environment
+
+Use Python ≥ 3.11. The project metadata pins NumPy ≥ 2.0 and SciPy ≥
+1.12; older system Python environments can import enough to start but
+will fail the suite. From a fresh checkout:
+
+```sh
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -e ".[dev]"
+pytest -q
+ruff check src/ tests/ notebooks/
+```
+
+Ad-hoc one-line scripts that import modules directly should either use
+the editable install above or set `PYTHONPATH=src`, matching the
+notebook regeneration commands.
 
 | Phase | Surface | State |
 |---|---|---|
@@ -99,6 +118,7 @@ index.
 | 9 | findings narrative — [physics](docs/findings-physics.md) + [process](docs/findings-process.md) | done — [phase-9 note](lab_notes/2026-04-28-phase9-findings-narrative.md) |
 | 9.1 | findings corrections (Pe-label, time-evolution table, notebook-03 fallback, section count) | done — [phase-9.1 note](lab_notes/2026-04-28-phase9-1-findings-corrections.md) |
 | 9.2 | arithmetic and wording fixes (65 %→67 %, "queries used") | done — [phase-9.2 note](lab_notes/2026-04-28-phase9-2-arithmetic-and-wording-fixes.md) |
+| 9.3 | adversarial review fixes (threshold refinement, CI, validity envelope) | done — [phase-9.3 note](lab_notes/2026-04-28-phase9-3-adversarial-review-fixes.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in

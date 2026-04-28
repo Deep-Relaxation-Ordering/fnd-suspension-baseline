@@ -28,8 +28,8 @@ A homogeneous-corner short-circuit avoids the Method C call entirely
 when Method A's *equilibrium* ratio ``exp(-h/ℓ_g) ≥ 0.95`` — at finite
 t_obs starting from uniform IC, the ratio is bounded between the
 equilibrium value and 1, so the cell is always homogeneous regardless
-of t_obs. This skip cuts the homogeneous corner of the grid (~half the
-6300 cells) out of the expensive expm_multiply path.
+of t_obs. This skip cuts the analytically homogeneous corner of the
+grid out of the expensive expm_multiply path.
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from analytical import scale_height, settling_velocity
-from fokker_planck import solve_cell
+from fokker_planck import DEFAULT_N_CELLS, solve_cell
 from parameters import RHO_P_DIAMOND, diffusivity
 from scan_grid import DEPTHS_M, T_OBS_S, radii_m, temperatures_k
 
@@ -83,6 +83,30 @@ threshold to 10 nm routes the high-r corner of the grid (cells with
 ℓ_g ≲ 50 nm and t_obs short of the equilibrated short-circuit) through
 the fast asymptotic transient instead of a refined-mesh
 expm_multiply that would otherwise cost 10-20 s per cell."""
+
+REGIME_MAP_N_CELLS: int = 120
+"""First-pass finite-volume cell count used by the regime map.
+
+The full §5 sweep is dominated by resolved transient Method-C cells.
+A 120-cell first pass keeps the cache walk tractable; cells close to
+classification thresholds are rerun with `REGIME_MAP_REFINEMENT_N_CELLS`
+before their labels are assigned.
+"""
+
+REGIME_MAP_REFINEMENT_N_CELLS: int = DEFAULT_N_CELLS
+"""Refined resolved-Method-C cell count for threshold-adjacent cells."""
+
+REGIME_MAP_REFINEMENT_MARGIN: float = 1e-2
+"""Rerun resolved transient cells this close to a ratio threshold.
+
+The margin targets numerical classification stability rather than plot
+smoothness. It catches the known 120-cell false-homogeneous transient
+case while avoiding a full 240-cell sweep through the slow Method-C band.
+The bottom-mass threshold is not included here because the high-Pe cells
+near that boundary can be pathological under direct 240-cell
+`expm_multiply`; those are handled by the 10-nm asymptotic-fallback
+policy and documented as part of the fidelity envelope.
+"""
 
 
 @dataclass
@@ -162,6 +186,14 @@ def _classify_from_ratio_and_bmf(ratio: float, bmf: float) -> Regime:
     return "stratified"
 
 
+def _needs_refined_method_c(ratio: float) -> bool:
+    """Return True when a resolved Method-C ratio is threshold-adjacent."""
+    return (
+        abs(ratio - HOMOGENEOUS_RATIO_THRESHOLD) < REGIME_MAP_REFINEMENT_MARGIN
+        or abs(ratio - SEDIMENTED_RATIO_THRESHOLD) < REGIME_MAP_REFINEMENT_MARGIN
+    )
+
+
 def classify_cell(
     radius_m: float,
     temperature_kelvin: float,
@@ -169,7 +201,7 @@ def classify_cell(
     t_obs_s: float,
     *,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
-    n_cells: int = 120,
+    n_cells: int = REGIME_MAP_N_CELLS,
     min_resolvable_dz_m: float = REGIME_MAP_MIN_RESOLVABLE_DZ_M,
 ) -> RegimeResult:
     """Classify a single (r, T, h, t_obs) cell per breakout-note §5.1.
@@ -193,9 +225,11 @@ def classify_cell(
        expm_multiply with a spectral radius around 10⁵ s⁻¹ and runtimes
        in the tens of seconds per cell.
 
-    Cells that miss both short-circuits go through Method C. For
-    sub-5 nm scale heights, Method C's own asymptotic-sedimentation
-    fallback engages internally and stays fast.
+    Cells that miss both short-circuits go through Method C. Resolved
+    Method-C cells close to a §5.1 threshold are rerun at
+    `REGIME_MAP_REFINEMENT_N_CELLS` before classification. For sub-5 nm
+    scale heights, Method C's own asymptotic-sedimentation fallback
+    engages internally and stays fast.
     """
     ell_g = scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
     eq_ratio = math.exp(-sample_depth_m / ell_g) if ell_g > 0.0 else 0.0
@@ -258,6 +292,22 @@ def classify_cell(
     )
     ratio = method_c.top_to_bottom_ratio()
     bmf = method_c.bottom_mass_fraction(SEDIMENTED_BOTTOM_LAYER_FRACTION)
+    if (
+        not method_c.used_asymptotic_fallback
+        and n_cells < REGIME_MAP_REFINEMENT_N_CELLS
+        and _needs_refined_method_c(ratio)
+    ):
+        method_c = solve_cell(
+            radius_m,
+            temperature_kelvin,
+            sample_depth_m,
+            t_total=t_obs_s,
+            rho_particle_kg_per_m3=rho_particle_kg_per_m3,
+            n_cells=REGIME_MAP_REFINEMENT_N_CELLS,
+            min_resolvable_dz_m=min_resolvable_dz_m,
+        )
+        ratio = method_c.top_to_bottom_ratio()
+        bmf = method_c.bottom_mass_fraction(SEDIMENTED_BOTTOM_LAYER_FRACTION)
 
     return RegimeResult(
         radius_m=radius_m,
@@ -280,7 +330,7 @@ def walk_grid(
     depths: tuple[float, ...] | None = None,
     t_obs: tuple[float, ...] | None = None,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
-    n_cells: int = 120,
+    n_cells: int = REGIME_MAP_N_CELLS,
     min_resolvable_dz_m: float = REGIME_MAP_MIN_RESOLVABLE_DZ_M,
 ) -> list[RegimeResult]:
     """Walk a (sub-)grid of (r, T, h, t_obs) cells and classify each one.
