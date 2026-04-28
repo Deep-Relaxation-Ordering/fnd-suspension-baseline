@@ -34,7 +34,8 @@ Extracted from the §5 cache:
 
 - Regime distribution across the 6300 cells (1166 H / 2293 S /
   2841 sed = 18.5 / 36.4 / 45.1 %).
-- Pe = 1 boundary scaling: `r ∝ h^{-1/3}`, with grid samples
+- Homogeneous-edge boundary scaling (`exp(-h/ℓ_g) = 0.95` ⇒
+  `h/ℓ_g ≈ 0.051`, *not* Pe = 1): `r ∝ h^{-1/3}`, with grid samples
   ~1 §5 bin below the analytic edge across all five depths.
 - Temperature dependence is sub-bin (~3 % shift across 5 → 35 °C,
   invisible to the §5 r-axis at 10 % bin spacing).
@@ -49,10 +50,10 @@ Extracted from the §5 cache:
   round-4 threshold) — the boundary layer is ~ 56 µm vs the
   50 µm = 5 % of h cuvette fraction the criterion measures against.
   Exactly the kind of cell §5.1 round-4 was designed to handle.
-- Smallest sedimented r at 1 h vs Pe = 1 boundary: ratio 10× to
-  100×, growing with h. The "sedimented within an hour" radius is
-  set by the slow `h²` diffusive relaxation, not by the
-  equilibrium boundary.
+- Smallest sedimented r at 1 h vs the analytic homogeneous-edge
+  radius: ratio 10× to 100×, growing with h. The "sedimented
+  within an hour" radius is set by the slow `h²` diffusive
+  relaxation, not by the equilibrium ratio-threshold boundary.
 - Practical guidance brackets at 25 °C / 1 mm: stay-mixed below
   ~ 11 nm; sedimented within 1 h above ~ 255 nm; sedimented within
   1 minute above ~ 1.6 µm.
@@ -66,9 +67,10 @@ the queries used.
 
 ### `docs/findings-process.md`
 
-Fourteen patterns the pilot converged on, with the failure mode
-each averted in this project. Notable additions over the
-deliverable-index "known caveats" section:
+Thirteen patterns the pilot converged on, plus a closing summary
+table mapping each pattern to the specific failure mode it averted
+in this project. Notable additions over the deliverable-index
+"known caveats" section:
 
 - The `.0` / `.1` / `.2` phase numbering convention.
 - The cache-as-deliverable cost/benefit (770 KB on disk vs 150 min

@@ -227,17 +227,29 @@ not in a comment that drifts.
 
 ## 10. Notebook fallback patterns
 
-Notebook 02 reads from `notebooks/data/regime_map_grid.csv` if it
-exists, otherwise walks a coarse 270-cell grid live. Notebook 03
-does the same. Notebook 04, by contrast, raises `FileNotFoundError`
-if the cache is missing — because the design table is structurally
-a *projection* of the §5 cache; without the cache there is nothing
-to project.
+Three different cache-dependence regimes across the four notebooks:
 
-**Pattern signature:** decide per notebook whether the deliverable
-is renderable without the cache. Self-contained-with-fallback for
-discovery / overview notebooks; cache-required for derived
-artefacts. State the choice in the notebook header.
+- **Notebook 02 — full fallback**: reads
+  `notebooks/data/regime_map_grid.csv` if it exists, otherwise
+  walks a coarse 270-cell grid live. Every figure is renderable on
+  a fresh clone.
+- **Notebook 03 — partial fallback**: figure 1 (Method-A primitives
+  vs T) is computed directly from `analytical.py` and never needs
+  the cache. Figures 2 and 3 (per-T regime panels and the
+  homogeneous-radius envelope) require the cache and are *skipped
+  with a printed message* if it is missing — Method-C regeneration
+  is too expensive to run inline.
+- **Notebook 04 — cache required**: raises `FileNotFoundError` if
+  the cache is missing, because the design table is structurally a
+  *projection* of the §5 cache; without the cache there is nothing
+  to project.
+
+**Pattern signature:** decide per notebook (and per figure within
+a notebook) whether the artefact is renderable without the cache.
+Self-contained-with-fallback for cheap visualisations,
+skip-with-message for expensive cache-derived figures, and
+hard-error for derived artefacts that have no meaningful fallback.
+State the choice in the notebook header.
 
 ## 11. Spec pinning at commit-hash precision
 
@@ -285,9 +297,10 @@ Institut Freiburg.*
 document, not to a sidecar metadata file. If a single file gets
 copied out (paper draft, slides, etc.), the marker travels with it.
 
-## 14. Failure modes the patterns avoided
+## Failure modes the patterns avoided
 
-For each pattern above, the failure mode it avoided in this pilot:
+For each of the thirteen patterns above, the failure mode it avoided
+in this pilot:
 
 | Pattern | Failure averted |
 |---|---|

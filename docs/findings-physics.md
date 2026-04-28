@@ -28,17 +28,22 @@ diamond-density / aqueous-suspension regime is dominated by gravity
 across most of the (r, h, t_obs) space the breakout note sets out
 to scan.
 
-## The Pe = 1 boundary follows `r ∝ h^{-1/3}`
+## The homogeneous-edge boundary follows `r ∝ h^{-1/3}`
 
 The "homogeneous" upper-edge radius — the largest particle size that
 the suspension keeps mixed at long times — is set analytically by
+the §5.1 ratio threshold
 
 ```text
-exp(-h / ℓ_g) = 0.95   ⇒   r ≈ ((3 / 4π) · k_B T · |ln 0.95| / (g h Δρ))^(1/3)
+exp(-h / ℓ_g) = 0.95   ⇒   h / ℓ_g = -ln 0.95 ≈ 0.0513
+                       ⇒   r ≈ ((3 / 4π) · k_B T · |ln 0.95| / (g h Δρ))^(1/3)
 ```
 
-so `r_max(homog) ∝ (T / Δρ)^{1/3} · h^{-1/3}`. At room temperature
-this gives:
+so `r_max(homog) ∝ (T / Δρ)^{1/3} · h^{-1/3}`. (Note: this is the
+ratio-threshold edge `h/ℓ_g ≈ 0.051`, *not* the Péclet-unity
+condition `h/ℓ_g = 1`. Pe ≈ 1 corresponds to `c(h)/c(0) = e⁻¹ ≈
+0.37`, well inside the stratified band.) At room temperature this
+gives:
 
 | h | analytic r_max | §5 grid r_max (1 week) | comment |
 |---|---|---|---|
@@ -76,25 +81,27 @@ constant matters less than holding the cell depth constant.
 
 ## Time matters more than temperature
 
-Same 1 mm room-temperature cell, walking the breakout-note t_obs
-axis:
+Walking the breakout-note t_obs axis at 25 °C, h = 1 mm — slice
+shape is the §5 r-axis (30 radii) at fixed (T, h, t_obs):
 
-| t_obs | regime distribution at 25 °C, 1 mm (5 cells × 30 radii) |
+| t_obs | regime distribution along the §5 r-axis (30 radii) |
 |---|---|
 | 1 min | 8 H / 14 S / 8 s |
 | 10 min | 6 H / 12 S / 12 s |
-| 1 h | 5 H / 11 S / 14 s |
-| 4 h | 5 H / 10 S / 15 s |
+| 1 h | 5 H / 10 S / 15 s |
+| 4 h | 4 H / 9 S / 17 s |
 | 1 d | 4 H / 9 S / 17 s |
 | 1 week | 4 H / 9 S / 17 s |
 
-(H = homogeneous, S = stratified, s = sedimented; sum = 30.)
+(H = homogeneous, S = stratified, s = sedimented; each row sums to
+30 = number of §5 radii.)
 
 The *long-time* distribution is set by the equilibrium ratio
 `exp(-h/ℓ_g)`; the *short-time* distribution drifts toward it. The
-sedimented column nearly doubles from 1 minute to 1 week. The
+sedimented column more than doubles from 1 minute to 1 hour. The
 homogeneous corner shrinks but stabilises — beyond `5 · t_relax` the
-classifier sees the analytic equilibrium, and t_obs no longer matters.
+classifier sees the analytic equilibrium, and t_obs no longer matters
+(rows 4 h, 1 d, 1 w are bit-identical at this slice).
 
 ## Round-4 second criterion is non-trivial
 
@@ -160,22 +167,24 @@ Inverse perspective — for sedimentation experiments, the smallest
 particle that the §5 axis classifies "sedimented" at room temperature
 and t_obs = 1 hour:
 
-| h | smallest tested sedimented r at 1 h | analytic Pe = 1 r at h | ratio |
+| h | smallest tested sedimented r at 1 h | analytic homog-edge r at h | ratio |
 |---|---|---|---|
-| 0.1 mm | 331 nm | 30 nm | 11× |
-| 0.5 mm | 196 nm | 17 nm | 12× |
-| 1 mm | 255 nm | 14 nm | 18× |
-| 2 mm | 331 nm | 11 nm | 30× |
+| 0.1 mm | 331 nm | 27 nm | 12× |
+| 0.5 mm | 196 nm | 16 nm | 12× |
+| 1 mm | 255 nm | 13 nm | 20× |
+| 2 mm | 331 nm | 10 nm | 33× |
 | 10 mm | 727 nm | 6 nm | 121× |
 
-The ratio of "smallest radius that is *sedimented* in 1 h" to "Pe=1
-boundary at equilibrium" is large (10× to 100×) and grows with h.
-The interpretation: at deep cells, equilibrium sedimentation is
-slow because the diffusive relaxation timescale grows as `h²`, so
-much larger particles are needed to *finish* sedimenting in an hour.
-This bracket — Pe=1 boundary on the small side, in-transit boundary
-on the large side, with the stratified band between — is the
-deliverable-5 design table's central narrative.
+The ratio of "smallest radius that is *sedimented* in 1 h" to the
+analytic homogeneous-edge radius (the ratio-threshold boundary
+`exp(-h/ℓ_g) = 0.95` from the section above) is large (10× to
+100×) and grows with `h`. The interpretation: at deep cells,
+equilibrium sedimentation is slow because the diffusive relaxation
+timescale grows as `h²`, so much larger particles are needed to
+*finish* sedimenting in an hour. This bracket — homogeneous-edge
+boundary on the small side, in-transit boundary on the large side,
+with the stratified band between — is the deliverable-5 design
+table's central narrative.
 
 ## Practical guidance bracket
 
@@ -226,8 +235,9 @@ t_obs.
 - [`notebooks/02_regime_map.py`](../notebooks/02_regime_map.py) —
   visual companion to the headline distribution.
 - [`notebooks/03_parameter_scans.py`](../notebooks/03_parameter_scans.py)
-  — visual companion to the temperature-dependence and Pe=1 scaling
-  findings (specifically the analytic-vs-grid envelope).
+  — visual companion to the temperature-dependence and
+  homogeneous-edge scaling findings (specifically the
+  analytic-vs-grid envelope).
 - [`notebooks/04_design_table.py`](../notebooks/04_design_table.py)
   — the design-table CSVs are the row-level data the headline
   brackets summarise.
