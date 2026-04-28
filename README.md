@@ -91,6 +91,7 @@ its feasibility envelope. Test suite: `92 passed`.
 | 5.1 | review fixes (t_obs wording, homogeneous-bmf semantics, A/B/C scope) | done — [phase-5.1 note](lab_notes/2026-04-27-phase5-1-review-driven-fixes.md) |
 | 6 | grid cache + notebook 02 (deliverable-3 regime map) | done — [phase-6 note](lab_notes/2026-04-27-phase6-grid-cache-and-notebook-02.md) |
 | 7 | results_to_grid + notebooks 03/04 (parameter scans + deliverable-5 design table) | done — [phase-7 note](lab_notes/2026-04-27-phase7-parameter-scans-and-design-table.md) |
+| 7.1 | review fixes (envelope figure, table semantics, stale comments) | done — [phase-7.1 note](lab_notes/2026-04-28-phase7-1-review-driven-fixes.md) |
 | 8 | release tag, paper-draft hooks (breakout-note §9 wrap) | next |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.

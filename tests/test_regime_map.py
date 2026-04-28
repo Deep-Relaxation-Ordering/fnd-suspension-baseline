@@ -4,8 +4,9 @@ Spec: breakout-note §5 (parameter scan), §5.1 (regime classification).
 
 Pins both the threshold logic (`classify_cell`) and the grid-walking
 shape (`walk_grid`). Walks are deliberately tiny — the production
-6300-cell sweep takes O(20 min) and belongs in a one-shot deliverable
-script, not the unit suite.
+6300-cell sweep takes ~150 min single-threaded (8836 s measured on
+the Phase 6 commit) and belongs in a one-shot deliverable script,
+not the unit suite.
 """
 
 from __future__ import annotations
@@ -202,7 +203,7 @@ def test_results_csv_round_trip_is_lossless(tmp_path: Path) -> None:
     """CSV round-trip preserves every RegimeResult field bit-exactly.
 
     This is what lets the deliverable notebooks consume the precomputed
-    grid cache without re-walking — an 18-min operation otherwise.
+    grid cache without re-walking — a ~150-min operation otherwise.
     """
     original = walk_grid(
         radii=(5e-9, 1e-7, 1e-6),

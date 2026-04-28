@@ -43,7 +43,8 @@ import numpy as np
 from matplotlib.colors import ListedColormap
 
 from analytical import diffusivity, scale_height, settling_velocity
-from regime_map import results_from_csv, results_to_grid
+from parameters import K_B, RHO_P_DIAMOND, G, rho_water
+from regime_map import HOMOGENEOUS_RATIO_THRESHOLD, results_from_csv, results_to_grid
 from scan_grid import T_OBS_LABELS, T_OBS_S, radii_m, temperatures_k
 
 # %% [markdown]
@@ -175,42 +176,114 @@ else:
 # ## Homogeneous-radius envelope vs temperature
 #
 # For each `(h, t_obs)` cell, the *largest* radius in the §5 axis that
-# is still classified `homogeneous`, traced across temperatures. Curves
-# fall slightly with T because higher temperature → lower viscosity
-# → faster settling at the same r → boundary moves to smaller r.
+# is still classified `homogeneous`, traced across T. Two complementary
+# curves per depth:
 #
-# (For the full design table — every `(h, t_obs)` envelope at every T —
-# see notebook 04.)
+# - **Continuous line** — analytic *equilibrium* boundary `exp(-h/ℓ_g) = 0.95`.
+#   This is what the homogeneous edge converges to as `t_obs → ∞`. Shows
+#   the genuine T-dependence: r ∝ (T / Δρ)^(1/3), so the envelope rises
+#   weakly with T (≈ 3 % across 5 → 35 °C) — small enough that the §5
+#   axis (~10 % bin spacing) cannot resolve it.
+# - **Markers** — *finite-time* §5 grid samples at the panel's `t_obs`,
+#   snapped to the §5 r-axis. At short `t_obs` the markers can sit
+#   *above* the analytic line because the system hasn't had time to
+#   approach equilibrium; they only collapse onto the analytic boundary
+#   once `t_obs ≳ 5 · t_relax`.
+#
+# Below: two panels at `t_obs = 1 h` and `t_obs = 1 d`. The 1-day panel
+# is closer to equilibrium for most depths and shows the markers
+# tracking the analytic line; the 1-hour panel shows several depths'
+# markers stacked at the same r because the system is still uniform at
+# r ≲ 14 nm regardless of depth.
+#
+# (For the full multi-T design-table CSV with every `(h, t_obs)` cell,
+# see notebook 04 / `design_table_max_homogeneous_r.csv`.)
+
+
+def _analytic_max_homogeneous_radius(
+    h: float,
+    temperature_kelvin: float,
+    ratio_threshold: float = HOMOGENEOUS_RATIO_THRESHOLD,
+) -> float:
+    """Continuous r at which exp(-h/ℓ_g(r, T)) = ratio_threshold.
+
+    From ℓ_g = k_B T / (m_eff g) and m_eff = (4/3) π r³ Δρ::
+
+        r = ((3 / (4π)) · k_B T · |ln ratio| / (g h Δρ))^(1/3)
+
+    This is the boundary of the analytic equilibrium homogeneous band;
+    Method-C finite-time and short-circuit-equilibrium results approach
+    this as t_obs → ∞.
+    """
+    delta_rho = RHO_P_DIAMOND - rho_water(temperature_kelvin)
+    return (
+        (3.0 / (4.0 * np.pi))
+        * K_B
+        * temperature_kelvin
+        * (-np.log(ratio_threshold))
+        / (G * h * delta_rho)
+    ) ** (1.0 / 3.0)
+
+
+def _envelope_panel(ax: plt.Axes, t_idx: int, t_label: str) -> None:
+    T_axis_smooth = np.linspace(temps[0], temps[-1], 41)
+    for hi, h in enumerate(grid.depths):
+        # Grid-snapped finite-time points from the cache.
+        max_homog_r_grid = []
+        for ti in range(len(grid.temperatures)):
+            mask = grid.regime[:, ti, hi, t_idx] == 0  # homogeneous
+            if mask.any():
+                idxs = np.where(mask)[0]
+                max_homog_r_grid.append(grid.radii[int(idxs[-1])])
+            else:
+                max_homog_r_grid.append(np.nan)
+        # Analytic continuous equilibrium boundary.
+        max_homog_r_smooth = np.array([
+            _analytic_max_homogeneous_radius(h, T) for T in T_axis_smooth
+        ])
+        line, = ax.semilogy(
+            T_axis_smooth - 273.15,
+            max_homog_r_smooth * 1e9,
+            lw=1.5,
+            label=f"h = {h*1e3:g} mm",
+        )
+        ax.semilogy(
+            np.array(grid.temperatures) - 273.15,
+            np.array(max_homog_r_grid) * 1e9,
+            marker="o",
+            linestyle="none",
+            color=line.get_color(),
+            markeredgecolor="black",
+            markersize=5,
+        )
+    ax.set_xlabel("temperature  [°C]")
+    ax.set_ylabel(r"max homogeneous radius  [nm]")
+    ax.set_title(rf"$t_\mathrm{{obs}}$ = {t_label}")
+    ax.grid(True, which="both", alpha=0.3)
+
 
 # %%
 if have_cache:
-    # Pick a fixed t_obs (1 h) and one h per panel for legibility.
-    h_indices = list(range(len(grid.depths)))
+    # Pick a 1-day index alongside the 1-h index — at 1 day most cells
+    # have equilibrated, so markers track the analytic line cleanly.
+    if 86400.0 in grid.t_obs:
+        t_idx_1d = grid.t_obs.index(86400.0)
+    else:
+        t_idx_1d = min(range(len(grid.t_obs)), key=lambda i: abs(grid.t_obs[i] - 86400.0))
+    t_label_1d = (
+        T_OBS_LABELS[T_OBS_S.index(grid.t_obs[t_idx_1d])]
+        if grid.t_obs[t_idx_1d] in T_OBS_S
+        else f"{grid.t_obs[t_idx_1d]:.0f} s"
+    )
 
-    fig, ax = plt.subplots(figsize=(8.5, 5.0))
-    for hi, h in zip(h_indices, grid.depths, strict=True):
-        max_homog_r = []
-        for ti in range(len(grid.temperatures)):
-            mask = grid.regime[:, ti, hi, t_idx_1h] == 0  # homogeneous
-            if mask.any():
-                # Largest radius-index that is still classified homogeneous.
-                idxs = np.where(mask)[0]
-                last_homog = int(idxs[-1])
-                max_homog_r.append(grid.radii[last_homog])
-            else:
-                max_homog_r.append(np.nan)
-        ax.semilogy(
-            np.array(grid.temperatures) - 273.15,
-            np.array(max_homog_r) * 1e9,
-            marker="o",
-            lw=1.5,
-            label=f"h = {h*1e3:.1f} mm",
-        )
-    ax.set_xlabel("temperature  [°C]")
-    ax.set_ylabel("max homogeneous radius  [nm]")
-    ax.set_title(rf"Homogeneous-radius envelope at $t_\mathrm{{obs}}$ = {t_label_1h}")
-    ax.grid(True, which="both", alpha=0.3)
-    ax.legend(loc="best")
+    fig, axes = plt.subplots(1, 2, figsize=(14.0, 5.0), sharey=True)
+    _envelope_panel(axes[0], t_idx_1h, t_label_1h)
+    _envelope_panel(axes[1], t_idx_1d, t_label_1d)
+    axes[1].legend(loc="best", fontsize=9)
+    fig.suptitle(
+        "Homogeneous-radius envelope: analytic equilibrium "
+        "boundary (lines) vs §5 grid samples (markers)"
+    )
     fig.tight_layout()
     fig.savefig(figures_dir / "homogeneous_envelope_vs_T.png", dpi=140)
     fig.savefig(figures_dir / "homogeneous_envelope_vs_T.pdf")

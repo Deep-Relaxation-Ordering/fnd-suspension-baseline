@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-28 | [Phase 7.1 — review-driven fixes (envelope figure, table semantics, stale comments)](2026-04-28-phase7-1-review-driven-fixes.md) | 7.1 |
 | 2026-04-27 | [Phase 7 — results_to_grid + notebooks 03/04 (parameter scans + deliverable-5 design table)](2026-04-27-phase7-parameter-scans-and-design-table.md) | 7 |
 | 2026-04-27 | [Phase 6 — grid cache + notebook 02 (deliverable-3 regime map)](2026-04-27-phase6-grid-cache-and-notebook-02.md) | 6 |
 | 2026-04-27 | [Phase 5.1 — review-driven fixes (t_obs wording, homogeneous-bmf semantics, A/B/C scope, test counts)](2026-04-27-phase5-1-review-driven-fixes.md) | 5.1 |

@@ -306,7 +306,8 @@ plt.show()
 #
 # Notebook 02 covers deliverable 3 (regime map). The full §5 grid cache
 # (`notebooks/data/regime_map_grid.csv`) doubles as deliverable 5 (the
-# design table); pretty-printing it as a polished table is a separate
-# notebook (03/04, next session).
+# design table); the pretty-printed table itself ships in notebook 04
+# (Phase 7), and the parameter-scan supporting figures ship in
+# notebook 03.
 
 print("notebook 02 complete; figures written to", figures_dir)
