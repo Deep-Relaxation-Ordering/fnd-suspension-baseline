@@ -64,17 +64,16 @@ fnd-suspension-baseline/
 
 ## Status
 
-Phase 7 in — all five §6 deliverables exist. Notebook 02 produces
-deliverable 3 (regime map), notebook 03 produces the parameter-scan
-support figures (Method-A primitives across temperature, regime maps
-per-temperature, homogeneous-radius envelope vs T), and notebook 04
-produces deliverable 5 (the design table at room T as Markdown plus
-multi-T full-precision CSVs). All driven from the §5 grid cache
-(`notebooks/data/regime_map_grid.csv`) via the new coordinate-indexed
-`regime_map.results_to_grid` helper. Methods A and C are composed by
-`regime_map.classify_cell` and `walk_grid` per the §5.1 rules; Method
-B remains in place as the cross-validation harness for Method C inside
-its feasibility envelope. Test suite: `92 passed`.
+**`pilot-v0.1` released** — all five §6 deliverables shipped, full
+§5 grid cached, and the §6 ↔ artefact map is in
+[`docs/deliverable-index.md`](docs/deliverable-index.md). Methods
+A (analytical), B (Langevin), and C (Smoluchowski FV) are
+implemented and cross-validated; the §5 grid (30 × 7 × 5 × 6 = 6300
+cells) is walked and checked into git as
+[`notebooks/data/regime_map_grid.csv`](notebooks/data/regime_map_grid.csv);
+notebooks 01–04 produce the deliverables on top of that cache. Test
+suite: `92 passed, 0 skipped`. Known caveats (audit-gap pins,
+design-table grid-snap) are documented in the deliverable index.
 
 | Phase | Surface | State |
 |---|---|---|
@@ -92,7 +91,7 @@ its feasibility envelope. Test suite: `92 passed`.
 | 6 | grid cache + notebook 02 (deliverable-3 regime map) | done — [phase-6 note](lab_notes/2026-04-27-phase6-grid-cache-and-notebook-02.md) |
 | 7 | results_to_grid + notebooks 03/04 (parameter scans + deliverable-5 design table) | done — [phase-7 note](lab_notes/2026-04-27-phase7-parameter-scans-and-design-table.md) |
 | 7.1 | review fixes (envelope figure, table semantics, stale comments) | done — [phase-7.1 note](lab_notes/2026-04-28-phase7-1-review-driven-fixes.md) |
-| 8 | release tag, paper-draft hooks (breakout-note §9 wrap) | next |
+| 8 | `pilot-v0.1` release tag + [`docs/deliverable-index.md`](docs/deliverable-index.md) | done — [phase-8 note](lab_notes/2026-04-28-phase8-pilot-v0-1-release.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
