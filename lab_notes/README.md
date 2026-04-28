@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-28 | [Phase 8.1 — post-release doc fixes (README layout, deliverable-index §4.4 lead-in)](2026-04-28-phase8-1-post-release-doc-fixes.md) | 8.1 |
 | 2026-04-28 | [Phase 8 — `pilot-v0.1` release (deliverable index, version bump, tag)](2026-04-28-phase8-pilot-v0-1-release.md) | 8 |
 | 2026-04-28 | [Phase 7.1 — review-driven fixes (envelope figure, table semantics, stale comments)](2026-04-28-phase7-1-review-driven-fixes.md) | 7.1 |
 | 2026-04-27 | [Phase 7 — results_to_grid + notebooks 03/04 (parameter scans + deliverable-5 design table)](2026-04-27-phase7-parameter-scans-and-design-table.md) | 7 |

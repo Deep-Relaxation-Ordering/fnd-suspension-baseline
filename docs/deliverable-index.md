@@ -31,7 +31,9 @@ they can paste the rows below directly.
 
 ## Validation surfaces (breakout-note §4.4)
 
-The five §4.4 cross-method consistency checks all pass:
+The §4.4 cross-method consistency surface — the five core checks listed
+in the spec plus the additional Method-C and Phase-4.1 surfaces added
+during implementation — is pinned end-to-end by the test suite:
 
 | §4.4 check | Pinning test |
 |---|---|

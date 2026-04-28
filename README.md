@@ -55,7 +55,7 @@ fnd-suspension-baseline/
 │   ├── fokker_planck.py            Method C — Smoluchowski PDE (exp-fitting FV)
 │   └── regime_map.py               Orchestration; produces deliverables 3 and 5
 ├── tests/                          (validation per breakout-note §4.4)
-├── notebooks/                      (deliverables 2–4: validation, scans, regime map)
+├── notebooks/                      (deliverables 2–5: validation, regime map, scans, design table)
 ├── lab_notes/                      (dated session notes — breakout-note §4.5)
 ├── docs/
 │   └── conventions.md              cd-rules pin + per-rule applicability + breakout-note pin
@@ -92,6 +92,7 @@ design-table grid-snap) are documented in the deliverable index.
 | 7 | results_to_grid + notebooks 03/04 (parameter scans + deliverable-5 design table) | done — [phase-7 note](lab_notes/2026-04-27-phase7-parameter-scans-and-design-table.md) |
 | 7.1 | review fixes (envelope figure, table semantics, stale comments) | done — [phase-7.1 note](lab_notes/2026-04-28-phase7-1-review-driven-fixes.md) |
 | 8 | `pilot-v0.1` release tag + [`docs/deliverable-index.md`](docs/deliverable-index.md) | done — [phase-8 note](lab_notes/2026-04-28-phase8-pilot-v0-1-release.md) |
+| 8.1 | post-release doc fixes (README layout, deliverable-index §4.4 lead-in) | done — [phase-8.1 note](lab_notes/2026-04-28-phase8-1-post-release-doc-fixes.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
