@@ -72,8 +72,11 @@ implemented and cross-validated; the §5 grid (30 × 7 × 5 × 6 = 6300
 cells) is walked and checked into git as
 [`notebooks/data/regime_map_grid.csv`](notebooks/data/regime_map_grid.csv);
 notebooks 01–04 produce the deliverables on top of that cache. Test
-suite: `92 passed, 0 skipped`. Known caveats (audit-gap pins,
-design-table grid-snap) are documented in the deliverable index.
+suite: `92 passed, 0 skipped`. Findings narrative is split into
+[physics](docs/findings-physics.md) (what the §5 sweep shows) and
+[process](docs/findings-process.md) (engineering patterns the pilot
+converged on). Known caveats are documented in the deliverable
+index.
 
 | Phase | Surface | State |
 |---|---|---|
@@ -93,6 +96,7 @@ design-table grid-snap) are documented in the deliverable index.
 | 7.1 | review fixes (envelope figure, table semantics, stale comments) | done — [phase-7.1 note](lab_notes/2026-04-28-phase7-1-review-driven-fixes.md) |
 | 8 | `pilot-v0.1` release tag + [`docs/deliverable-index.md`](docs/deliverable-index.md) | done — [phase-8 note](lab_notes/2026-04-28-phase8-pilot-v0-1-release.md) |
 | 8.1 | post-release doc fixes (README layout, deliverable-index §4.4 lead-in) | done — [phase-8.1 note](lab_notes/2026-04-28-phase8-1-post-release-doc-fixes.md) |
+| 9 | findings narrative — [physics](docs/findings-physics.md) + [process](docs/findings-process.md) | done — [phase-9 note](lab_notes/2026-04-28-phase9-findings-narrative.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in

@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-28 | [Phase 9 — findings narrative (physics + process)](2026-04-28-phase9-findings-narrative.md) | 9 |
 | 2026-04-28 | [Phase 8.1 — post-release doc fixes (README layout, deliverable-index §4.4 lead-in)](2026-04-28-phase8-1-post-release-doc-fixes.md) | 8.1 |
 | 2026-04-28 | [Phase 8 — `pilot-v0.1` release (deliverable index, version bump, tag)](2026-04-28-phase8-pilot-v0-1-release.md) | 8 |
 | 2026-04-28 | [Phase 7.1 — review-driven fixes (envelope figure, table semantics, stale comments)](2026-04-28-phase7-1-review-driven-fixes.md) | 7.1 |
