@@ -57,13 +57,15 @@ Extracted from the §5 cache:
 - Practical guidance brackets at 25 °C / 1 mm: stay-mixed below
   ~ 11 nm; sedimented within 1 h above ~ 255 nm; sedimented within
   1 minute above ~ 1.6 µm.
-- Orchestration cost mix: 65 % of the grid determined analytically
-  (homog SC + equilibrated SC + asymptotic fallback), only 33 %
-  needs Method C resolved-mesh. The 150-min wall-time is set by
-  those 2061 resolved-mesh cells.
+- Orchestration cost mix: 67 % of the grid (4239 / 6300 cells)
+  determined analytically (homog SC + equilibrated SC + asymptotic
+  fallback), only 33 % needs Method C resolved-mesh. The 150-min
+  wall-time is set by those 2061 resolved-mesh cells.
 
-All numbers are reproducible via the cache; the document includes
-the queries used.
+All numbers in `findings-physics.md` are reproducible from the §5
+cache via short queries against `regime_map.results_to_grid`; the
+document spells out which path of `classify_cell` produces each
+quoted figure.
 
 ### `docs/findings-process.md`
 

@@ -99,9 +99,11 @@ anyone checking against the spec.
    so the high-Pe corner routes through the asymptotic fallback
    rather than a refined-mesh `expm_multiply`.
 
-**Cost saved:** 65 % of the §5 grid (4239 / 6300 cells) determined
-analytically; only 33 % goes through Method C resolved-mesh. The
-walk takes 150 min instead of an estimated 6+ hours without these.
+**Cost saved:** 67 % of the §5 grid (4239 / 6300 cells; the two
+short-circuits plus the asymptotic-sedimentation fallback) is
+determined analytically; only 33 % (2061 / 6300) goes through
+Method C resolved-mesh. The walk takes 150 min instead of an
+estimated 6+ hours without these.
 
 **Pattern signature:** every short-circuit is a *physics* statement
 about the regime in which the analytic answer dominates the
