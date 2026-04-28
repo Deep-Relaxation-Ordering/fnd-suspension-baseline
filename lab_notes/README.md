@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-28 | [Phase 10 — `pilot-v0.2` scoping + spec-anchoring ADR](2026-04-28-phase10-v0-2-scoping.md) | 10 |
 | 2026-04-28 | [Phase 9.3 — adversarial review fixes (threshold refinement, CI, validity envelope)](2026-04-28-phase9-3-adversarial-review-fixes.md) | 9.3 |
 | 2026-04-28 | [Phase 9.2 — arithmetic and wording fixes (65 %→67 %, "queries used")](2026-04-28-phase9-2-arithmetic-and-wording-fixes.md) | 9.2 |
 | 2026-04-28 | [Phase 9.1 — findings corrections (Pe-label, time-evolution table, notebook-03 fallback, section count)](2026-04-28-phase9-1-findings-corrections.md) | 9.1 |

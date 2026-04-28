@@ -64,20 +64,17 @@ fnd-suspension-baseline/
 
 ## Status
 
-**`pilot-v0.1` released** — all five §6 deliverables shipped, full
-§5 grid cached, and the §6 ↔ artefact map is in
-[`docs/deliverable-index.md`](docs/deliverable-index.md). Methods
-A (analytical), B (Langevin), and C (Smoluchowski FV) are
-implemented and cross-validated; the §5 grid (30 × 7 × 5 × 6 = 6300
-cells) is walked and checked into git as
-[`notebooks/data/regime_map_grid.csv`](notebooks/data/regime_map_grid.csv);
-notebooks 01–04 produce the deliverables on top of that cache. Test
-suite: `94 passed, 0 skipped` on the current post-release branch
-(`92 passed` at the `pilot-v0.1` tag). Findings narrative is split into
-[physics](docs/findings-physics.md) (what the §5 sweep shows) and
-[process](docs/findings-process.md) (engineering patterns the pilot
-converged on). Known caveats are documented in the deliverable
-index.
+**`pilot-v0.2` cycle open.** v0.1 (tag `pilot-v0.1` at `9a0fc76`)
+remains the released reference: all five §6 deliverables shipped,
+full §5 grid cached, narrative triad (deliverable index, physics,
+process) published. v0.2 adds the Rayleigh-number convection gate,
+a hydrodynamic-vs-material radius split (`δ_shell`), and log-normal
+polydispersity post-processing — all forward-compatible with v0.1
+(defaults reproduce v0.1 arithmetic to machine precision). The
+spec-anchoring decision is recorded in
+[ADR 0001](docs/adr/0001-v0.2-spec-anchoring.md). Test suite on
+the current branch: `94 passed, 0 skipped` (`92 passed` at the
+`pilot-v0.1` tag). v0.2 tag will be `pilot-v0.2` at Phase 15.
 
 ## Environment
 
@@ -119,6 +116,13 @@ notebook regeneration commands.
 | 9.1 | findings corrections (Pe-label, time-evolution table, notebook-03 fallback, section count) | done — [phase-9.1 note](lab_notes/2026-04-28-phase9-1-findings-corrections.md) |
 | 9.2 | arithmetic and wording fixes (65 %→67 %, "queries used") | done — [phase-9.2 note](lab_notes/2026-04-28-phase9-2-arithmetic-and-wording-fixes.md) |
 | 9.3 | adversarial review fixes (threshold refinement, CI, validity envelope) | done — [phase-9.3 note](lab_notes/2026-04-28-phase9-3-adversarial-review-fixes.md) |
+| **`pilot-v0.2` cycle (forward-compatible extensions)** | | |
+| 10 | scope + spec-anchoring [ADR 0001](docs/adr/0001-v0.2-spec-anchoring.md) | done — [phase-10 note](lab_notes/2026-04-28-phase10-v0-2-scoping.md) |
+| 11 | `src/convection.py` Rayleigh gate + `regime_map` channel | next |
+| 12 | `r_material` / `r_hydro` split | pending |
+| 13 | re-walk §5 cache with new channels | pending |
+| 14 | `src/polydispersity.py` + notebook 05 + deliverable 6 | pending |
+| 15 | `pilot-v0.2` release tag | pending |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
