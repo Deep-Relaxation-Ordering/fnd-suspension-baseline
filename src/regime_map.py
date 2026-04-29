@@ -44,6 +44,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from analytical import scale_height, settling_velocity
+from convection import BoundaryCondition, is_convection_dominated, rayleigh_number
 from fokker_planck import DEFAULT_N_CELLS, solve_cell
 from parameters import RHO_P_DIAMOND, diffusivity
 from scan_grid import DEPTHS_M, T_OBS_S, radii_m, temperatures_k
@@ -152,6 +153,7 @@ class RegimeResult:
     used_homogeneous_short_circuit: bool
     used_equilibrated_short_circuit: bool
     used_method_c_fallback: bool
+    convection_flag: bool = False
 
 
 def _equilibrium_bottom_mass_fraction(
@@ -203,6 +205,8 @@ def classify_cell(
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
     n_cells: int = REGIME_MAP_N_CELLS,
     min_resolvable_dz_m: float = REGIME_MAP_MIN_RESOLVABLE_DZ_M,
+    delta_T_assumed: float = 0.0,
+    boundary: BoundaryCondition = "rigid-rigid",
 ) -> RegimeResult:
     """Classify a single (r, T, h, t_obs) cell per breakout-note §5.1.
 
@@ -231,6 +235,10 @@ def classify_cell(
     scale heights, Method C's own asymptotic-sedimentation fallback
     engages internally and stays fast.
     """
+    convection_flag = is_convection_dominated(
+        rayleigh_number(sample_depth_m, delta_T_assumed, temperature_kelvin),
+        boundary=boundary,
+    )
     ell_g = scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
     eq_ratio = math.exp(-sample_depth_m / ell_g) if ell_g > 0.0 else 0.0
 
@@ -256,6 +264,7 @@ def classify_cell(
             used_homogeneous_short_circuit=True,
             used_equilibrated_short_circuit=False,
             used_method_c_fallback=False,
+            convection_flag=convection_flag,
         )
 
     # Short-circuit 2: equilibrated corner.
@@ -278,6 +287,7 @@ def classify_cell(
             used_homogeneous_short_circuit=False,
             used_equilibrated_short_circuit=True,
             used_method_c_fallback=False,
+            convection_flag=convection_flag,
         )
 
     # Otherwise: full Method C, with a regime-classification mesh floor.
@@ -320,6 +330,7 @@ def classify_cell(
         used_homogeneous_short_circuit=False,
         used_equilibrated_short_circuit=False,
         used_method_c_fallback=method_c.used_asymptotic_fallback,
+        convection_flag=convection_flag,
     )
 
 
@@ -332,6 +343,8 @@ def walk_grid(
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
     n_cells: int = REGIME_MAP_N_CELLS,
     min_resolvable_dz_m: float = REGIME_MAP_MIN_RESOLVABLE_DZ_M,
+    delta_T_assumed: float = 0.0,
+    boundary: BoundaryCondition = "rigid-rigid",
 ) -> list[RegimeResult]:
     """Walk a (sub-)grid of (r, T, h, t_obs) cells and classify each one.
 
@@ -360,6 +373,8 @@ def walk_grid(
                             rho_particle_kg_per_m3=rho_particle_kg_per_m3,
                             n_cells=n_cells,
                             min_resolvable_dz_m=min_resolvable_dz_m,
+                            delta_T_assumed=delta_T_assumed,
+                            boundary=boundary,
                         )
                     )
     return results
@@ -378,6 +393,9 @@ def walk_grid(
 # the file is the authoritative form of the design table.
 
 _CSV_FIELDS: tuple[str, ...] = tuple(f.name for f in fields(RegimeResult))
+_PRE_V02_CSV_FIELDS: tuple[str, ...] = tuple(
+    name for name in _CSV_FIELDS if name != "convection_flag"
+)
 
 
 def results_to_csv(results: list[RegimeResult], path: str | Path) -> None:
@@ -404,15 +422,22 @@ def results_from_csv(path: str | Path) -> list[RegimeResult]:
     with path.open(newline="") as fh:
         reader = csv.reader(fh)
         header = next(reader)
-        if tuple(header) != _CSV_FIELDS:
+        header_tuple = tuple(header)
+        if header_tuple == _CSV_FIELDS:
+            fields_to_parse = _CSV_FIELDS
+        elif header_tuple == _PRE_V02_CSV_FIELDS:
+            fields_to_parse = _PRE_V02_CSV_FIELDS
+        else:
             raise ValueError(
                 f"CSV header {header} does not match RegimeResult fields {_CSV_FIELDS}"
             )
         out: list[RegimeResult] = []
         for row in reader:
             kwargs: dict[str, object] = {}
-            for field, raw in zip(_CSV_FIELDS, row, strict=True):
+            for field, raw in zip(fields_to_parse, row, strict=True):
                 kwargs[field] = _parse_csv_value(field, raw)
+            if "convection_flag" not in kwargs:
+                kwargs["convection_flag"] = False
             out.append(RegimeResult(**kwargs))  # type: ignore[arg-type]
     return out
 
@@ -487,6 +512,8 @@ class RegimeGrid:
     - ``bmf``: float64 ∫₀^{0.05 h} c dz.
     - ``path``: int8 with 0 = homogeneous SC, 1 = equilibrated SC,
       2 = Method C fallback, 3 = Method C resolved mesh.
+    - ``convection_flag``: bool side-channel for cells whose Rayleigh
+      number exceeds the configured boundary threshold.
     """
 
     radii: tuple[float, ...]
@@ -497,6 +524,7 @@ class RegimeGrid:
     ratio: NDArray[np.float64]
     bmf: NDArray[np.float64]
     path: NDArray[np.int8]
+    convection_flag: NDArray[np.bool_]
 
 
 def results_to_grid(results: list[RegimeResult]) -> RegimeGrid:
@@ -530,6 +558,7 @@ def results_to_grid(results: list[RegimeResult]) -> RegimeGrid:
     ratio = np.full(shape, np.nan, dtype=np.float64)
     bmf = np.full(shape, np.nan, dtype=np.float64)
     path = np.full(shape, -1, dtype=np.int8)
+    convection_flag = np.full(shape, False, dtype=np.bool_)
 
     for r in results:
         ri = r_idx[r.radius_m]
@@ -544,6 +573,7 @@ def results_to_grid(results: list[RegimeResult]) -> RegimeGrid:
         regime[ri, ti, hi, oi] = _REGIME_INT[r.regime]
         ratio[ri, ti, hi, oi] = r.top_to_bottom_ratio
         bmf[ri, ti, hi, oi] = r.bottom_mass_fraction
+        convection_flag[ri, ti, hi, oi] = r.convection_flag
         if r.used_homogeneous_short_circuit:
             path[ri, ti, hi, oi] = _PATH_HOMOGENEOUS_SC
         elif r.used_equilibrated_short_circuit:
@@ -565,4 +595,5 @@ def results_to_grid(results: list[RegimeResult]) -> RegimeGrid:
         ratio=ratio,
         bmf=bmf,
         path=path,
+        convection_flag=convection_flag,
     )

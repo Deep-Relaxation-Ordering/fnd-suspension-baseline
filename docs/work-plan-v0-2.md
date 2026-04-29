@@ -5,7 +5,7 @@ Institut Freiburg.*
 
 | Field | Value |
 |---|---|
-| Status | **Accepted — Phase 11 open.** Scope, D1–D6 decisions, and risk register accepted. |
+| Status | **Accepted — Phase 11 complete; Phase 11.1 review fixes applied; Phase 12 next.** Scope, D1–D6 decisions, and risk register accepted. |
 | Date | 2026-04-29 (accepted; drafted 2026-04-28) |
 | Drafted at | commit `42e819e` (Phase 10 ADR landed) |
 | Spec anchor | breakout-note v0.2 commit `3b7b18af` (frozen unless v0.3 lands during the cycle; see [ADR 0001](adr/0001-v0.2-spec-anchoring.md)) |
@@ -86,19 +86,25 @@ historical reference for the v0.1 release moment, but it is
 
 v0.2 must satisfy, against the post-9.3 `main` baseline:
 
-1. The entire 94-test suite passes unchanged at the v0.2
+1. The post-9.3 baseline suite passes unchanged at the v0.2
    compatibility-mode settings (`δ_shell = 0`,
-   `delta_T_assumed = 0.0 K`, `σ_geom = 0`). Enforced by Phase
+   `delta_T_assumed = 0.0 K`, `σ_geom = 0`). The current suite
+   count increases as v0.2 phases add tests; Phase 12.1 records the
+   exact pre-refactor and post-refactor counts. Enforced by Phase
    12.1's regression audit and by CI.
 2. The current `main` §5 cache
    `notebooks/data/regime_map_grid.csv` regime label columns
    (`regime`, `top_to_bottom_ratio`, `bottom_mass_fraction`) are
-   bit-identical after Phase 13's re-walk, modulo the new
-   `convection_flag` column added.
+   unchanged after Phase 13's re-walk, modulo the new
+   `convection_flag` column added: regime strings exactly equal,
+   booleans exactly equal, numeric channels equal to machine
+   precision (`rtol <= 1e-15`, `atol = 0` unless a documented
+   zero-crossing channel requires absolute tolerance).
 3. The current `main` deliverable artefacts (notebook 02–04
    figures, design tables, `cell_summary` outputs) are
-   bit-identical when generated from v0.2 code at
-   compatibility-mode settings.
+   equal to machine precision when generated from v0.2 code at
+   compatibility-mode settings. PNG/PDF metadata diffs are allowed
+   only when image pixels / plotted data are unchanged.
 
 Any commit that breaks (1)–(3) is reverted before merge. CI
 catches violations at PR time.
@@ -114,10 +120,10 @@ Phase 10 (DONE) ────────► ADR 0001 + scoping             │
                                        │
                 ┌──────────────────────┼──────────────────────┐
                 ▼                      ▼                      ▼
-        Phase 11 (Ra gate)    Phase 12 (radius split)   (parallel-safe)
+        Phase 11 (DONE)       Phase 12 (radius split)
                 │                      │
                 ▼                      ▼
-        Phase 11.1 review     Phase 12.1 regression audit
+        Phase 11.1 (DONE)     Phase 12.1 regression audit
                 │                      │
                 └──────────┬───────────┘
                            ▼
@@ -136,8 +142,8 @@ Phase 10 (DONE) ────────► ADR 0001 + scoping             │
                   Phase 15.1 (anticipated post-release)
 ```
 
-Phases 11 and 12 are independent and can run in parallel if there's
-appetite. Phases 13 onward are strictly sequential.
+Phase 11 / 11.1 is complete. Phase 12 is next; Phases 13 onward are
+strictly sequential.
 
 ---
 
@@ -193,6 +199,8 @@ Switch via a kwarg.
       delta_T_kelvin: float,
       temperature_kelvin: float,
   ) -> float: ...
+      # rejects sample_depth_m <= 0, matching analytical / Method-C
+      # positive-depth conventions.
 
   def is_convection_dominated(
       Ra: float,
@@ -207,7 +215,7 @@ Switch via a kwarg.
     `boundary: Literal["rigid-rigid", "rigid-free"] = "rigid-rigid"`.
     With `delta_T_assumed = 0.0`, `Ra ≡ 0`, `convection_flag ≡
     False`, and the cache walk produces a column of all-False —
-    bit-identical regime labels to the post-9.3 main cache.
+    exactly matching regime labels against the post-9.3 main cache.
   - `RegimeResult` gains `convection_flag: bool` (default
     `False`).
   - `walk_grid(...)` and `RegimeGrid` channels propagate the new
@@ -254,13 +262,19 @@ Switch via a kwarg.
   - `test_marginal_deep_cell` — h=10mm, ΔT=0.1K, T=25°C: Ra ≈
     2.0·10³, flag True at rigid-rigid (~18 % above threshold) and
     flag True at rigid-free.
-  - `test_alpha_handles_4C_inversion` — α(277.15 K) (≈ 4 °C grid
-    point) is small (~10⁻⁵ K⁻¹) but positive at the v0.2 §5 grid
-    boundary; α(275.15 K) is negative. The Phase-11 lab note
-    pins a convention (likely: take `Ra > Ra_c` strictly using
-    signed α, so that anomalous-density cells with α < 0 cannot
-    flip the flag — convection there is not Rayleigh-Bénard
-    in the standard sense).
+  - `test_alpha_handles_4C_inversion` — α(277.15 K) (≈ 4 °C) is
+    tiny but positive; α(278.15 K), the v0.2 §5 lower temperature
+    boundary (5 °C), is small and positive (~1.6·10⁻⁵ K⁻¹);
+    α(275.15 K) is negative. The Phase-11 lab note pins the
+    convention: take `Ra > Ra_c` strictly using signed α, so that
+    anomalous-density cells with α < 0 cannot flip the flag —
+    convection there is not Rayleigh-Bénard in the standard sense.
+  - `test_alpha_matches_iapws95_sanity_values` — loose 5 %
+    cross-check against IAPWS-95 reference values at 5 / 25 / 35 °C
+    and 0.101325 MPa. Tanaka remains the implementation source of
+    truth.
+  - `test_rejects_nonpositive_depth` — `rayleigh_number` follows
+    the rest of the cell APIs and rejects `h <= 0`.
 
 ### Audit-gap pin introduced
 
@@ -278,7 +292,8 @@ note.
 - v0.1 tests still pass: the API default `delta_T_assumed = 0.0 K`
   produces `Ra ≡ 0` and `convection_flag ≡ False`, leaving the
   §5.1 regime label and the cache CSV's regime columns
-  bit-identical to the post-9.3 main baseline. Notebook overlays
+  equal to the post-9.3 main baseline (exact labels,
+  machine-precision numeric channels). Notebook overlays
   that pass `DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K` are a separate
   rendering pass and do not affect the cache.
 - ruff clean.
@@ -301,12 +316,20 @@ note.
   laboratory bench. Higher values (e.g. 1 K for an unattended
   cell) flip the flag for many more cells. The default is an
   audit-gap pin; *experimental* users override.
+- **Failure-surface change.** `classify_cell` computes the
+  convection side channel before the homogeneous / equilibrated
+  short-circuits return. Temperatures outside the water-property
+  calibration range therefore now fail even for cells that would
+  previously have short-circuited. This is acceptable because the
+  Rayleigh calculation needs the same `ρ(T)` / `η(T)` validity
+  envelope, but the Phase 11 lab note records the change.
 
 ### Phase 11.1 (review fixes, anticipated)
 
-Likely review hits: the 4 °C inversion handling (does the test
-suite actually cover the §5 5 °C grid point?), the rigid-rigid
-vs rigid-free default, the polynomial fit's reference. ~0.25 d.
+Review fixes applied after Phase 11: independent IAPWS-95 sanity
+values for α(T), non-positive-depth rejection in `rayleigh_number`,
+the 4 °C / 5 °C wording fix above, and explicit documentation of
+the new convection-side-channel failure surface. ~0.25 d.
 
 ---
 
@@ -329,6 +352,35 @@ The last identity is the key invariant: equilibrium *concentration
 profiles* are insensitive to `δ_shell`; only *timescales* (`v_sed`,
 `D`, `t_relax`) are affected.
 
+### Data-model decision (accepted before Phase 12)
+
+The cache and public summaries must carry both radii explicitly.
+There is no single unqualified "radius" once `δ_shell != 0`.
+
+- `r_material_m` sets buoyant mass, scale height, equilibrium
+  profiles, `top_to_bottom_ratio`, and `bottom_mass_fraction`.
+- `r_hydro_m` sets Stokes drag, Stokes-Einstein diffusivity,
+  `v_sed`, `t_relax`, and `t_settle`.
+- `delta_shell_m = r_hydro_m - r_material_m` is recorded wherever
+  a row-level summary could otherwise look inconsistent.
+- `radius_m` / `r_m` are retained only as v0.2 compatibility aliases
+  for `r_material_m` in Python APIs and human-facing tables. New CSV
+  columns and new tests use the explicit names.
+- `RegimeGrid.radii` remains the field name for notebook
+  compatibility and is documented as the material-radius coordinate
+  axis. New properties `RegimeGrid.r_material` and
+  `RegimeGrid.r_hydro` may be added, but notebooks 02-04 must not be
+  forced to rename `grid.radii` during v0.2.
+- CSV parsing uses a dedicated `_detect_csv_format(header)` helper
+  with explicit handling for all cache formats in the wild:
+  1. v0.1: `radius_m`, no `convection_flag`;
+  2. Phase 11: `radius_m` plus `convection_flag`;
+  3. Phase 12+: `r_material_m`, `r_hydro_m`,
+     `delta_shell_m`, plus `convection_flag`.
+  Any `radius_m` input maps to
+  `r_material_m = r_hydro_m = radius_m` and
+  `delta_shell_m = 0.0`; missing `convection_flag` maps to `False`.
+
 ### Deliverables
 
 - **`src/parameters.py`** changes:
@@ -339,69 +391,123 @@ profiles* are insensitive to `δ_shell`; only *timescales* (`v_sed`,
 
       Default δ_shell = 0 reproduces v0.1 (single-radius) arithmetic.
       """
-      r_material: float
-      delta_shell: float = 0.0
+      r_material_m: float
+      delta_shell_m: float = 0.0
 
       @property
-      def r_hydro(self) -> float:
-          return self.r_material + self.delta_shell
+      def r_hydro_m(self) -> float:
+          return self.r_material_m + self.delta_shell_m
+
+      @property
+      def radius_m(self) -> float:
+          """v0.2 compatibility alias for r_material_m."""
+          return self.r_material_m
 
       @classmethod
       def from_radius(cls, r: float) -> "ParticleGeometry":
           """v0.1-compatible single-radius constructor."""
-          return cls(r_material=r, delta_shell=0.0)
+          return cls(r_material_m=r, delta_shell_m=0.0)
   ```
 
-- **`src/parameters.py` primitives** (signatures gain `geom`
-  parameter; old scalar-r entry points retained as thin wrappers):
-  - `buoyant_mass(geom, T, rho_p)` ← uses `geom.r_material`.
-  - `gamma_stokes(geom, T)` ← uses `geom.r_hydro`.
-  - `diffusivity(geom, T)` ← uses `geom.r_hydro`.
+- **`src/parameters.py` primitives** keep the existing public names
+  polymorphic, with `@overload` signatures for
+  `float | ParticleGeometry`; scalar floats are coerced via
+  `ParticleGeometry.from_radius`:
+  - `buoyant_mass(radius_or_geom, T, rho_p)` ← uses
+    `geom.r_material_m`.
+  - `gamma_stokes(radius_or_geom, T)` ← uses `geom.r_hydro_m`.
+  - `diffusivity(radius_or_geom, T)` ← uses `geom.r_hydro_m`.
 
 - **`src/analytical.py`** primitives propagate `geom` through:
-  - `scale_height(geom, T, rho_p)` — depends only on `r_material`
-    (mass-driven).
-  - `settling_velocity(geom, T, rho_p)` — depends on both.
-  - `equilibration_time(geom, T, h, rho_p)` — depends on both.
-  - `settling_time(...)`, `top_to_bottom_ratio(...)`,
-    `barometric_profile(...)`, `cell_summary(...)`, etc.
+  - Add explicit `_geom` suffixed primaries for the geometry-aware
+    implementation: `scale_height_geom`, `settling_velocity_geom`,
+    `equilibration_time_geom`, `settling_time_geom`,
+    `top_to_bottom_ratio_geom`, `barometric_profile_geom`, and
+    `cell_summary_geom`.
+  - Keep existing unsuffixed functions (`scale_height`,
+    `settling_velocity`, etc.) as scalar-radius wrappers for v0.1
+    callers and notebooks. This avoids polymorphic public Method-A
+    docstrings and keeps the old hot path readable.
+  - Geometry primaries use `r_material_m` for mass / equilibrium
+    quantities and `r_hydro_m` for drag / diffusivity / timescales.
+  - `cell_summary(...)` gains explicit
+    `"r_material_m"`, `"r_hydro_m"`, and `"delta_shell_m"` keys.
+    `"r_m"` remains through v0.2 as a compatibility alias equal to
+    `"r_material_m"`. The reported `"gamma_N_s_per_m"` and
+    `"D_m2_per_s"` must be internally consistent with
+    `"r_hydro_m"`, not `"r_m"`.
 
 - **`src/langevin.py` `simulate_cell`** and **`src/fokker_planck.py`
   `solve_cell`** accept `ParticleGeometry` (or scalar r for
   back-compat).
 
 - **`src/regime_map.py` `classify_cell`** accepts
-  `ParticleGeometry` or `r` and propagates.
+  `float | ParticleGeometry` in its first positional parameter,
+  typed with `@overload` and internally coerced once at the top of
+  the function. The existing call style
+  `classify_cell(radius_m, T, h, t_obs_s=...)` remains valid; no
+  separate `classify_cell_geom` public function is introduced.
+
+- **`src/regime_map.py` cache data model**:
+  - `RegimeResult` replaces the persisted `radius_m` field with
+    `r_material_m` and adds `r_hydro_m`. A Python compatibility
+    property `radius_m` returns `r_material_m` for v0.2 callers.
+  - `results_from_csv` delegates header interpretation to
+    `_detect_csv_format(header)`, then maps legacy rows as described
+    in the data-model decision above.
+  - `RegimeGrid.radii` stays as the material-radius coordinate axis.
+    `RegimeGrid.r_material` may alias it, and `RegimeGrid.r_hydro`
+    is an aligned axis / channel. Any downstream calculation that
+    needs drag or diffusion must use `r_hydro`.
+  - Phase 13's cache diff therefore expects the old `radius_m`
+    column to be superseded by `r_material_m` + `r_hydro_m`; label
+    equality and numeric-channel equality are still judged against
+    the post-9.3 baseline at `δ_shell = 0`.
 
 - **`tests/test_hydrodynamic_split.py`** (new file):
   - `test_default_geometry_reproduces_v01_buoyant_mass` —
-    `ParticleGeometry(r_material=1e-7).r_hydro == 1e-7`.
+    `ParticleGeometry(r_material_m=1e-7).r_hydro_m == 1e-7`.
   - `test_delta_shell_doubles_drag_when_equal_to_r_material` —
-    `δ_shell = r_material` ⇒ `r_hydro = 2·r_material` ⇒ `γ`
+    `δ_shell_m = r_material_m` ⇒ `r_hydro_m = 2·r_material_m` ⇒ `γ`
     doubles, `D` halves, `v_sed` halves, `ℓ_g` unchanged
     (within float precision).
   - `test_equilibrium_profile_invariant_under_delta_shell` —
-    `barometric_profile` at fixed `r_material` is identical for
-    `δ_shell = 0` and `δ_shell = 10 nm`.
+    `barometric_profile` at fixed `r_material_m` is identical for
+    `delta_shell_m = 0` and `delta_shell_m = 10 nm`.
   - `test_relaxation_time_doubles_when_r_hydro_doubles` —
-    `δ_shell = r_material` (i.e. `r_hydro = 2 r_material`)
+    `delta_shell_m = r_material_m` (i.e. `r_hydro_m = 2 r_material_m`)
     halves `D`. With `ℓ_g` unchanged and `t_relax = min(h, ℓ_g)²
     / D`, `t_relax` *doubles* (the squared-length factor is
     `r_hydro`-independent because `ℓ_g` is set by the *material*
     radius). Pin to `2.0` within `1e-12` rel-tol.
+  - `test_regime_result_carries_both_radii` — a nonzero shell stores
+    `r_material_m` and `r_hydro_m` distinctly in `RegimeResult` and
+    in CSV output.
+  - `test_cell_summary_reports_explicit_radii` — `gamma` and `D`
+    agree with `r_hydro_m`; `m_eff` and `ell_g` agree with
+    `r_material_m`; `r_m == r_material_m` only as a compatibility
+    alias.
+  - `test_detect_csv_format_accepts_v01_phase11_and_v12_headers` —
+    pins all three header formats before the parser is used by the
+    cache reader.
+  - `test_regime_grid_keeps_radii_axis_alias` — `grid.radii` remains
+    available and equal to the material-radius axis after the
+    Phase-12 schema change.
 
 ### Phase 12.1 — regression audit (separate session)
 
-Run the entire post-9.3 main test suite (94 tests) at the new API
-with default `δ_shell = 0`. Every test must pass *bit-for-bit
-unchanged*. Numerical snapshots from the post-9.3 main baseline
+Run the entire post-9.3 main baseline suite at the new API with
+default `delta_shell_m = 0`. Every pre-existing test must pass
+unchanged. Numerical snapshots from the post-9.3 main baseline
 (anchor-cell numbers in notebook 01, the §5 grid cache) must match
-to machine precision.
+to machine precision (`rtol <= 1e-15` for nonzero float channels;
+exact equality for labels, booleans, and integer path codes).
 
 This is the forward-compatibility contract enforced.
 
-If any test fails or any snapshot drifts, Phase 12.1 is in-progress
-until the drift is identified and fixed before Phase 13 starts.
+If any test fails or any snapshot drifts beyond the documented
+tolerance, Phase 12.1 is in-progress until the drift is identified
+and fixed before Phase 13 starts.
 
 ### Audit-gap pin introduced
 
@@ -411,7 +517,8 @@ back-compat default). Recorded in the deliverable index.
 
 ### Exit criteria
 
-- All v0.1 tests pass at `δ_shell = 0` (Phase 12.1 contract).
+- All pre-existing tests pass at `delta_shell_m = 0` (Phase 12.1
+  contract).
 - All new tests in `tests/test_hydrodynamic_split.py` pass.
 - ruff clean.
 - Phase 12 lab note documents the API change strategy
@@ -421,16 +528,23 @@ back-compat default). Recorded in the deliverable index.
 ### Risks
 
 - **Surface area of refactor.** `ParticleGeometry` propagates through
-  ~6 modules (`parameters`, `analytical`, `langevin`,
-  `fokker_planck`, `regime_map`, plus the four notebooks). High
-  blast radius for typos and signature drift. Mitigation: keep the
-  old scalar-r entry points as wrappers for the entire v0.2 cycle;
-  test the wrappers explicitly; CI catches notebook-side breakage.
+  3 public primitives in `parameters.py`, 8 Method-A public functions
+  in `analytical.py`, `langevin.simulate_cell`,
+  `fokker_planck.solve_cell` / `equilibrium_cell`,
+  `regime_map.classify_cell` / `walk_grid` / CSV / `RegimeGrid`, four
+  notebooks, and multiple test files. High blast radius for typos and
+  signature drift. Mitigation: keep the old scalar-r entry points as
+  wrappers for the entire v0.2 cycle; test wrappers explicitly; CI
+  catches notebook-side breakage.
 - **Notebook signature breakage.** Notebooks 01–04 currently call
   `analytical.scale_height(r, T)`. If we change the primary
   signature to `(geom, T)`, every notebook line breaks. Mitigation:
   keep the scalar-r form callable; deprecate the scalar form as
   a separate v0.3 task if at all.
+- **Ambiguous cached radius.** A single `radius_m` field is unsafe
+  once `delta_shell_m != 0`. Phase 12 is blocked on the explicit
+  `r_material_m` / `r_hydro_m` cache schema above; do not implement
+  the radius split until that schema is in place.
 
 ---
 
@@ -446,23 +560,28 @@ columns.
   column (back-compat: reading a v0.1-format CSV without the
   column is allowed, with `convection_flag = False` filled in).
 - **`notebooks/data/regime_map_grid.csv`** regenerated. File size
-  grows by one boolean column (~6300 bytes). Tests pin the
-  before/after diff:
-  - regime label columns are bit-identical
-  - top_to_bottom_ratio columns are bit-identical
-  - bottom_mass_fraction columns are bit-identical
-  - convection_flag column is new
+  grows with `convection_flag` and, after Phase 12, the explicit
+  `r_material_m` / `r_hydro_m` schema. Tests pin the before/after
+  diff:
+  - regime label columns are exactly equal
+  - top_to_bottom_ratio columns match to machine precision
+  - bottom_mass_fraction columns match to machine precision
+  - `convection_flag` column is new and all-False in
+    compatibility-mode cache generation
+  - `r_material_m == r_hydro_m == old radius_m` at
+    `delta_shell_m = 0`
 
 - **`tests/test_regime_map.py`** additions:
   - `test_csv_back_compat_reads_pre_v02_format` — a CSV without
     the `convection_flag` column (e.g. the post-9.3 main cache
     or the historical `pilot-v0.1` cache) still loads, with the
     flag column synthesised as all-False.
-  - `test_v02_label_columns_bit_identical_to_post_9_3_main` —
+  - `test_v02_label_columns_match_post_9_3_main` —
     snapshot test that the new cache's `regime`,
     `top_to_bottom_ratio`, and `bottom_mass_fraction` columns are
-    bit-identical to the post-9.3 main cache (the forward-compat
-    target). Hard-fails on any drift.
+    equal to the post-9.3 main cache (the forward-compat target:
+    exact labels, machine-precision floats). Hard-fails on any
+    drift beyond tolerance.
 
 ### Compute
 
@@ -474,18 +593,23 @@ per cell.
 tables, etc.)
 
 All cache-derived artefacts must be regenerated after the cache
-walk and committed. The regeneration is mechanical
-(`PYTHONPATH=src python notebooks/02_regime_map.py`, etc.) and
-should produce zero diffs in figures-as-PNG and in the design-
-table CSV/Markdown — if not, it's a Phase 13 bug to investigate
-before merging.
+walk and committed. This phase is not merely a re-run: notebooks
+02 / 03 need explicit code edits for the experimental convection
+overlay using `DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K`, while
+notebook 04 must remain compatibility-mode for design-table
+semantics. After those edits, the compatibility-mode plotted data
+and design-table CSV/Markdown should produce zero semantic diffs
+apart from the intentional overlay / schema additions — if not,
+it's a Phase 13 bug to investigate before merging.
 
 ### Exit criteria
 
-- New cache committed; bit-diff against the post-9.3 main cache
-  for label columns is empty (regime / ratio / bmf columns
-  unchanged; only `convection_flag` is added).
-- Cache-derived notebook outputs regenerated (zero diff expected).
+- New cache committed; diff against the post-9.3 main cache is
+  empty for regime labels, and machine-precision equal for ratio /
+  bmf columns. Intentional additions: `convection_flag`, explicit
+  radius schema columns, and any documented overlay artefacts.
+- Cache-derived notebook outputs regenerated; semantic diffs limited
+  to intentional overlay / schema additions.
 - Phase 13 lab note records the wall time and confirms the diff
   invariants.
 
@@ -494,7 +618,7 @@ before merging.
 - **Convection flag changes the §5.1 regime label.** Should not —
   the flag is a side channel. But a coding bug that wires it into
   the label is the most likely failure mode. The
-  `test_v02_label_columns_bit_identical_to_post_9_3_main`
+  `test_v02_label_columns_match_post_9_3_main`
   snapshot test is the guard.
 - **New pathological Method-C cells surface during the re-walk
   (Phase 9.3 lesson).** Phase 9.3 found 8 false-homogeneous
@@ -502,7 +626,8 @@ before merging.
   re-walk inherits that refinement, but if the convection-channel
   plumbing accidentally changes a Method-C parameter or short-
   circuit boundary, similar flips could appear. Mitigation:
-  same snapshot test as above (label columns bit-identical to
+  same snapshot test as above (labels exact; numeric channels
+  machine-precision equal to
   post-9.3 main); if it fails, treat as a Phase 13 bug, not a
   legitimate update. A targeted-repair path that re-runs only
   the flipped cells at higher mesh fidelity is available as a
@@ -552,9 +677,12 @@ edges — *not* PDF-times-Δr at grid points:
    `w_total = lognormal_cdf(r_edge_N; r̄, σ_geom)
             − lognormal_cdf(r_edge_0; r̄, σ_geom)`.
    `1 − w_total` is the fraction of probability mass outside the
-   §5 r-axis. Reject inputs (raise `ValueError`) when
-   `w_total < 0.95` — the v0.2 acceptance is "no more than 5 %
-   of the distribution falls outside §5".
+   §5 r-axis. Strict single-cell calls reject inputs (raise
+   `ValueError`) when `w_total < 0.95` — the v0.2 acceptance is
+   "no more than 5 % of the distribution falls outside §5". Grid /
+   table calls carry `truncation_loss = 1 - w_total` and an
+   `accepted` mask so deliverables can mark rejected cells rather
+   than silently omitting rows.
 4. Look up the regime at each §5 r-bin from the cache and
    accumulate the bin masses into the three regime buckets
    `p_homogeneous`, `p_stratified`, `p_sedimented`.
@@ -568,9 +696,10 @@ edges — *not* PDF-times-Δr at grid points:
 
 The CDF-based form is exact in log-space; the §5 r-axis does not
 need to be finer for any σ_geom in the planned axis (1.05–1.60).
-The truncation diagnostic is a hard gate at the 5 % loss
-boundary; it surfaces inputs the §5 cache cannot represent
-faithfully.
+The truncation diagnostic is a hard gate at the 5 % loss boundary
+for strict calls; deliverable tables must expose the same diagnostic
+as data so users can see which `(r̄, σ_geom)` cells sit outside the
+§5 cache support.
 
 ### Deliverables
 
@@ -591,13 +720,23 @@ faithfully.
       p_sedimented: NDArray[np.float64]
       expected_top_to_bottom_ratio: NDArray[np.float64]
       expected_bottom_mass_fraction: NDArray[np.float64]
+      truncation_loss: NDArray[np.float64]
+      accepted: NDArray[np.bool_]
 
   def lognormal_smear(
       grid: RegimeGrid,
-      r_geom_mean_axis: NDArray[np.float64],
-      sigma_geom_axis: NDArray[np.float64],
+      r_geom_mean_axis: NDArray[np.float64] | None = None,
+      sigma_geom_axis: NDArray[np.float64] = SIGMA_GEOM_AXIS,
+      *,
+      min_covered_mass: float = 0.95,
+      on_truncation: Literal["raise", "mask"] = "raise",
   ) -> SmearedGrid: ...
   ```
+
+  `r_geom_mean_axis=None` means `np.asarray(grid.r_material)` (the
+  §5 material-radius axis). `SIGMA_GEOM_AXIS` lives in
+  `src/polydispersity.py`, not `scan_grid.py`, because
+  polydispersity is post-processing and not a §5 scan axis.
 
 - **`notebooks/05_polydispersity_smearing.py`** (new):
   - **Figure 1** — probabilistic regime triptych (RGB) at room T,
@@ -613,7 +752,10 @@ faithfully.
 
 - **`notebooks/data/design_table_polydispersity_room_T.md`**
   (deliverable 6): for target `p_stratified ≥ 0.8` at t_obs = 1 h,
-  the admissible `(r̄, σ_geom)` envelope per `(T, h)`.
+  the admissible `(r̄, σ_geom)` envelope per `(T, h)`. Rows whose
+  log-normal tails lose more than 5 % outside the §5 r-axis are not
+  omitted; they are marked `rejected_truncation` and include a
+  `truncation_loss` diagnostic.
 
 - **`tests/test_polydispersity.py`** (new):
   - `test_degenerate_limit_recovers_sharp_labels` — `σ_geom = 1.001`
@@ -623,9 +765,12 @@ faithfully.
   - `test_conservation_at_every_cell` — `p_H + p_S + p_s = 1` at
     every accepted `(r̄, σ_geom, T, h, t_obs)` to machine
     precision.
-  - `test_truncation_rejection` — `r̄ = 1 nm, σ_geom = 1.05`
-    (well below the §5 r-axis floor of 5 nm) raises
+  - `test_truncation_rejection` — strict mode with `r̄ = 1 nm,
+    σ_geom = 1.05` (well below the §5 r-axis floor of 5 nm) raises
     `ValueError` because `w_total < 0.95`.
+  - `test_truncation_mask_mode_marks_rejected_cells` — table mode
+    returns `accepted=False` and a finite `truncation_loss`, so
+    deliverables can show rejected cells explicitly.
   - **Anchored regression tests** (replacing the abstract
     monotonicity claim — the regime map is discrete and not
     globally monotone in σ_geom across all cells):
@@ -657,11 +802,12 @@ faithfully.
 
 `σ_geom` axis values are an audit-gap pin (the breakout-note v0.2
 spec doesn't list a polydispersity axis). The pinned values for
-the deliverable-6 table are recorded in
-`src/scan_grid.py` (proposed: `σ_geom ∈ {1.05, 1.10, 1.20, 1.40,
-1.60}` — five values spanning very-narrow to very-broad). Per
-ADR 0001 the breakout-note authors decide if and when this gets
-promoted to a §5 axis.
+the deliverable-6 table are recorded in `src/polydispersity.py` as
+`SIGMA_GEOM_AXIS = (1.05, 1.10, 1.20, 1.40, 1.60)`. Do not put this
+axis in `src/scan_grid.py`: `scan_grid.py` remains the single source
+of truth for the breakout-note §5 axes only. Per ADR 0001 the
+breakout-note authors decide if and when `σ_geom` gets promoted to a
+§5 axis.
 
 ### Exit criteria
 
@@ -669,8 +815,8 @@ promoted to a §5 axis.
 - Notebook 05 renders cleanly headless; figures committed.
 - Deliverable-6 design table committed.
 - Phase 14 lab note documents the discretisation choice (sum over
-  §5 r-axis vs. finer interpolation), the σ_geom axis, and the
-  conservation evidence.
+  §5 r-axis vs. finer interpolation), the σ_geom axis, truncation
+  handling / table markers, and the conservation evidence.
 
 ### Phase 14.1 (review fixes, anticipated)
 
@@ -689,9 +835,11 @@ edge-case behaviour at the §5 r-axis end-bins. ~0.25 d.
   from the sharp v0.1 labels, switch to finer interpolation.
 - **Boundary effects.** A log-normal distribution has support on
   `(0, ∞)`, but the §5 r-axis covers only [5 nm, 10 µm]. Tail
-  truncation matters for very broad σ_geom. Mitigation: report
-  total mass within the §5 r-axis as a diagnostic; reject inputs
-  where the truncation loses more than 5 % of probability.
+  truncation matters for very broad σ_geom and near the 5 nm /
+  10 µm edges. Mitigation: report `truncation_loss` as a
+  diagnostic; strict APIs reject inputs where truncation loses more
+  than 5 % of probability, while deliverable-table mode marks
+  rejected cells explicitly instead of leaving gaps.
 
 ---
 
@@ -827,7 +975,9 @@ resolve the small-σ corner better.
 Decision: **five points**: `{1.05, 1.10, 1.20, 1.40, 1.60}`. The
 deliverable-6 figure 2 (`σ_geom` sensitivity at the anchor cell)
 covers the small-σ corner with its own axis; the table should stay
-readable and experimental-facing.
+readable and experimental-facing. The axis is owned by
+`src/polydispersity.py`, not `src/scan_grid.py`, because it is a
+post-processing parameter rather than a §5 scan-grid axis.
 
 ### D5. `r̄` axis for polydispersity smearing — same as §5 r-axis or finer?
 
@@ -861,8 +1011,10 @@ both outputs.
 | Risk | Phase | Severity | Mitigation |
 |---|---|---|---|
 | Phase 12 refactor regresses v0.1 outputs | 12 / 12.1 | High | Phase 12.1 regression audit; CI; back-compat scalar-r entry points retained for the cycle |
-| Convection module silently changes §5.1 labels | 11 / 13 | High | Snapshot test against post-9.3 main cache (Phase 13 exit criterion: regime label columns bit-identical) |
+| Phase 12 cache / summary rows carry ambiguous radius semantics | 12 / 13 | High | Explicit `r_material_m` / `r_hydro_m` / `delta_shell_m` schema accepted before implementation; old `radius_m` / `r_m` only compatibility aliases |
+| Convection module silently changes §5.1 labels | 11 / 13 | High | Snapshot test against post-9.3 main cache (Phase 13 exit criterion: labels exact; numeric channels machine-precision equal) |
 | Cache regen surfaces new pathological Method-C cells (Phase 9.3 precedent: 8 false-homogeneous boundary cells flipped under refinement) | 13 | **Medium** | Snapshot test against post-9.3 main labels is the first guard. If new flips appear: (a) confirm they reproduce locally, (b) confirm they're driven by the new convection-flag code path or by an unintended Method-C parameter change, not by the legitimate refinement already in place. Mitigation toolkit: process-pool-friendly walk_grid signature (already in regime_map.py), explicit per-cell timeout, and a targeted-repair path that re-runs only the flipped cells at higher mesh fidelity. |
+| Phase 13 notebook work underestimated as pure regeneration | 13 | Medium | Notebook 02 / 03 overlay code edits are explicit Phase 13 deliverables; regenerated artefact diffs must be explained as overlay / schema changes |
 | Cache regen wall time blows out beyond ~150 min | 13 | Low | Convection check is sub-µs; if walk slows by > 10 % investigate before merge. Note Phase 9.3 already added the 240-cell threshold-adjacent refinement, so the v0.2 walk inherits the post-9.3 wall-time profile, not an unrefined v0.1 baseline. |
 | Polydispersity discretisation error > 5 % at small σ_geom | 14 | Medium | Phase 14 test pins degenerate-limit error at 1 %; switch to finer interpolation if it fails |
 | Polydispersity log-normal tail truncation > 5 % | 14 | Medium | Diagnostic + reject in `lognormal_smear` when truncation lossy |
@@ -912,7 +1064,8 @@ Calendar: 1.5–2 weeks at v0.1 working tempo.
 
 ## 12. Acceptance / next step
 
-This document is accepted as the v0.2-cycle contract. Phase 11 is
-open. Changes to scope, D1–D6, or the risk register after this
-point require an explicit work-plan amendment before implementation
-continues.
+This document is accepted as the v0.2-cycle contract. Phase 11 and
+the Phase 11.1 review fixes are complete; Phase 12 is next. Changes
+to scope, D1–D6, the Phase-12 radius schema, or the risk register
+after this point require an explicit work-plan amendment before
+implementation continues.

@@ -66,6 +66,7 @@ def test_homogeneous_short_circuit_fires_for_small_radii() -> None:
     """5 nm at 25 °C in 100 µm cell: ℓ_g ≈ 32 cm ≫ h, eq ratio ≈ 0.9997."""
     res = classify_cell(5e-9, 298.15, 1e-4, t_obs_s=3600.0)
     assert res.regime == "homogeneous"
+    assert not res.convection_flag
     assert res.used_homogeneous_short_circuit
     assert res.top_to_bottom_ratio >= HOMOGENEOUS_RATIO_THRESHOLD
 
@@ -156,6 +157,18 @@ def test_long_time_high_pe_cell_is_sedimented() -> None:
     assert res.bottom_mass_fraction >= SEDIMENTED_BOTTOM_MASS_THRESHOLD
 
 
+def test_convection_flag_is_side_channel() -> None:
+    """Realistic ΔT can flag a deep cell without changing its §5.1 label."""
+    base = classify_cell(5e-9, 298.15, 1e-2, t_obs_s=3600.0)
+    flagged = classify_cell(5e-9, 298.15, 1e-2, t_obs_s=3600.0, delta_T_assumed=0.1)
+
+    assert not base.convection_flag
+    assert flagged.convection_flag
+    assert flagged.regime == base.regime
+    assert flagged.top_to_bottom_ratio == base.top_to_bottom_ratio
+    assert flagged.bottom_mass_fraction == base.bottom_mass_fraction
+
+
 # ---------------------------------------------------------------------------
 # Grid walker
 # ---------------------------------------------------------------------------
@@ -223,6 +236,19 @@ def test_walk_grid_smoke_diversity() -> None:
     assert regimes == {"homogeneous", "stratified", "sedimented"}
 
 
+def test_walk_grid_propagates_convection_flag() -> None:
+    results = walk_grid(
+        radii=(5e-9,),
+        temperatures=(298.15,),
+        depths=(1e-2,),
+        t_obs=(3600.0,),
+        delta_T_assumed=0.1,
+    )
+
+    assert len(results) == 1
+    assert results[0].convection_flag
+
+
 # ---------------------------------------------------------------------------
 # CSV cache round-trip
 # ---------------------------------------------------------------------------
@@ -258,6 +284,25 @@ def test_results_csv_round_trip_is_lossless(tmp_path: Path) -> None:
         assert orig.used_homogeneous_short_circuit == back.used_homogeneous_short_circuit
         assert orig.used_equilibrated_short_circuit == back.used_equilibrated_short_circuit
         assert orig.used_method_c_fallback == back.used_method_c_fallback
+        assert orig.convection_flag == back.convection_flag
+
+
+def test_results_csv_back_compat_reads_pre_v02_format(tmp_path: Path) -> None:
+    """Pre-v0.2 CSVs have no convection column; load them as all-False."""
+    path = tmp_path / "pre_v02_cache.csv"
+    path.write_text(
+        "radius_m,temperature_kelvin,sample_depth_m,t_obs_s,regime,"
+        "top_to_bottom_ratio,bottom_mass_fraction,"
+        "used_homogeneous_short_circuit,used_equilibrated_short_circuit,"
+        "used_method_c_fallback\n"
+        "5e-09,298.15,0.0001,3600.0,homogeneous,"
+        "0.999,0.05,True,False,False\n"
+    )
+
+    restored = results_from_csv(path)
+
+    assert len(restored) == 1
+    assert not restored[0].convection_flag
 
 
 def test_results_from_csv_rejects_mismatched_header(tmp_path: Path) -> None:
@@ -317,6 +362,7 @@ def test_results_to_grid_is_order_independent() -> None:
     assert (grid_in_order.ratio == grid_shuffled.ratio).all()
     assert (grid_in_order.bmf == grid_shuffled.bmf).all()
     assert (grid_in_order.path == grid_shuffled.path).all()
+    assert (grid_in_order.convection_flag == grid_shuffled.convection_flag).all()
 
 
 def test_results_to_grid_rejects_missing_cell() -> None:

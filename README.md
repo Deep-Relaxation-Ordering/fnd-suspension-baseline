@@ -73,7 +73,7 @@ polydispersity post-processing — all forward-compatible with v0.1
 (defaults reproduce v0.1 arithmetic to machine precision). The
 spec-anchoring decision is recorded in
 [ADR 0001](docs/adr/0001-v0.2-spec-anchoring.md). Test suite on
-the current branch: `94 passed, 0 skipped` (`92 passed` at the
+the current branch: `109 passed, 0 skipped` (`92 passed` at the
 `pilot-v0.1` tag). v0.2 tag will be `pilot-v0.2` at Phase 15.
 
 ## Environment
@@ -118,7 +118,8 @@ notebook regeneration commands.
 | 9.3 | adversarial review fixes (threshold refinement, CI, validity envelope) | done — [phase-9.3 note](lab_notes/2026-04-28-phase9-3-adversarial-review-fixes.md) |
 | **`pilot-v0.2` cycle (forward-compatible extensions)** | | |
 | 10 | scope + spec-anchoring [ADR 0001](docs/adr/0001-v0.2-spec-anchoring.md) | done — [phase-10 note](lab_notes/2026-04-28-phase10-v0-2-scoping.md) |
-| 11 | `src/convection.py` Rayleigh gate + `regime_map` channel | next |
+| 11 | `src/convection.py` Rayleigh gate + `regime_map` channel | done — [phase-11 note](lab_notes/2026-04-29-phase11-rayleigh-convection-gate.md) |
+| 11.1 | review fixes + Phase-12 radius data-model amendment | done — [phase-11.1 note](lab_notes/2026-04-29-phase11-1-review-fixes.md) |
 | 12 | `r_material` / `r_hydro` split | pending |
 | 13 | re-walk §5 cache with new channels | pending |
 | 14 | `src/polydispersity.py` + notebook 05 + deliverable 6 | pending |

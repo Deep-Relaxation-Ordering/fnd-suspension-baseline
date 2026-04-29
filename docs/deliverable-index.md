@@ -73,10 +73,11 @@ follow-up commits. The complete audit trail from scaffold to
 release runs from `10d1d24` (initial scaffold) through to the
 `pilot-v0.1` tag.
 
-## Known caveats (not blocking v0.1)
+## Known caveats and audit-gap pins
 
-These are documented in their respective lab notes and intentionally
-not addressed at v0.1:
+These are documented in their respective lab notes. The first set
+was intentionally not addressed at v0.1; later entries are v0.2-cycle
+audit-gap pins that will be folded into the Phase 15 release index.
 
 - **`scan_grid.T_OBS_S` audit-gap pin** — the six observation times
   (1 min, 10 min, 1 h, 4 h, 1 d, 1 w) are physically-motivated
@@ -96,6 +97,11 @@ not addressed at v0.1:
   1-nm resolved-mesh convergence sweep.
 - **`equilibrium_cell` `t_factor = 50` magic constant** — works for
   every cell tested; not formally derived (Phase 4.1 lab note).
+- **`DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K` audit-gap pin** —
+  v0.2 notebook overlays use 0.1 K as the experimental Rayleigh
+  side-channel convention. The `classify_cell` API and cache walk
+  still default to `delta_T_assumed = 0.0 K` for v0.1 compatibility
+  (Phase 11 lab note).
 
 ## What `pilot-v1.0` would change
 
