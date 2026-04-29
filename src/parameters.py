@@ -30,6 +30,7 @@ water at various temperatures", J. Phys. Chem. 73, 34–39.
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 
 # ---------------------------------------------------------------------------
 # Physical constants (CODATA 2019, SI)
@@ -47,6 +48,39 @@ G: float = 9.806_65
 
 RHO_P_DIAMOND: float = 3510.0
 """Bulk-diamond density, kg/m³ (breakout-note §3, §7g caveat for HPHT FNDs)."""
+
+
+@dataclass(frozen=True)
+class ParticleGeometry:
+    """Material and hydrodynamic radii for one particle preparation.
+
+    ``r_material_m`` sets buoyant mass. ``r_hydro_m`` sets Stokes drag
+    and Stokes-Einstein diffusivity. The zero-shell default preserves
+    the v0.1 single-radius interpretation.
+    """
+
+    r_material_m: float
+    delta_shell_m: float = 0.0
+
+    def __post_init__(self) -> None:
+        if self.r_material_m <= 0.0:
+            raise ValueError("r_material_m must be positive.")
+        if self.delta_shell_m < 0.0:
+            raise ValueError("delta_shell_m must be non-negative.")
+
+    @property
+    def r_hydro_m(self) -> float:
+        return self.r_material_m + self.delta_shell_m
+
+    @property
+    def radius_m(self) -> float:
+        """v0.2 compatibility alias for the material radius."""
+        return self.r_material_m
+
+    @classmethod
+    def from_radius(cls, radius_m: float) -> ParticleGeometry:
+        """Construct the v0.1-compatible zero-shell geometry."""
+        return cls(r_material_m=radius_m, delta_shell_m=0.0)
 
 # ---------------------------------------------------------------------------
 # Validity ranges

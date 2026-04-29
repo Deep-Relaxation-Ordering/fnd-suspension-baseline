@@ -18,6 +18,9 @@ import pytest
 
 from fokker_planck import DEFAULT_N_CELLS
 from regime_map import (
+    _CSV_FIELDS,
+    _PHASE11_CSV_FIELDS,
+    _V01_CSV_FIELDS,
     HOMOGENEOUS_RATIO_THRESHOLD,
     REGIME_MAP_N_CELLS,
     REGIME_MAP_REFINEMENT_N_CELLS,
@@ -26,6 +29,7 @@ from regime_map import (
     RegimeGrid,
     RegimeResult,
     _classify_from_ratio_and_bmf,
+    _detect_csv_format,
     classify_cell,
     results_from_csv,
     results_to_csv,
@@ -273,6 +277,9 @@ def test_results_csv_round_trip_is_lossless(tmp_path: Path) -> None:
     assert len(restored) == len(original)
     for orig, back in zip(original, restored, strict=True):
         # Floats: bit-exact via repr round-trip.
+        assert orig.r_material_m == back.r_material_m
+        assert orig.r_hydro_m == back.r_hydro_m
+        assert orig.delta_shell_m == back.delta_shell_m
         assert orig.radius_m == back.radius_m
         assert orig.temperature_kelvin == back.temperature_kelvin
         assert orig.sample_depth_m == back.sample_depth_m
@@ -302,7 +309,37 @@ def test_results_csv_back_compat_reads_pre_v02_format(tmp_path: Path) -> None:
     restored = results_from_csv(path)
 
     assert len(restored) == 1
+    assert restored[0].r_material_m == 5e-9
+    assert restored[0].r_hydro_m == 5e-9
+    assert restored[0].delta_shell_m == 0.0
     assert not restored[0].convection_flag
+
+
+def test_results_csv_back_compat_reads_phase11_format(tmp_path: Path) -> None:
+    """Phase-11 CSVs have radius_m plus convection_flag."""
+    path = tmp_path / "phase11_cache.csv"
+    path.write_text(
+        "radius_m,temperature_kelvin,sample_depth_m,t_obs_s,regime,"
+        "top_to_bottom_ratio,bottom_mass_fraction,"
+        "used_homogeneous_short_circuit,used_equilibrated_short_circuit,"
+        "used_method_c_fallback,convection_flag\n"
+        "1e-06,298.15,0.01,3600.0,sedimented,"
+        "0.001,0.99,False,True,False,True\n"
+    )
+
+    restored = results_from_csv(path)
+
+    assert len(restored) == 1
+    assert restored[0].r_material_m == 1e-6
+    assert restored[0].r_hydro_m == 1e-6
+    assert restored[0].delta_shell_m == 0.0
+    assert restored[0].convection_flag
+
+
+def test_detect_csv_format_accepts_v01_phase11_and_current_headers() -> None:
+    assert _detect_csv_format(_V01_CSV_FIELDS) == "v01"
+    assert _detect_csv_format(_PHASE11_CSV_FIELDS) == "phase11"
+    assert _detect_csv_format(_CSV_FIELDS) == "current"
 
 
 def test_results_from_csv_rejects_mismatched_header(tmp_path: Path) -> None:
@@ -336,6 +373,9 @@ def test_results_to_grid_recovers_axes_and_shape() -> None:
     assert grid.depths == (1e-4, 1e-3)
     assert grid.t_obs == (60.0, 3600.0)
     assert grid.regime.shape == (2, 2, 2, 2)
+    assert grid.r_material == grid.radii
+    assert grid.r_hydro.shape == grid.regime.shape
+    assert (grid.r_hydro[:, :, :, :] == grid.r_hydro[:, 0:1, 0:1, 0:1]).all()
 
 
 def test_results_to_grid_is_order_independent() -> None:
@@ -363,6 +403,7 @@ def test_results_to_grid_is_order_independent() -> None:
     assert (grid_in_order.bmf == grid_shuffled.bmf).all()
     assert (grid_in_order.path == grid_shuffled.path).all()
     assert (grid_in_order.convection_flag == grid_shuffled.convection_flag).all()
+    assert (grid_in_order.r_hydro == grid_shuffled.r_hydro).all()
 
 
 def test_results_to_grid_rejects_missing_cell() -> None:

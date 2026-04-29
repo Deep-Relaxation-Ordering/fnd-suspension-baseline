@@ -143,7 +143,9 @@ class RegimeResult:
     in all four cases.
     """
 
-    radius_m: float
+    r_material_m: float
+    r_hydro_m: float
+    delta_shell_m: float
     temperature_kelvin: float
     sample_depth_m: float
     t_obs_s: float
@@ -154,6 +156,11 @@ class RegimeResult:
     used_equilibrated_short_circuit: bool
     used_method_c_fallback: bool
     convection_flag: bool = False
+
+    @property
+    def radius_m(self) -> float:
+        """v0.2 compatibility alias for the material-radius coordinate."""
+        return self.r_material_m
 
 
 def _equilibrium_bottom_mass_fraction(
@@ -254,7 +261,9 @@ def classify_cell(
     if eq_ratio >= HOMOGENEOUS_RATIO_THRESHOLD:
         eq_bmf = _equilibrium_bottom_mass_fraction(sample_depth_m, ell_g)
         return RegimeResult(
-            radius_m=radius_m,
+            r_material_m=radius_m,
+            r_hydro_m=radius_m,
+            delta_shell_m=0.0,
             temperature_kelvin=temperature_kelvin,
             sample_depth_m=sample_depth_m,
             t_obs_s=t_obs_s,
@@ -277,7 +286,9 @@ def classify_cell(
     if t_obs_s >= t_full_eq:
         bmf = _equilibrium_bottom_mass_fraction(sample_depth_m, ell_g)
         return RegimeResult(
-            radius_m=radius_m,
+            r_material_m=radius_m,
+            r_hydro_m=radius_m,
+            delta_shell_m=0.0,
             temperature_kelvin=temperature_kelvin,
             sample_depth_m=sample_depth_m,
             t_obs_s=t_obs_s,
@@ -320,7 +331,9 @@ def classify_cell(
         bmf = method_c.bottom_mass_fraction(SEDIMENTED_BOTTOM_LAYER_FRACTION)
 
     return RegimeResult(
-        radius_m=radius_m,
+        r_material_m=radius_m,
+        r_hydro_m=radius_m,
+        delta_shell_m=0.0,
         temperature_kelvin=temperature_kelvin,
         sample_depth_m=sample_depth_m,
         t_obs_s=t_obs_s,
@@ -392,10 +405,40 @@ def walk_grid(
 # re-walking. CSV (not pickle) for human-readability and portability —
 # the file is the authoritative form of the design table.
 
+CsvFormat = Literal["current", "phase11", "v01"]
+
 _CSV_FIELDS: tuple[str, ...] = tuple(f.name for f in fields(RegimeResult))
-_PRE_V02_CSV_FIELDS: tuple[str, ...] = tuple(
-    name for name in _CSV_FIELDS if name != "convection_flag"
+
+# Frozen legacy headers. Do not derive these from `_CSV_FIELDS`: Phase 12
+# intentionally replaces `radius_m` with explicit material / hydrodynamic
+# radius columns, but old cache files must keep loading.
+_V01_CSV_FIELDS: tuple[str, ...] = (
+    "radius_m",
+    "temperature_kelvin",
+    "sample_depth_m",
+    "t_obs_s",
+    "regime",
+    "top_to_bottom_ratio",
+    "bottom_mass_fraction",
+    "used_homogeneous_short_circuit",
+    "used_equilibrated_short_circuit",
+    "used_method_c_fallback",
 )
+_PHASE11_CSV_FIELDS: tuple[str, ...] = _V01_CSV_FIELDS + ("convection_flag",)
+
+
+def _detect_csv_format(header: list[str] | tuple[str, ...]) -> CsvFormat:
+    """Return which supported regime-cache CSV schema `header` uses."""
+    header_tuple = tuple(header)
+    if header_tuple == _CSV_FIELDS:
+        return "current"
+    if header_tuple == _PHASE11_CSV_FIELDS:
+        return "phase11"
+    if header_tuple == _V01_CSV_FIELDS:
+        return "v01"
+    raise ValueError(
+        f"CSV header {list(header)} does not match any supported RegimeResult schema"
+    )
 
 
 def results_to_csv(results: list[RegimeResult], path: str | Path) -> None:
@@ -422,21 +465,19 @@ def results_from_csv(path: str | Path) -> list[RegimeResult]:
     with path.open(newline="") as fh:
         reader = csv.reader(fh)
         header = next(reader)
-        header_tuple = tuple(header)
-        if header_tuple == _CSV_FIELDS:
-            fields_to_parse = _CSV_FIELDS
-        elif header_tuple == _PRE_V02_CSV_FIELDS:
-            fields_to_parse = _PRE_V02_CSV_FIELDS
-        else:
-            raise ValueError(
-                f"CSV header {header} does not match RegimeResult fields {_CSV_FIELDS}"
-            )
+        csv_format = _detect_csv_format(header)
+        fields_to_parse = _CSV_FIELDS if csv_format == "current" else tuple(header)
         out: list[RegimeResult] = []
         for row in reader:
             kwargs: dict[str, object] = {}
             for field, raw in zip(fields_to_parse, row, strict=True):
                 kwargs[field] = _parse_csv_value(field, raw)
-            if "convection_flag" not in kwargs:
+            if csv_format in {"phase11", "v01"}:
+                radius = kwargs.pop("radius_m")
+                kwargs["r_material_m"] = radius
+                kwargs["r_hydro_m"] = radius
+                kwargs["delta_shell_m"] = 0.0
+            if csv_format == "v01":
                 kwargs["convection_flag"] = False
             out.append(RegimeResult(**kwargs))  # type: ignore[arg-type]
     return out
@@ -514,6 +555,9 @@ class RegimeGrid:
       2 = Method C fallback, 3 = Method C resolved mesh.
     - ``convection_flag``: bool side-channel for cells whose Rayleigh
       number exceeds the configured boundary threshold.
+    - ``r_hydro``: float64 hydrodynamic-radius value aligned with each
+      cell. `radii` remains the material-radius coordinate axis for
+      notebook compatibility.
     """
 
     radii: tuple[float, ...]
@@ -525,6 +569,12 @@ class RegimeGrid:
     bmf: NDArray[np.float64]
     path: NDArray[np.int8]
     convection_flag: NDArray[np.bool_]
+    r_hydro: NDArray[np.float64]
+
+    @property
+    def r_material(self) -> tuple[float, ...]:
+        """Alias for `radii`, whose semantics are material radius."""
+        return self.radii
 
 
 def results_to_grid(results: list[RegimeResult]) -> RegimeGrid:
@@ -559,6 +609,7 @@ def results_to_grid(results: list[RegimeResult]) -> RegimeGrid:
     bmf = np.full(shape, np.nan, dtype=np.float64)
     path = np.full(shape, -1, dtype=np.int8)
     convection_flag = np.full(shape, False, dtype=np.bool_)
+    r_hydro = np.full(shape, np.nan, dtype=np.float64)
 
     for r in results:
         ri = r_idx[r.radius_m]
@@ -574,6 +625,7 @@ def results_to_grid(results: list[RegimeResult]) -> RegimeGrid:
         ratio[ri, ti, hi, oi] = r.top_to_bottom_ratio
         bmf[ri, ti, hi, oi] = r.bottom_mass_fraction
         convection_flag[ri, ti, hi, oi] = r.convection_flag
+        r_hydro[ri, ti, hi, oi] = r.r_hydro_m
         if r.used_homogeneous_short_circuit:
             path[ri, ti, hi, oi] = _PATH_HOMOGENEOUS_SC
         elif r.used_equilibrated_short_circuit:
@@ -596,4 +648,5 @@ def results_to_grid(results: list[RegimeResult]) -> RegimeGrid:
         bmf=bmf,
         path=path,
         convection_flag=convection_flag,
+        r_hydro=r_hydro,
     )
