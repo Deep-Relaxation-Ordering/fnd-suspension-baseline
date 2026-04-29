@@ -5,8 +5,8 @@ Institut Freiburg.*
 
 | Field | Value |
 |---|---|
-| Status | **Draft — open for review.** No implementation work started until accepted. |
-| Date | 2026-04-28 |
+| Status | **Accepted — Phase 11 open.** Scope, D1–D6 decisions, and risk register accepted. |
+| Date | 2026-04-29 (accepted; drafted 2026-04-28) |
 | Drafted at | commit `42e819e` (Phase 10 ADR landed) |
 | Spec anchor | breakout-note v0.2 commit `3b7b18af` (frozen unless v0.3 lands during the cycle; see [ADR 0001](adr/0001-v0.2-spec-anchoring.md)) |
 | Predecessor | `pilot-v0.1` tag at `9a0fc76` |
@@ -20,9 +20,8 @@ The cycle ends when every phase's exit criteria are met and the
 `pilot-v0.2` tag conditions in §"Tag acceptance criteria" are
 satisfied.
 
-The conversation-level phase table that opened this cycle is the
-seed; this document is the deliberation-ready form — review it,
-push back on scope, and only then start Phase 11.
+The conversation-level phase table that opened this cycle was the
+seed; this document is now the accepted contract for the v0.2 cycle.
 
 ---
 
@@ -51,8 +50,11 @@ Three additions, all forward-compatible with v0.1:
 Plus the housekeeping phases:
 
 - **Phase 13** — re-walk the §5 cache so the new
-  `convection_flag` column populates without forcing every
-  consumer to recompute.
+  `convection_flag` column exists in compatibility mode
+  (`delta_T_assumed = 0.0 K`, therefore all-False) without forcing
+  every consumer to recompute. Experimental convection overlays use
+  `DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K` and recompute the flag
+  from the cache axes / precursors.
 - **Phase 15** — release: deliverable index updated, findings
   narratives extended, `docs/experimental-envelope.md` shipped,
   `pilot-v0.2` tag.
@@ -84,9 +86,10 @@ historical reference for the v0.1 release moment, but it is
 
 v0.2 must satisfy, against the post-9.3 `main` baseline:
 
-1. The entire 94-test suite passes unchanged at the v0.2 default
-   settings (`δ_shell = 0`, `delta_T_assumed = 0.0 K`, `σ_geom = 0`).
-   Enforced by Phase 12.1's regression audit and by CI.
+1. The entire 94-test suite passes unchanged at the v0.2
+   compatibility-mode settings (`δ_shell = 0`,
+   `delta_T_assumed = 0.0 K`, `σ_geom = 0`). Enforced by Phase
+   12.1's regression audit and by CI.
 2. The current `main` §5 cache
    `notebooks/data/regime_map_grid.csv` regime label columns
    (`regime`, `top_to_bottom_ratio`, `bottom_mass_fraction`) are
@@ -94,7 +97,8 @@ v0.2 must satisfy, against the post-9.3 `main` baseline:
    `convection_flag` column added.
 3. The current `main` deliverable artefacts (notebook 02–04
    figures, design tables, `cell_summary` outputs) are
-   bit-identical when generated from v0.2 code at v0.2 defaults.
+   bit-identical when generated from v0.2 code at
+   compatibility-mode settings.
 
 Any commit that breaks (1)–(3) is reverted before merge. CI
 catches violations at PR time.
@@ -766,31 +770,27 @@ the doc additions, README phase-table-row format consistency.
 
 ---
 
-## 8. Open decisions (for review *now*, before Phase 11 starts)
+## 8. Accepted decisions (D1-D6)
 
-These are the design questions the work plan does *not* yet
-resolve. Each needs a decision before its phase opens.
+Review accepted the six design recommendations below. D1 is
+intentionally split: the experimental default is informative
+(`0.1 K`), while the programmatic API and cache-generation default
+remain in compatibility mode (`0.0 K`) so v0.1 outputs reproduce
+exactly.
 
-### D1. `delta_T_assumed` default — 0.0 K or 0.1 K?
+### D1. `delta_T_assumed` convention
 
-Two readings of the forward-compatibility contract:
+Decision: **`DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K`** for
+notebooks, figures, and experimental-facing overlays;
+**`classify_cell(..., delta_T_assumed=0.0 K)`** remains the API
+default and the cache-generation setting.
 
-- **0.0 K.** v0.1 had no convection check at all, equivalent to
-  `delta_T_assumed = 0.0` (no Ra computation, flag always False).
-  Default 0.0 K reproduces v0.1 exactly. Convection check fires
-  only when the user opts in.
-- **0.1 K.** Realistic laboratory thermostat hysteresis is ~ 0.1 K.
-  Default 0.1 K means the flag fires on h ≥ 1 mm cells out of
-  the box, which is the *informative* default for experimental
-  consumers. v0.1 reproducibility is preserved by the §5.1 label
-  itself being unchanged.
-
-Recommendation: **0.1 K** with explicit documentation that the
-forward-compat contract applies to the §5.1 label, not the
-side-channel flag. Alternative interpretation requires a separate
-test mode that disables the convection check entirely.
-
-Decide before Phase 11 begins.
+Reasoning: 0.1 K is the practically useful laboratory hysteresis
+scale, so experimental consumers see an informative side-channel
+flag without needing to discover an opt-in. The forward-
+compatibility contract protects the §5.1 regime labels and the
+compatibility-mode cache, which remain unchanged at
+`delta_T_assumed = 0.0 K`.
 
 ### D2. `boundary` default — `"rigid-rigid"` or `"rigid-free"`?
 
@@ -798,12 +798,10 @@ Closed (capped) cuvettes are rigid-rigid; open (uncovered)
 cuvettes are rigid-free. The breakout note (v0.2 §3) does not
 specify cuvette closure.
 
-Recommendation: **`"rigid-rigid"`** as the default — closed
-cuvettes are the more controlled experimental mode and the more
-conservative threshold (1707 vs 1100, requires more ΔT to flip).
-Document both constants; let users override via kwarg.
-
-Decide before Phase 11 begins.
+Decision: **`"rigid-rigid"`** as the default — closed cuvettes
+are the more controlled experimental mode and the more
+conservative threshold (1707.762 vs 1100.65, requiring more ΔT to
+flip). Document both constants; let users override via kwarg.
 
 ### D3. `α(T)` polynomial fit — which reference?
 
@@ -813,11 +811,11 @@ handbooks. Pick one. v0.1 used Tanaka (2001) for ρ(T); a
 Tanaka-derivable α(T) is the most consistent choice (differentiate
 the Tanaka form once).
 
-Recommendation: **derive α(T) by differentiating Tanaka 2001**
-(consistent with `parameters.rho_water`). Validate against the
-IAPWS R6-95 reference at 5 / 25 / 35 °C as a sanity check.
-
-Decide before Phase 11 begins.
+Decision: **derive α(T) by differentiating Tanaka 2001**,
+consistent with `parameters.rho_water`. Validate against IAPWS
+R6-95 at 5 / 25 / 35 °C as a sanity check; if the discrepancy is
+larger than ~5 %, treat that as a Phase-11 review item rather than
+silently switching references.
 
 ### D4. `σ_geom` axis values — five points or seven?
 
@@ -826,11 +824,10 @@ The deliverable-6 design table needs a small sweep. Five points
 Seven points (`{1.05, 1.10, 1.15, 1.20, 1.30, 1.45, 1.60}`)
 resolve the small-σ corner better.
 
-Recommendation: **five points**. The deliverable-6 figure 2 (σ_geom
-sensitivity at the anchor cell) covers the small-σ corner with
-its own axis; the table doesn't need finer resolution.
-
-Decide before Phase 14 begins.
+Decision: **five points**: `{1.05, 1.10, 1.20, 1.40, 1.60}`. The
+deliverable-6 figure 2 (`σ_geom` sensitivity at the anchor cell)
+covers the small-σ corner with its own axis; the table should stay
+readable and experimental-facing.
 
 ### D5. `r̄` axis for polydispersity smearing — same as §5 r-axis or finer?
 
@@ -839,12 +836,10 @@ the §5 r-axis is the *innermost* discretisation; the `r̄` axis is
 where we *evaluate* the smeared classification. They can be the
 same or different.
 
-Recommendation: **`r̄` axis matches the §5 r-axis** (30 points,
-5 nm to 10 µm). Reuses the existing infrastructure; no
-interpolation needed; the design table has the same row count as
-v0.1's homogeneous-edge table.
-
-Decide before Phase 14 begins.
+Decision: **`r̄` axis matches the §5 r-axis** (30 log-spaced
+points, 5 nm to 10 µm). This reuses the existing infrastructure,
+avoids interpolation logic, and gives the design table the same
+row count as v0.1's homogeneous-edge table.
 
 ### D6. Convection flag in the design table?
 
@@ -853,12 +848,11 @@ Should deliverable 6 (the polydispersity design table) report
 T, h, t_obs)` space; adding a sixth dimension would explode the
 table.
 
-Recommendation: **no — convection flag stays in the regime-map
-cache** (deliverable 5 / regime_map_grid.csv), separate from the
+Decision: **no — convection flag stays in the regime-map cache**
+(deliverable 5 / `regime_map_grid.csv`), separate from the
 polydispersity design table. Cross-reference the convection-flag
-column in the deliverable-6 prose so consumers know to consult both.
-
-Decide before Phase 14 begins.
+column in the deliverable-6 prose so consumers know to consult
+both outputs.
 
 ---
 
@@ -910,16 +904,15 @@ Calendar: 1.5–2 weeks at v0.1 working tempo.
 - [`findings-physics.md`](findings-physics.md) and
   [`findings-process.md`](findings-process.md) — to be extended in
   Phase 15.
-- v0.1 release tag `pilot-v0.1` at commit `9a0fc76` — the
-  forward-compatibility reference.
+- v0.1 release tag `pilot-v0.1` at commit `9a0fc76` — historical
+  release reference. The forward-compatibility reference is the
+  post-Phase-9.3 `main` baseline named in §1.
 
 ---
 
 ## 12. Acceptance / next step
 
-Review this document. If you accept the scope, the open decisions
-(D1–D6), and the risk register, mark the status field at the top
-to **Accepted** (with date) and Phase 11 opens. Otherwise push
-back on any phase, decision, or deliverable; the work plan is the
-contract, and the contract is negotiable until the first
-implementation commit lands.
+This document is accepted as the v0.2-cycle contract. Phase 11 is
+open. Changes to scope, D1–D6, or the risk register after this
+point require an explicit work-plan amendment before implementation
+continues.
