@@ -35,11 +35,15 @@ from parameters import (
     K_B,
     RHO_P_DIAMOND,
     G,
-    buoyant_mass,
-    diffusivity,
+    ParticleGeometry,
+    buoyant_mass_geom,
+    diffusivity_geom,
     eta_water,
-    gamma_stokes,
+    gamma_stokes_geom,
     rho_water,
+)
+from parameters import (
+    diffusivity as _diffusivity,
 )
 
 # ---------------------------------------------------------------------------
@@ -47,8 +51,13 @@ from parameters import (
 # ---------------------------------------------------------------------------
 
 
-def scale_height(
-    radius_m: float,
+def diffusivity(radius_m: float, temperature_kelvin: float) -> float:
+    """Compatibility re-export of the scalar Stokes-Einstein primitive."""
+    return _diffusivity(radius_m, temperature_kelvin)
+
+
+def scale_height_geom(
+    geom: ParticleGeometry,
     temperature_kelvin: float,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
 ) -> float:
@@ -57,12 +66,25 @@ def scale_height(
     Assumes m_eff > 0 (denser-than-water particles); diamond satisfies
     this across the full 5–35 °C scan range.
     """
-    m_eff = buoyant_mass(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
+    m_eff = buoyant_mass_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
     return K_B * temperature_kelvin / (m_eff * G)
 
 
-def settling_velocity(
+def scale_height(
     radius_m: float,
+    temperature_kelvin: float,
+    rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
+) -> float:
+    """v0.1-compatible scale-height wrapper using a zero-shell geometry."""
+    return scale_height_geom(
+        ParticleGeometry.from_radius(radius_m),
+        temperature_kelvin,
+        rho_particle_kg_per_m3,
+    )
+
+
+def settling_velocity_geom(
+    geom: ParticleGeometry,
     temperature_kelvin: float,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
 ) -> float:
@@ -71,13 +93,26 @@ def settling_velocity(
     Stokes-regime; valid only at low Reynolds number, which holds across
     the entire scan grid for diamond in water.
     """
-    m_eff = buoyant_mass(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
-    gamma = gamma_stokes(radius_m, temperature_kelvin)
+    m_eff = buoyant_mass_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
+    gamma = gamma_stokes_geom(geom, temperature_kelvin)
     return m_eff * G / gamma
 
 
-def equilibration_time(
+def settling_velocity(
     radius_m: float,
+    temperature_kelvin: float,
+    rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
+) -> float:
+    """v0.1-compatible settling-velocity wrapper using a zero-shell geometry."""
+    return settling_velocity_geom(
+        ParticleGeometry.from_radius(radius_m),
+        temperature_kelvin,
+        rho_particle_kg_per_m3,
+    )
+
+
+def equilibration_time_geom(
+    geom: ParticleGeometry,
     temperature_kelvin: float,
     sample_depth_m: float,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
@@ -90,13 +125,28 @@ def equilibration_time(
     decay constant. For strongly-sedimenting cells, prefer
     `settling_time`.
     """
-    ell_g = scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
-    d = diffusivity(radius_m, temperature_kelvin)
+    ell_g = scale_height_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
+    d = diffusivity_geom(geom, temperature_kelvin)
     return min(sample_depth_m, ell_g) ** 2 / d
 
 
-def settling_time(
+def equilibration_time(
     radius_m: float,
+    temperature_kelvin: float,
+    sample_depth_m: float,
+    rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
+) -> float:
+    """v0.1-compatible relaxation-time wrapper using a zero-shell geometry."""
+    return equilibration_time_geom(
+        ParticleGeometry.from_radius(radius_m),
+        temperature_kelvin,
+        sample_depth_m,
+        rho_particle_kg_per_m3,
+    )
+
+
+def settling_time_geom(
+    geom: ParticleGeometry,
     temperature_kelvin: float,
     sample_depth_m: float,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
@@ -107,12 +157,27 @@ def settling_time(
     distribution on [0, h], the latest particle arrives at z = 0 at this
     time; the mean arrival time is h / (2 v_sed).
     """
-    v_sed = settling_velocity(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
+    v_sed = settling_velocity_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
     return sample_depth_m / v_sed
 
 
-def top_to_bottom_ratio(
+def settling_time(
     radius_m: float,
+    temperature_kelvin: float,
+    sample_depth_m: float,
+    rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
+) -> float:
+    """v0.1-compatible settling-time wrapper using a zero-shell geometry."""
+    return settling_time_geom(
+        ParticleGeometry.from_radius(radius_m),
+        temperature_kelvin,
+        sample_depth_m,
+        rho_particle_kg_per_m3,
+    )
+
+
+def top_to_bottom_ratio_geom(
+    geom: ParticleGeometry,
     temperature_kelvin: float,
     sample_depth_m: float,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
@@ -121,8 +186,23 @@ def top_to_bottom_ratio(
 
     The 5 % threshold of breakout-note §5.1 corresponds to h / ℓ_g ≈ 3.
     """
-    ell_g = scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
+    ell_g = scale_height_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
     return math.exp(-sample_depth_m / ell_g)
+
+
+def top_to_bottom_ratio(
+    radius_m: float,
+    temperature_kelvin: float,
+    sample_depth_m: float,
+    rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
+) -> float:
+    """v0.1-compatible concentration-ratio wrapper using a zero-shell geometry."""
+    return top_to_bottom_ratio_geom(
+        ParticleGeometry.from_radius(radius_m),
+        temperature_kelvin,
+        sample_depth_m,
+        rho_particle_kg_per_m3,
+    )
 
 
 def barometric_mean_height(
@@ -159,9 +239,9 @@ def barometric_mean_height(
 # ---------------------------------------------------------------------------
 
 
-def barometric_profile(
+def barometric_profile_geom(
     z_m: ArrayLike,
-    radius_m: float,
+    geom: ParticleGeometry,
     temperature_kelvin: float,
     sample_depth_m: float,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
@@ -173,10 +253,27 @@ def barometric_profile(
     so that ∫₀ʰ c_eq(z) dz = 1. Uses `expm1` to remain accurate in the
     homogeneous limit ℓ_g ≫ h (where the naive `1 − exp(...)` underflows).
     """
-    ell_g = scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
+    ell_g = scale_height_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
     z = np.asarray(z_m, dtype=np.float64)
     norm = ell_g * (-math.expm1(-sample_depth_m / ell_g))
     return np.exp(-z / ell_g) / norm
+
+
+def barometric_profile(
+    z_m: ArrayLike,
+    radius_m: float,
+    temperature_kelvin: float,
+    sample_depth_m: float,
+    rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
+) -> NDArray[np.float64]:
+    """v0.1-compatible barometric-profile wrapper using a zero-shell geometry."""
+    return barometric_profile_geom(
+        z_m,
+        ParticleGeometry.from_radius(radius_m),
+        temperature_kelvin,
+        sample_depth_m,
+        rho_particle_kg_per_m3,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -184,8 +281,8 @@ def barometric_profile(
 # ---------------------------------------------------------------------------
 
 
-def cell_summary(
-    radius_m: float,
+def cell_summary_geom(
+    geom: ParticleGeometry,
     temperature_kelvin: float,
     sample_depth_m: float,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
@@ -194,29 +291,54 @@ def cell_summary(
 
     Useful as the per-row record in the §5 1 050-cell sub-grid output.
     """
+    m_eff = buoyant_mass_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
+    gamma = gamma_stokes_geom(geom, temperature_kelvin)
+    d = diffusivity_geom(geom, temperature_kelvin)
+    v_sed = settling_velocity_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
+    ell_g = scale_height_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
+    t_eq = equilibration_time_geom(
+        geom, temperature_kelvin, sample_depth_m, rho_particle_kg_per_m3
+    )
+    t_settle = settling_time_geom(
+        geom, temperature_kelvin, sample_depth_m, rho_particle_kg_per_m3
+    )
     return {
-        "r_m": radius_m,
+        "r_m": geom.r_material_m,
+        "r_material_m": geom.r_material_m,
+        "r_hydro_m": geom.r_hydro_m,
+        "delta_shell_m": geom.delta_shell_m,
         "T_K": temperature_kelvin,
         "h_m": sample_depth_m,
         "rho_p_kg_per_m3": rho_particle_kg_per_m3,
         "rho_f_kg_per_m3": rho_water(temperature_kelvin),
         "eta_Pa_s": eta_water(temperature_kelvin),
-        "m_eff_kg": buoyant_mass(radius_m, temperature_kelvin, rho_particle_kg_per_m3),
-        "gamma_N_s_per_m": gamma_stokes(radius_m, temperature_kelvin),
-        "D_m2_per_s": diffusivity(radius_m, temperature_kelvin),
-        "v_sed_m_per_s": settling_velocity(radius_m, temperature_kelvin, rho_particle_kg_per_m3),
-        "ell_g_m": scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3),
-        "t_eq_s": equilibration_time(
-            radius_m, temperature_kelvin, sample_depth_m, rho_particle_kg_per_m3
-        ),
-        "t_settle_s": settling_time(
-            radius_m, temperature_kelvin, sample_depth_m, rho_particle_kg_per_m3
-        ),
-        "z_mean_m": barometric_mean_height(
+        "m_eff_kg": m_eff,
+        "gamma_N_s_per_m": gamma,
+        "D_m2_per_s": d,
+        "v_sed_m_per_s": v_sed,
+        "ell_g_m": ell_g,
+        "t_eq_s": t_eq,
+        "t_settle_s": t_settle,
+        "z_mean_m": barometric_mean_height(sample_depth_m, ell_g),
+        "ratio_top_bottom": top_to_bottom_ratio_geom(
+            geom,
+            temperature_kelvin,
             sample_depth_m,
-            scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3),
-        ),
-        "ratio_top_bottom": top_to_bottom_ratio(
-            radius_m, temperature_kelvin, sample_depth_m, rho_particle_kg_per_m3
+            rho_particle_kg_per_m3,
         ),
     }
+
+
+def cell_summary(
+    radius_m: float,
+    temperature_kelvin: float,
+    sample_depth_m: float,
+    rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
+) -> dict[str, float]:
+    """v0.1-compatible cell-summary wrapper using a zero-shell geometry."""
+    return cell_summary_geom(
+        ParticleGeometry.from_radius(radius_m),
+        temperature_kelvin,
+        sample_depth_m,
+        rho_particle_kg_per_m3,
+    )

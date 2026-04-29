@@ -42,8 +42,13 @@ from typing import NamedTuple
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from analytical import settling_velocity
-from parameters import RHO_P_DIAMOND, diffusivity
+from analytical import settling_velocity_geom
+from parameters import (
+    RHO_P_DIAMOND,
+    ParticleGeometry,
+    as_particle_geometry,
+    diffusivity_geom,
+)
 
 # ---------------------------------------------------------------------------
 # Defaults — α and β are the round-2 timestep coefficients.
@@ -426,7 +431,7 @@ def simulate(
 
 
 def simulate_cell(
-    radius_m: float,
+    radius_m: float | ParticleGeometry,
     temperature_kelvin: float,
     sample_depth_m: float,
     t_total: float,
@@ -436,8 +441,9 @@ def simulate_cell(
     **kwargs,
 ) -> LangevinResult:
     """Convenience wrapper: take a (r, T, h) cell, derive (v_sed, D), simulate."""
-    v = settling_velocity(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
-    d = diffusivity(radius_m, temperature_kelvin)
+    geom = as_particle_geometry(radius_m)
+    v = settling_velocity_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
+    d = diffusivity_geom(geom, temperature_kelvin)
     return simulate(
         v_sed=v,
         diff=d,

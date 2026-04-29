@@ -43,10 +43,15 @@ from typing import Literal
 import numpy as np
 from numpy.typing import NDArray
 
-from analytical import scale_height, settling_velocity
+from analytical import scale_height_geom, settling_velocity_geom
 from convection import BoundaryCondition, is_convection_dominated, rayleigh_number
 from fokker_planck import DEFAULT_N_CELLS, solve_cell
-from parameters import RHO_P_DIAMOND, diffusivity
+from parameters import (
+    RHO_P_DIAMOND,
+    ParticleGeometry,
+    as_particle_geometry,
+    diffusivity_geom,
+)
 from scan_grid import DEPTHS_M, T_OBS_S, radii_m, temperatures_k
 
 Regime = Literal["homogeneous", "stratified", "sedimented"]
@@ -204,7 +209,7 @@ def _needs_refined_method_c(ratio: float) -> bool:
 
 
 def classify_cell(
-    radius_m: float,
+    radius_m: float | ParticleGeometry,
     temperature_kelvin: float,
     sample_depth_m: float,
     t_obs_s: float,
@@ -242,11 +247,12 @@ def classify_cell(
     scale heights, Method C's own asymptotic-sedimentation fallback
     engages internally and stays fast.
     """
+    geom = as_particle_geometry(radius_m)
     convection_flag = is_convection_dominated(
         rayleigh_number(sample_depth_m, delta_T_assumed, temperature_kelvin),
         boundary=boundary,
     )
-    ell_g = scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
+    ell_g = scale_height_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
     eq_ratio = math.exp(-sample_depth_m / ell_g) if ell_g > 0.0 else 0.0
 
     # Short-circuit 1: homogeneous corner.
@@ -261,9 +267,9 @@ def classify_cell(
     if eq_ratio >= HOMOGENEOUS_RATIO_THRESHOLD:
         eq_bmf = _equilibrium_bottom_mass_fraction(sample_depth_m, ell_g)
         return RegimeResult(
-            r_material_m=radius_m,
-            r_hydro_m=radius_m,
-            delta_shell_m=0.0,
+            r_material_m=geom.r_material_m,
+            r_hydro_m=geom.r_hydro_m,
+            delta_shell_m=geom.delta_shell_m,
             temperature_kelvin=temperature_kelvin,
             sample_depth_m=sample_depth_m,
             t_obs_s=t_obs_s,
@@ -277,8 +283,8 @@ def classify_cell(
         )
 
     # Short-circuit 2: equilibrated corner.
-    v_sed = settling_velocity(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
-    d = diffusivity(radius_m, temperature_kelvin)
+    v_sed = settling_velocity_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
+    d = diffusivity_geom(geom, temperature_kelvin)
     t_relax = min(sample_depth_m, ell_g) ** 2 / d
     t_arrival = sample_depth_m / v_sed if v_sed > 0.0 else math.inf
     t_full_eq = max(EQUILIBRATED_RELAXATION_FACTOR * t_relax, 1.01 * t_arrival)
@@ -286,9 +292,9 @@ def classify_cell(
     if t_obs_s >= t_full_eq:
         bmf = _equilibrium_bottom_mass_fraction(sample_depth_m, ell_g)
         return RegimeResult(
-            r_material_m=radius_m,
-            r_hydro_m=radius_m,
-            delta_shell_m=0.0,
+            r_material_m=geom.r_material_m,
+            r_hydro_m=geom.r_hydro_m,
+            delta_shell_m=geom.delta_shell_m,
             temperature_kelvin=temperature_kelvin,
             sample_depth_m=sample_depth_m,
             t_obs_s=t_obs_s,
@@ -303,7 +309,7 @@ def classify_cell(
 
     # Otherwise: full Method C, with a regime-classification mesh floor.
     method_c = solve_cell(
-        radius_m,
+        geom,
         temperature_kelvin,
         sample_depth_m,
         t_total=t_obs_s,
@@ -319,7 +325,7 @@ def classify_cell(
         and _needs_refined_method_c(ratio)
     ):
         method_c = solve_cell(
-            radius_m,
+            geom,
             temperature_kelvin,
             sample_depth_m,
             t_total=t_obs_s,
@@ -331,9 +337,9 @@ def classify_cell(
         bmf = method_c.bottom_mass_fraction(SEDIMENTED_BOTTOM_LAYER_FRACTION)
 
     return RegimeResult(
-        r_material_m=radius_m,
-        r_hydro_m=radius_m,
-        delta_shell_m=0.0,
+        r_material_m=geom.r_material_m,
+        r_hydro_m=geom.r_hydro_m,
+        delta_shell_m=geom.delta_shell_m,
         temperature_kelvin=temperature_kelvin,
         sample_depth_m=sample_depth_m,
         t_obs_s=t_obs_s,

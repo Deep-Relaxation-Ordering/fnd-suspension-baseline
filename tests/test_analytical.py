@@ -214,6 +214,9 @@ def test_cell_summary_contains_all_expected_keys() -> None:
     summary = cell_summary(_R_ANCHOR, _T_ANCHOR, _H_ANCHOR)
     expected_keys = {
         "r_m",
+        "r_material_m",
+        "r_hydro_m",
+        "delta_shell_m",
         "T_K",
         "h_m",
         "rho_p_kg_per_m3",

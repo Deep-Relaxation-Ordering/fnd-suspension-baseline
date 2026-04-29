@@ -8,11 +8,13 @@ Provides:
 - T-dependent water density (Tanaka 2001) and dynamic viscosity
   (IAPWS-derived Vogel form, after Korson 1969).
 - Stokes drag γ, Stokes–Einstein diffusivity D, and buoyancy-corrected
-  mass m_eff as scalar primitives shared across Methods A/B/C.
+  mass m_eff as scalar primitives shared across Methods A/B/C, with
+  explicit `ParticleGeometry` variants for the v0.2 material/hydrodynamic
+  radius split.
 
-Functions are scalar in the input temperature/radius. Vectorisation is
-deferred to the call sites that actually need it (Method B trajectory
-arrays, Method C grids).
+Functions are scalar in the input temperature and radius/geometry.
+Vectorisation is deferred to the call sites that actually need it
+(Method B trajectory arrays, Method C grids).
 
 References
 ----------
@@ -81,6 +83,13 @@ class ParticleGeometry:
     def from_radius(cls, radius_m: float) -> ParticleGeometry:
         """Construct the v0.1-compatible zero-shell geometry."""
         return cls(r_material_m=radius_m, delta_shell_m=0.0)
+
+
+def as_particle_geometry(radius_or_geom: float | ParticleGeometry) -> ParticleGeometry:
+    """Coerce scalar-radius inputs to the v0.1-compatible geometry object."""
+    if isinstance(radius_or_geom, ParticleGeometry):
+        return radius_or_geom
+    return ParticleGeometry.from_radius(radius_or_geom)
 
 # ---------------------------------------------------------------------------
 # Validity ranges
@@ -155,34 +164,63 @@ def eta_water(temperature_kelvin: float) -> float:
 # ---------------------------------------------------------------------------
 
 
-def gamma_stokes(radius_m: float, temperature_kelvin: float) -> float:
-    """Stokes drag coefficient γ = 6 π η(T) r, in N·s/m.
+def gamma_stokes_geom(geom: ParticleGeometry, temperature_kelvin: float) -> float:
+    """Stokes drag coefficient γ = 6 π η(T) r_hydro, in N·s/m.
 
     Low-Reynolds-number, no-slip sphere. Breakout-note §3, §11 (Lock 1).
     """
-    return 6.0 * math.pi * eta_water(temperature_kelvin) * radius_m
+    return 6.0 * math.pi * eta_water(temperature_kelvin) * geom.r_hydro_m
 
 
-def diffusivity(radius_m: float, temperature_kelvin: float) -> float:
+def gamma_stokes(
+    radius_or_geom: float | ParticleGeometry,
+    temperature_kelvin: float,
+) -> float:
+    """Stokes drag wrapper accepting a scalar radius or `ParticleGeometry`."""
+    return gamma_stokes_geom(as_particle_geometry(radius_or_geom), temperature_kelvin)
+
+
+def diffusivity_geom(geom: ParticleGeometry, temperature_kelvin: float) -> float:
     """Stokes–Einstein diffusivity D = k_B T / γ, in m²/s.
 
     Breakout-note §3, §11 (Lock 2). The Einstein–Smoluchowski relation
     D · γ = k_B T must hold to machine precision; this is the test in
     `tests/test_einstein_relation.py`.
     """
-    return K_B * temperature_kelvin / gamma_stokes(radius_m, temperature_kelvin)
+    return K_B * temperature_kelvin / gamma_stokes_geom(geom, temperature_kelvin)
 
 
-def buoyant_mass(
-    radius_m: float,
+def diffusivity(
+    radius_or_geom: float | ParticleGeometry,
+    temperature_kelvin: float,
+) -> float:
+    """Diffusivity wrapper accepting a scalar radius or `ParticleGeometry`."""
+    return diffusivity_geom(as_particle_geometry(radius_or_geom), temperature_kelvin)
+
+
+def buoyant_mass_geom(
+    geom: ParticleGeometry,
     temperature_kelvin: float,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
 ) -> float:
-    """Buoyancy-corrected mass m_eff = (4/3) π r³ (ρ_p − ρ_f), in kg.
+    """Buoyancy-corrected mass m_eff = (4/3) π r_material³ (ρ_p − ρ_f), in kg.
 
     Breakout-note §3. The particle radius r used here is the *material*
     radius r_c (breakout-note §7h); for r ≲ 20 nm, r_c may differ from
     the hydrodynamic radius r_H used in `gamma_stokes` and `diffusivity`.
     """
     delta_rho = rho_particle_kg_per_m3 - rho_water(temperature_kelvin)
-    return (4.0 / 3.0) * math.pi * radius_m**3 * delta_rho
+    return (4.0 / 3.0) * math.pi * geom.r_material_m**3 * delta_rho
+
+
+def buoyant_mass(
+    radius_or_geom: float | ParticleGeometry,
+    temperature_kelvin: float,
+    rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
+) -> float:
+    """Buoyant-mass wrapper accepting a scalar radius or `ParticleGeometry`."""
+    return buoyant_mass_geom(
+        as_particle_geometry(radius_or_geom),
+        temperature_kelvin,
+        rho_particle_kg_per_m3,
+    )

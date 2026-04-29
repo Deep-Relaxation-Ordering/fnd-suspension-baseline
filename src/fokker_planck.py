@@ -28,8 +28,17 @@ from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import expm_multiply
 
-from analytical import barometric_mean_height, scale_height, settling_velocity
-from parameters import RHO_P_DIAMOND, diffusivity
+from analytical import (
+    barometric_mean_height,
+    scale_height_geom,
+    settling_velocity_geom,
+)
+from parameters import (
+    RHO_P_DIAMOND,
+    ParticleGeometry,
+    as_particle_geometry,
+    diffusivity_geom,
+)
 
 DEFAULT_N_CELLS: int = 240
 """Default finite-volume cell count for Method C."""
@@ -444,7 +453,7 @@ def solve(
 
 
 def solve_cell(
-    radius_m: float,
+    radius_m: float | ParticleGeometry,
     temperature_kelvin: float,
     sample_depth_m: float,
     t_total: float,
@@ -453,13 +462,14 @@ def solve_cell(
     **kwargs,
 ) -> FokkerPlanckResult:
     """Convenience wrapper: derive `(v_sed, D)` from a physical cell and solve."""
-    v = settling_velocity(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
-    d = diffusivity(radius_m, temperature_kelvin)
+    geom = as_particle_geometry(radius_m)
+    v = settling_velocity_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
+    d = diffusivity_geom(geom, temperature_kelvin)
     return solve(v_sed=v, diff=d, h=sample_depth_m, t_total=t_total, **kwargs)
 
 
 def equilibrium_cell(
-    radius_m: float,
+    radius_m: float | ParticleGeometry,
     temperature_kelvin: float,
     sample_depth_m: float,
     *,
@@ -468,15 +478,16 @@ def equilibrium_cell(
     **kwargs,
 ) -> FokkerPlanckResult:
     """Return a long-time Method-C approximation to the barometric equilibrium."""
-    ell_g = scale_height(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
-    d = diffusivity(radius_m, temperature_kelvin)
-    v = settling_velocity(radius_m, temperature_kelvin, rho_particle_kg_per_m3)
+    geom = as_particle_geometry(radius_m)
+    ell_g = scale_height_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
+    d = diffusivity_geom(geom, temperature_kelvin)
+    v = settling_velocity_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
     t_relax = min(sample_depth_m, ell_g) ** 2 / d
     t_equilibrium = t_factor * t_relax
     if v > 0.0:
         t_equilibrium = max(t_equilibrium, 1.01 * sample_depth_m / v)
     return solve_cell(
-        radius_m,
+        geom,
         temperature_kelvin,
         sample_depth_m,
         t_total=t_equilibrium,
