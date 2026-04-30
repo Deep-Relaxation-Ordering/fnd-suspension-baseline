@@ -142,8 +142,10 @@ notebook regeneration commands.
 | 13 | re-walk §5 cache with new channels | done — [phase-13 note](lab_notes/2026-04-30-phase13-cache-regeneration.md) |
 | 14 | `src/polydispersity.py` + notebook 05 + deliverable 6 | done — [phase-14 note](lab_notes/2026-04-30-phase14-polydispersity-smearing.md) |
 | 15 | `pilot-v0.2` release tag | done — [phase-15 note](lab_notes/2026-04-30-phase15-pilot-v0-2-release.md) |
-| **`pilot-v0.2.1` metadata patch** | | |
+| **`pilot-v0.2.1` cycle (FAIR metadata + v0.3 deliberation)** | | |
 | 16 | FAIR metadata, data schemas, and v0.2 release note | done — [phase-16 note](lab_notes/2026-04-30-phase16-fair-metadata-and-v0-2-closeout.md) |
+| 16.1 | defer Zenodo DOI to `pilot-v1.0` | done — [phase-16.1 note](lab_notes/2026-04-30-phase16-1-defer-doi-to-v1-0.md) |
+| 16.2 | v0.3 deliberation surfaces ([work-plan scaffold](docs/work-plan-v0-3.md), [ADR 0002 stub](docs/adr/0002-v0.3-spec-anchoring.md), [ADR index](docs/adr/README.md)) | done — [phase-16.2 note](lab_notes/2026-04-30-phase16-2-v0-3-deliberation-surfaces.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in

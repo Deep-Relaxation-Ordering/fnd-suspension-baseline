@@ -157,8 +157,10 @@ Phase 16. The v0.2 scope was anchored in
 - **Aggregation, adsorption, surfactants, and wall corrections** —
   not modelled in v0.2. See
   [`experimental-envelope.md`](experimental-envelope.md).
-- **DOI pending** — `CITATION.cff` and `codemeta.json` carry DOI TODOs
-  until the `pilot-v0.2.1` tag is pushed and Zenodo mints the DOI.
+- **DOI deferred to `pilot-v1.0`** — `CITATION.cff` and `codemeta.json`
+  carry no DOI; Zenodo minting is intentionally postponed to the v1.0
+  release because pre-v1.0 pilots have a moving physics scope. See
+  [`../lab_notes/2026-04-30-phase16-1-defer-doi-to-v1-0.md`](../lab_notes/2026-04-30-phase16-1-defer-doi-to-v1-0.md).
 - **`equilibrium_cell` `t_factor = 50` magic constant** — works for
   every cell tested; not formally derived.
 

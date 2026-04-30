@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-30 | [Phase 16.2 — v0.3 deliberation surfaces (work-plan scaffold + ADR 0002 stub)](2026-04-30-phase16-2-v0-3-deliberation-surfaces.md) | 16.2 |
 | 2026-04-30 | [Phase 16.1 — defer Zenodo DOI to pilot-v1.0](2026-04-30-phase16-1-defer-doi-to-v1-0.md) | 16.1 |
 | 2026-04-30 | [Phase 16 — FAIR metadata and v0.2 narrative closeout](2026-04-30-phase16-fair-metadata-and-v0-2-closeout.md) | 16 |
 | 2026-04-30 | [Phase 15 — `pilot-v0.2` release closeout](2026-04-30-phase15-pilot-v0-2-release.md) | 15 |
