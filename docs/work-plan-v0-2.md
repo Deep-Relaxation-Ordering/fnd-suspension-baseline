@@ -5,7 +5,7 @@ Institut Freiburg.*
 
 | Field | Value |
 |---|---|
-| Status | **Accepted — Phase 13 complete; Phase 14 next.** Scope, D1–D6 decisions, and risk register accepted. |
+| Status | **Accepted — Phase 14 complete; Phase 15 next.** Scope, D1–D6 decisions, and risk register accepted. |
 | Date | 2026-04-29 (accepted; drafted 2026-04-28) |
 | Drafted at | commit `42e819e` (Phase 10 ADR landed) |
 | Spec anchor | breakout-note v0.2 commit `3b7b18af` (frozen unless v0.3 lands during the cycle; see [ADR 0001](adr/0001-v0.2-spec-anchoring.md)) |
@@ -142,8 +142,8 @@ Phase 10 (DONE) ────────► ADR 0001 + scoping             │
                   Phase 15.1 (anticipated post-release)
 ```
 
-Phase 11 / 11.1, Phase 12 / 12.1, and Phase 13 are complete. Phase 14
-is next; Phases 14 onward are strictly sequential.
+Phase 11 / 11.1, Phase 12 / 12.1, Phase 13, and Phase 14 are complete.
+Phase 15 is next.
 
 ---
 

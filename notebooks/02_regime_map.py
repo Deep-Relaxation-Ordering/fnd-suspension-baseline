@@ -320,7 +320,6 @@ plt.show()
 # %%
 def _draw_convection_hatches(
     ax: plt.Axes,
-    _radii_axis: list[float],
     depths_axis: list[float],
     convection_slice: np.ndarray,
 ) -> None:
@@ -366,7 +365,7 @@ _draw_regime_panel(
         rf"$\Delta T = {DEFAULT_EXPERIMENTAL_DELTA_T_K:g}$ K"
     ),
 )
-_draw_convection_hatches(ax, unique_radii, unique_depths, convection_room_slice)
+_draw_convection_hatches(ax, unique_depths, convection_room_slice)
 conv_handle = plt.Rectangle(
     (0, 0), 1, 1, facecolor="white", edgecolor="black", hatch="////",
     label="convection flag"

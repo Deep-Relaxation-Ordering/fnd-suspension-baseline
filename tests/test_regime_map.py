@@ -11,6 +11,7 @@ not the unit suite.
 
 from __future__ import annotations
 
+import csv
 import math
 from pathlib import Path
 
@@ -345,7 +346,8 @@ def test_detect_csv_format_accepts_v01_phase11_and_current_headers() -> None:
 def test_committed_regime_map_cache_uses_v02_zero_shell_schema() -> None:
     """Phase-13 cache migration preserves labels while using explicit radii."""
     cache_path = Path(__file__).resolve().parents[1] / "notebooks/data/regime_map_grid.csv"
-    header = cache_path.read_text().splitlines()[0].split(",")
+    with cache_path.open(newline="") as fh:
+        header = next(csv.reader(fh))
 
     assert _detect_csv_format(header) == "current"
     assert "radius_m" not in header

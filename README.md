@@ -53,7 +53,9 @@ fnd-suspension-baseline/
 │   ├── analytical.py               Method A — closed-form equilibrium quantities
 │   ├── langevin.py                 Method B — stochastic Langevin ensemble
 │   ├── fokker_planck.py            Method C — Smoluchowski PDE (exp-fitting FV)
-│   └── regime_map.py               Orchestration; produces deliverables 3 and 5
+│   ├── convection.py               Rayleigh-number convection side channel
+│   ├── regime_map.py               Orchestration; produces deliverables 3 and 5
+│   └── polydispersity.py           Log-normal smearing; produces deliverable 6
 ├── tests/                          (validation per breakout-note §4.4)
 ├── notebooks/                      (deliverables 2–5: validation, regime map, scans, design table)
 ├── lab_notes/                      (dated session notes — breakout-note §4.5)
@@ -73,7 +75,7 @@ polydispersity post-processing — all forward-compatible with v0.1
 (defaults reproduce v0.1 arithmetic to machine precision). The
 spec-anchoring decision is recorded in
 [ADR 0001](docs/adr/0001-v0.2-spec-anchoring.md). Test suite on
-the current branch: `123 passed, 0 skipped` (`92 passed` at the
+the current branch: `133 passed, 0 skipped` (`92 passed` at the
 `pilot-v0.1` tag). v0.2 tag will be `pilot-v0.2` at Phase 15.
 
 ## Environment
@@ -123,7 +125,7 @@ notebook regeneration commands.
 | 12 | `r_material` / `r_hydro` split | done — [schema/parser note](lab_notes/2026-04-29-phase12-radius-schema-parser.md), [physics-propagation note](lab_notes/2026-04-29-phase12-physics-propagation.md) |
 | 12.1 | regression audit (`δ_shell = 0` compatibility) | done — [phase-12.1 note](lab_notes/2026-04-30-phase12-1-regression-audit.md) |
 | 13 | re-walk §5 cache with new channels | done — [phase-13 note](lab_notes/2026-04-30-phase13-cache-regeneration.md) |
-| 14 | `src/polydispersity.py` + notebook 05 + deliverable 6 | pending |
+| 14 | `src/polydispersity.py` + notebook 05 + deliverable 6 | done — [phase-14 note](lab_notes/2026-04-30-phase14-polydispersity-smearing.md) |
 | 15 | `pilot-v0.2` release tag | pending |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
