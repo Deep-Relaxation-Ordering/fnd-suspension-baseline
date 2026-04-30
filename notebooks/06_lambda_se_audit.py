@@ -25,7 +25,7 @@ from scan_grid import DEPTHS_M, T_OBS_S
 from stokes_einstein_correction import (
     LAMBDA_SE_AXIS,
     SUB_150_NM_THRESHOLD_M,
-    count_label_flips,
+    is_label_flipped,
 )
 
 # ---------------------------------------------------------------------------
@@ -82,7 +82,7 @@ def run_audit() -> None:
                     corrected = classify_cell(
                         r, AUDIT_TEMPERATURE_K, h, t_obs, lambda_se=lambda_se
                     )
-                    flipped = count_label_flips(baseline, corrected)
+                    flipped = is_label_flipped(baseline, corrected)
                     if flipped:
                         flip_counts[(1.0, lambda_se)] += 1
 

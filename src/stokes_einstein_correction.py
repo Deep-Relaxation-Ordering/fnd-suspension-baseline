@@ -75,7 +75,7 @@ def classify_cell_lambda(
 # ---------------------------------------------------------------------------
 
 
-def count_label_flips(
+def is_label_flipped(
     baseline: RegimeResult,
     corrected: RegimeResult,
 ) -> bool:
@@ -95,7 +95,7 @@ def audit_lambda_impact(
     """Re-classify one cell at every λ in ``lambda_axis``.
 
     Returns a mapping ``λ → RegimeResult`` for direct comparison.
-    The caller can use ``count_label_flips`` to detect changes.
+    The caller can use ``is_label_flipped`` to detect changes.
     """
     return {
         lambda_se: classify_cell(
