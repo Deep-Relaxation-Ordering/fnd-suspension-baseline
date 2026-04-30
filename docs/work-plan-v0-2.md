@@ -5,7 +5,7 @@ Institut Freiburg.*
 
 | Field | Value |
 |---|---|
-| Status | **Accepted — Phase 11 complete; Phase 11.1 review fixes applied; Phase 12 physics propagation in progress.** Scope, D1–D6 decisions, and risk register accepted. |
+| Status | **Accepted — Phase 12 / 12.1 complete; Phase 13 next.** Scope, D1–D6 decisions, and risk register accepted. |
 | Date | 2026-04-29 (accepted; drafted 2026-04-28) |
 | Drafted at | commit `42e819e` (Phase 10 ADR landed) |
 | Spec anchor | breakout-note v0.2 commit `3b7b18af` (frozen unless v0.3 lands during the cycle; see [ADR 0001](adr/0001-v0.2-spec-anchoring.md)) |
@@ -142,10 +142,8 @@ Phase 10 (DONE) ────────► ADR 0001 + scoping             │
                   Phase 15.1 (anticipated post-release)
 ```
 
-Phase 11 / 11.1 is complete. Phase 12 has started with the explicit
-radius schema, three-format CSV parser checkpoint, and radius-split
-physics propagation through Method A/B/C wrappers; Phases 13 onward are
-strictly sequential.
+Phase 11 / 11.1 and Phase 12 / 12.1 are complete. Phase 13 is next;
+Phases 13 onward are strictly sequential.
 
 ---
 

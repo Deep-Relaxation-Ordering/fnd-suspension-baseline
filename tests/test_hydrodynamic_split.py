@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -22,7 +23,7 @@ from parameters import (
     diffusivity_geom,
     gamma_stokes_geom,
 )
-from regime_map import classify_cell
+from regime_map import classify_cell, results_from_csv, results_to_csv
 
 _R_MATERIAL = 1e-7
 _T = 298.15
@@ -148,3 +149,19 @@ def test_classify_cell_accepts_geometry_and_records_shell() -> None:
     assert result.r_hydro_m == shell.r_hydro_m
     assert result.delta_shell_m == shell.delta_shell_m
     assert result.radius_m == shell.r_material_m
+
+
+def test_regime_result_carries_both_radii_through_csv(tmp_path: Path) -> None:
+    shell = ParticleGeometry(r_material_m=5e-9, delta_shell_m=1e-9)
+    original = classify_cell(shell, _T, 1e-4, t_obs_s=3600.0)
+    path = tmp_path / "radius_split.csv"
+
+    results_to_csv([original], path)
+    restored = results_from_csv(path)
+
+    assert "r_material_m,r_hydro_m,delta_shell_m" in path.read_text().splitlines()[0]
+    assert len(restored) == 1
+    assert restored[0].r_material_m == original.r_material_m
+    assert restored[0].r_hydro_m == original.r_hydro_m
+    assert restored[0].delta_shell_m == original.delta_shell_m
+    assert restored[0].r_material_m != restored[0].r_hydro_m

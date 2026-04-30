@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-30 | [Phase 12.1 — regression audit](2026-04-30-phase12-1-regression-audit.md) | 12.1 |
 | 2026-04-29 | [Phase 12 — radius-split physics propagation](2026-04-29-phase12-physics-propagation.md) | 12 |
 | 2026-04-29 | [Phase 12 — radius schema and CSV parser checkpoint](2026-04-29-phase12-radius-schema-parser.md) | 12 |
 | 2026-04-29 | [Phase 11.1 — review fixes and Phase-12 data-model amendments](2026-04-29-phase11-1-review-fixes.md) | 11.1 |
