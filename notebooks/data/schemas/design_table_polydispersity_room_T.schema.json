@@ -1,0 +1,91 @@
+{
+  "$schema": "https://specs.frictionlessdata.io/schemas/table-schema.json",
+  "name": "design_table_polydispersity_room_T",
+  "path": "../design_table_polydispersity_room_T.csv",
+  "description": "Room-temperature deliverable-6 design table from log-normal radius smearing.",
+  "rowCount": 25,
+  "missingValues": [""],
+  "fields": [
+    {
+      "name": "sample_depth_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Vertical sample depth."
+    },
+    {
+      "name": "sample_depth",
+      "type": "string",
+      "description": "Human-readable sample-depth label."
+    },
+    {
+      "name": "sigma_geom",
+      "type": "number",
+      "description": "Geometric standard deviation of the log-normal radius distribution."
+    },
+    {
+      "name": "status",
+      "type": "string",
+      "description": "Acceptance status for the (h, sigma_geom) design row.",
+      "constraints": {
+        "enum": [
+          "accepted",
+          "partial_rejected_truncation",
+          "no_admissible",
+          "rejected_truncation"
+        ]
+      }
+    },
+    {
+      "name": "r_geom_mean_min_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Lower endpoint of the admissible geometric-mean radius interval.",
+      "constraints": {
+        "required": false,
+        "minimum": 0.0
+      }
+    },
+    {
+      "name": "r_geom_mean_max_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Upper endpoint of the admissible geometric-mean radius interval.",
+      "constraints": {
+        "required": false,
+        "minimum": 0.0
+      }
+    },
+    {
+      "name": "r_geom_mean_interval",
+      "type": "string",
+      "description": "Human-readable admissible radius interval."
+    },
+    {
+      "name": "best_p_stratified",
+      "type": "number",
+      "description": "Maximum smeared stratified probability on the §5 radius axis."
+    },
+    {
+      "name": "best_r_geom_mean_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Geometric-mean radius at best_p_stratified."
+    },
+    {
+      "name": "max_truncation_loss",
+      "type": "number",
+      "description": "Largest lost log-normal probability mass for this row.",
+      "constraints": {
+        "minimum": 0.0
+      }
+    },
+    {
+      "name": "rejected_rbar_count",
+      "type": "integer",
+      "description": "Count of r_bar samples rejected by the truncation gate.",
+      "constraints": {
+        "minimum": 0
+      }
+    }
+  ]
+}

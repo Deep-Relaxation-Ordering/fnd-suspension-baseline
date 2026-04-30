@@ -1,0 +1,93 @@
+{
+  "$schema": "https://specs.frictionlessdata.io/schemas/table-schema.json",
+  "name": "regime_map_grid",
+  "path": "../regime_map_grid.csv",
+  "description": "Full §5 regime-map cache in the pilot-v0.2 schema.",
+  "rowCount": 6300,
+  "missingValues": [""],
+  "fields": [
+    {
+      "name": "r_material_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Particle material radius used for buoyant mass."
+    },
+    {
+      "name": "r_hydro_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Hydrodynamic radius used for Stokes drag and diffusion."
+    },
+    {
+      "name": "delta_shell_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Hydrodynamic shell thickness, r_hydro_m - r_material_m.",
+      "constraints": {
+        "minimum": 0.0
+      }
+    },
+    {
+      "name": "temperature_kelvin",
+      "type": "number",
+      "unit": "K",
+      "description": "Water temperature."
+    },
+    {
+      "name": "sample_depth_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Vertical sample depth."
+    },
+    {
+      "name": "t_obs_s",
+      "type": "number",
+      "unit": "s",
+      "description": "Observation time."
+    },
+    {
+      "name": "regime",
+      "type": "string",
+      "description": "§5.1 deterministic regime label.",
+      "constraints": {
+        "enum": ["homogeneous", "stratified", "sedimented"]
+      }
+    },
+    {
+      "name": "top_to_bottom_ratio",
+      "type": "number",
+      "description": "Concentration ratio c(h)/c(0).",
+      "constraints": {
+        "minimum": 0.0
+      }
+    },
+    {
+      "name": "bottom_mass_fraction",
+      "type": "number",
+      "description": "Mass fraction in the bottom 5 % of the sample.",
+      "constraints": {
+        "minimum": 0.0
+      }
+    },
+    {
+      "name": "used_homogeneous_short_circuit",
+      "type": "boolean",
+      "description": "True when the homogeneous analytic short-circuit produced the row."
+    },
+    {
+      "name": "used_equilibrated_short_circuit",
+      "type": "boolean",
+      "description": "True when the equilibrated analytic short-circuit produced the row."
+    },
+    {
+      "name": "used_method_c_fallback",
+      "type": "boolean",
+      "description": "True when the Method-C asymptotic fallback produced the row."
+    },
+    {
+      "name": "convection_flag",
+      "type": "boolean",
+      "description": "Rayleigh-number side-channel flag; does not alter the regime label."
+    }
+  ]
+}

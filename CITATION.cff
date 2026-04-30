@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software or its generated data products, please cite it using the metadata in this file."
+title: "fnd-suspension-baseline: Brownian motion and sedimentation of diamond particles in aqueous suspension"
+type: software
+authors:
+  - family-names: Warring
+    given-names: U.
+    email: u.j.warring@gmail.com
+    affiliation: "AG Schätz, Physikalisches Institut Freiburg"
+abstract: >-
+  Numerical pilot implementing analytical, Langevin, and Smoluchowski
+  finite-volume models for Brownian motion and gravitational
+  sedimentation of diamond particles in aqueous suspension. The
+  pilot-v0.2 artefact adds a Rayleigh-number convection side channel,
+  a material-vs-hydrodynamic radius split, and log-normal
+  polydispersity smearing while preserving the pilot-v0.1 regime-label
+  surface by zero-default compatibility paths.
+keywords:
+  - Brownian motion
+  - sedimentation
+  - Smoluchowski equation
+  - Langevin dynamics
+  - nanodiamond
+  - aqueous suspension
+  - FAIR metadata
+license: MIT
+repository-code: "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline"
+url: "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline"
+version: 0.2.1
+date-released: 2026-04-30
+# TODO(v0.2.2): add the Zenodo DOI after the pilot-v0.2.1 tag is pushed and minted.

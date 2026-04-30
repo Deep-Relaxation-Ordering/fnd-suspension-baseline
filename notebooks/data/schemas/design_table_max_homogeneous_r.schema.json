@@ -1,0 +1,64 @@
+{
+  "$schema": "https://specs.frictionlessdata.io/schemas/table-schema.json",
+  "name": "design_table_max_homogeneous_r",
+  "path": "../design_table_max_homogeneous_r.csv",
+  "description": "For each (h, t_obs), largest §5 radius classified homogeneous at each temperature.",
+  "rowCount": 30,
+  "missingValues": [""],
+  "fields": [
+    {
+      "name": "sample_depth_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Vertical sample depth."
+    },
+    {
+      "name": "t_obs_s",
+      "type": "number",
+      "unit": "s",
+      "description": "Observation time."
+    },
+    {
+      "name": "max_homog_r_T_5C_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Largest tested homogeneous radius at 5 °C."
+    },
+    {
+      "name": "max_homog_r_T_10C_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Largest tested homogeneous radius at 10 °C."
+    },
+    {
+      "name": "max_homog_r_T_15C_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Largest tested homogeneous radius at 15 °C."
+    },
+    {
+      "name": "max_homog_r_T_20C_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Largest tested homogeneous radius at 20 °C."
+    },
+    {
+      "name": "max_homog_r_T_25C_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Largest tested homogeneous radius at 25 °C."
+    },
+    {
+      "name": "max_homog_r_T_30C_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Largest tested homogeneous radius at 30 °C."
+    },
+    {
+      "name": "max_homog_r_T_35C_m",
+      "type": "number",
+      "unit": "m",
+      "description": "Largest tested homogeneous radius at 35 °C."
+    }
+  ]
+}

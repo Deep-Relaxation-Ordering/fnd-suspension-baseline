@@ -14,11 +14,11 @@ they can paste the rows below directly.
 |---|---|
 | Repository | `Deep-Relaxation-Ordering/fnd-suspension-baseline` |
 | Pilot tag | `pilot-v0.2` |
-| Package version | `0.2.0` |
+| FAIR metadata patch | `0.2.1` |
 | Spec | breakout-note v0.2, pinned to `Deep-Relaxation-Ordering/diamonds_in_water` commit `3b7b18af7bd1739f3cb7b3360d2b75264dd5ad07` (see [`conventions.md`](conventions.md) §"Pilot-spec pin") |
 | cd-rules | pinned to `threehouse-plus-ec/cd-rules` commit `ee01c80352dd8446f189c3159a3d9e347463902c` (see [`conventions.md`](conventions.md) §"Inherited rules") |
-| Test suite at release | `133 passed, 0 skipped` (`pytest -q`) |
-| Lint at release | `ruff check .` clean |
+| Test suite at metadata patch | `135 passed, 0 skipped` (`pytest -q`) |
+| Lint at metadata patch | `ruff check .` clean |
 
 ## §6 deliverable mapping
 
@@ -84,6 +84,32 @@ machine. The Phase 13 migration was by load-and-rewrite after the
 Phase 12.1 audit established machine-precision identity to the
 post-9.3 baseline at `delta_shell_m = 0`.
 
+## Data schemas and FAIR metadata
+
+The `0.2.1` metadata patch adds citation and data-reuse surfaces
+without changing cache values:
+
+| Surface | File |
+|---|---|
+| CFF citation metadata | [`../CITATION.cff`](../CITATION.cff) |
+| CodeMeta JSON-LD | [`../codemeta.json`](../codemeta.json) |
+| Data-file index | [`../notebooks/data/README.md`](../notebooks/data/README.md) |
+| CSV schemas | [`../notebooks/data/schemas/`](../notebooks/data/schemas/) |
+| v0.2 release note | [`release-notes/v0.2.md`](release-notes/v0.2.md) |
+
+Every committed CSV in `notebooks/data/` has a Frictionless Table
+Schema:
+
+| CSV | Schema |
+|---|---|
+| `regime_map_grid.csv` | [`regime_map_grid.schema.json`](../notebooks/data/schemas/regime_map_grid.schema.json) |
+| `design_table_max_homogeneous_r.csv` | [`design_table_max_homogeneous_r.schema.json`](../notebooks/data/schemas/design_table_max_homogeneous_r.schema.json) |
+| `design_table_min_sedimented_r.csv` | [`design_table_min_sedimented_r.schema.json`](../notebooks/data/schemas/design_table_min_sedimented_r.schema.json) |
+| `design_table_polydispersity_room_T.csv` | [`design_table_polydispersity_room_T.schema.json`](../notebooks/data/schemas/design_table_polydispersity_room_T.schema.json) |
+
+`tests/test_data_schemas.py` validates schema coverage, exact headers,
+row counts, and scalar type/constraint parsing.
+
 ## Provenance trail
 
 The phase-by-phase development is recorded in
@@ -92,7 +118,8 @@ The phase-by-phase development is recorded in
 `main` is one phase; review-driven fixes appear as `.1` / `.2`
 follow-up commits. The complete audit trail from scaffold to this
 release runs from `10d1d24` (initial scaffold) through the
-`pilot-v0.2` tag. The v0.2 scope was anchored in
+`pilot-v0.2` tag, with the `0.2.1` FAIR metadata patch recorded as
+Phase 16. The v0.2 scope was anchored in
 [`ADR 0001`](adr/0001-v0.2-spec-anchoring.md).
 
 ## Known caveats and audit-gap pins
@@ -130,6 +157,8 @@ release runs from `10d1d24` (initial scaffold) through the
 - **Aggregation, adsorption, surfactants, and wall corrections** —
   not modelled in v0.2. See
   [`experimental-envelope.md`](experimental-envelope.md).
+- **DOI pending** — `CITATION.cff` and `codemeta.json` carry DOI TODOs
+  until the `pilot-v0.2.1` tag is pushed and Zenodo mints the DOI.
 - **`equilibrium_cell` `t_factor = 50` magic constant** — works for
   every cell tested; not formally derived.
 

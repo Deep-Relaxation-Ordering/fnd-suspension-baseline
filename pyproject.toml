@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fnd-suspension-baseline"
-version = "0.2.0"
+version = "0.2.1"
 description = "Numerical pilot: Brownian motion and sedimentation of diamond particles in aqueous suspension as a function of particle size."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,7 +12,17 @@ license = { file = "LICENCE" }
 authors = [
     { name = "U. Warring", email = "u.j.warring@gmail.com" },
 ]
-keywords = ["langevin", "smoluchowski", "sedimentation", "brownian", "fnd", "diamond"]
+keywords = [
+    "langevin",
+    "smoluchowski",
+    "sedimentation",
+    "brownian",
+    "fnd",
+    "diamond",
+    "rayleigh",
+    "polydispersity",
+    "fair-metadata",
+]
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -31,6 +41,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "cffconvert>=2.0",
     "pytest>=8",
     "pytest-cov>=5",
     "ruff>=0.4",
@@ -42,8 +53,13 @@ notebooks = [
 ]
 
 [project.urls]
+"Repository" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline"
 "Specification" = "https://github.com/Deep-Relaxation-Ordering/diamonds_in_water/blob/main/breakout-note-brownian-sedimentation.md"
 "Project rules" = "https://github.com/threehouse-plus-ec/cd-rules"
+"Deliverable index" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/docs/deliverable-index.md"
+"Release notes" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/docs/release-notes/v0.2.md"
+"Citation metadata" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/CITATION.cff"
+"Data schemas" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/tree/main/notebooks/data/schemas"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

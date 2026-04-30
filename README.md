@@ -46,6 +46,8 @@ repo is amended.
 ```
 fnd-suspension-baseline/
 ├── README.md                       (this file)
+├── CITATION.cff                    citation metadata (DOI patched after Zenodo minting)
+├── codemeta.json                   CodeMeta / schema.org software metadata
 ├── LICENCE                         (MIT — code/tooling layer per cd-rules §0.3)
 ├── pyproject.toml                  (Python ≥ 3.11; NumPy / SciPy / Matplotlib)
 ├── src/                            (implementation, per breakout-note §4.3)
@@ -70,7 +72,7 @@ fnd-suspension-baseline/
 
 **`pilot-v0.2` released.** v0.1 (tag `pilot-v0.1` at `9a0fc76`)
 shipped the original five §6 deliverables. v0.2 (tag `pilot-v0.2`,
-package version `0.2.0`) adds the Rayleigh-number convection gate, a
+release package version `0.2.0`) adds the Rayleigh-number convection gate, a
 hydrodynamic-vs-material radius split (`δ_shell`), log-normal
 polydispersity post-processing, deliverable 6, and an explicit
 experimental-envelope document — all forward-compatible with v0.1
@@ -78,7 +80,16 @@ experimental-envelope document — all forward-compatible with v0.1
 The spec-anchoring decision is recorded in
 [ADR 0001](docs/adr/0001-v0.2-spec-anchoring.md). Release suite:
 `133 passed, 0 skipped` (`92 passed` at the `pilot-v0.1` tag), with
-`ruff check .` clean.
+`ruff check .` clean. The current `0.2.1` patch adds FAIR citation,
+CodeMeta, and data-schema metadata only; it does not change physics,
+cache values, or notebook outputs. Patch suite: `135 passed, 0 skipped`.
+
+## How to cite
+
+Use [`CITATION.cff`](CITATION.cff) for citation metadata. The DOI is
+intentionally pending until the `pilot-v0.2.1` tag is pushed and
+Zenodo mints it; the DOI will be patched into `CITATION.cff` and
+[`codemeta.json`](codemeta.json) in a follow-up metadata-only release.
 
 ## Environment
 
@@ -129,6 +140,8 @@ notebook regeneration commands.
 | 13 | re-walk §5 cache with new channels | done — [phase-13 note](lab_notes/2026-04-30-phase13-cache-regeneration.md) |
 | 14 | `src/polydispersity.py` + notebook 05 + deliverable 6 | done — [phase-14 note](lab_notes/2026-04-30-phase14-polydispersity-smearing.md) |
 | 15 | `pilot-v0.2` release tag | done — [phase-15 note](lab_notes/2026-04-30-phase15-pilot-v0-2-release.md) |
+| **`pilot-v0.2.1` metadata patch** | | |
+| 16 | FAIR metadata, data schemas, and v0.2 release note | done — [phase-16 note](lab_notes/2026-04-30-phase16-fair-metadata-and-v0-2-closeout.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
