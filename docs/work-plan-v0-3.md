@@ -5,12 +5,13 @@ Institut Freiburg.*
 
 | Field | Value |
 |---|---|
-| Status | **SCAFFOLD — decisions [OPEN], not accepted.** This document is a deliberation surface, not a contract. Promote to a v0.2-style contract once §1 / §3 / §5 are resolved. |
-| Date | 2026-04-30 (drafted) |
+| Status | **OPENED against ADR 0002 (Phase 17 opening, 2026-04-30).** D1 (spec anchor) and the first-slice selection are resolved; D2 / D3 / D4 / D5 / D6 / D7 remain `[OPEN]`. Document remains a SCAFFOLD until §1 candidate menu, §4 phase plan, §6 risk register, and §7 schedule are filled — that promotion happens later in the Phase 17 ceremony, not in this opening commit. |
+| Date | 2026-04-30 (drafted Phase 16.2; opened against ADR 0002 Phase 17) |
 | Drafted at | post-Phase 16.1, commit `e2639ff` (FAIR metadata + DOI deferral landed) |
 | Predecessor tag | `pilot-v0.2` at `dfbb94d` (also `pilot-v0.2.1` once tagged) |
 | Successor tag (proposed) | `pilot-v0.3` |
-| Spec anchor | **[OPEN] — see §0 below** |
+| Spec anchor | **breakout-note v0.2 commit `3b7b18af`** — Option 2, resolved by [ADR 0002](adr/0002-v0.3-spec-anchoring.md). Same pin as v0.2 / v0.2.1. |
+| First implementation slice | **S2 — Stokes-Einstein corrections at sub-150-nm radii** ([program-context §3.1](program-context.md), [ADR 0002 Decision 2](adr/0002-v0.3-spec-anchoring.md)). See §1 item K. |
 | Working tempo | v0.2 baseline: ~7 working days across ~10 sessions; calendar 1.5–2 weeks |
 
 The scaffold structure mirrors [`work-plan-v0-2.md`](work-plan-v0-2.md)
@@ -20,33 +21,44 @@ open decisions are made.
 
 ---
 
-## 0. Spec anchoring [OPEN]
+## 0. Spec anchoring — RESOLVED
 
-Three options, mutually exclusive:
+**Decision: Option 2.** `pilot-v0.3` stays anchored to breakout-note
+v0.2 commit `3b7b18af`. Recorded in
+[ADR 0002 Decision 1](adr/0002-v0.3-spec-anchoring.md). Resolves D1
+in §5.
 
-1. **Re-anchor to breakout-note v0.3 if/when it lands.** Wait for the
-   upstream breakout-note repository to publish a v0.3 spec, then pin
-   to its commit per the [ADR 0001](adr/0001-v0.2-spec-anchoring.md)
-   pattern. Risk: indefinite wait.
-2. **Stay anchored to breakout-note v0.2 commit `3b7b18af`** (the v0.2
-   pin). Treat v0.3 strictly as implementation-side tightenings of an
-   already-frozen physics scope. Risk: any item that requires a
-   physics-scope expansion is forced out of scope.
-3. **Hybrid.** In-scope items that fit the v0.2 spec stay anchored to
-   `3b7b18af`; items that require physics-scope expansion (e.g.
-   aggregation, wall hydrodynamics) are split into parallel breakout
-   tracks per the v0.2 plan §1 convention. Risk: bookkeeping cost.
+The original three options remain readable in the ADR for context:
 
-**Decision needed before §1 can be fixed.** ADR 0002 should record
-whichever option is chosen.
+1. ~~Re-anchor to breakout-note v0.3 if/when it lands~~ — rejected
+   for calendar risk.
+2. **Stay anchored to breakout-note v0.2 commit `3b7b18af`** —
+   chosen.
+3. ~~Hybrid~~ — rejected for per-phase bookkeeping cost.
+
+**Consequence for §1.** Items that require a physics-scope expansion
+beyond the v0.2 envelope (e.g. item D aggregation, item E wall
+hydrodynamics) are *not* in v0.3 scope; they are parallel-breakout
+candidates or v0.4-and-later items. §1 reshape (the next step of the
+Phase 17 ceremony) marks each item accordingly.
+
+**Re-pin policy** if breakout-note v0.3 lands mid-cycle: ADR 0001's
+"release-phase picks up the new pin" clause applies — the v0.3
+release phase (proposed Phase 24) re-pins, not earlier phases.
 
 ---
 
-## 1. Scope candidates [OPEN]
+## 1. Scope candidates [OPEN — first slice fixed]
 
-Each item below is a **candidate** drawn from existing repo evidence,
-not an in-scope decision. Format per item: motivation, source,
-rough effort, blast radius, decision needed.
+Each item below is a **candidate** drawn from existing repo evidence
+or from [program-context.md §3.1](program-context.md). Format per
+item: motivation, source, rough effort, blast radius, decision
+needed.
+
+**First slice fixed: item K (S2 — Stokes-Einstein corrections at
+sub-150-nm radii)** per [ADR 0002 Decision 2](adr/0002-v0.3-spec-anchoring.md).
+The other items remain candidates pending the §1 reshape step of the
+Phase 17 ceremony.
 
 ### A. Resolve audit-gap pins `T_OBS_S` and `DEPTHS_M`
 - **Source:** [`docs/deliverable-index.md` §"What pilot-v0.3 would change"](deliverable-index.md#what-pilot-v03-would-change), bullet 1.
@@ -118,6 +130,16 @@ rough effort, blast radius, decision needed.
 - **Blast radius:** new design-table; no §5 cache change if the root-find runs on cached snapshots.
 - **Decision needed:** in-scope.
 
+### K. Stokes-Einstein corrections at sub-150-nm radii — **FIRST SLICE**
+- **Source:** [program-context §3.1, slice S2](program-context.md); [ADR 0002 Decision 2](adr/0002-v0.3-spec-anchoring.md). Adopted into Tier-1 from review R4 (see Phase-9.x lab notes).
+- **Why:** Continuum Stokes-Einstein begins to fail below ~150 nm radius. v0.2's diffusivity is bare SE everywhere; for the design-tool to be usable in the sub-150-nm band where FND vendors actually live, the SE breakdown coefficient must be a tunable axis.
+- **Spec content:** λ-sweep over `{0.1, 0.5, 1.0}` of the SE breakdown coefficient. Calibration against the gold-nanoparticle benchmark (Laloyaux z₂ tabulations).
+- **Forward-compat:** `λ = 1.0` reproduces v0.2 to machine precision (Pattern 14 zero-default extension, same shape v0.2 used for `δ_shell` / `delta_T_assumed` / `σ_geom`).
+- **Effort:** ~2–3 d (parameters wiring, λ-axis on Methods A/B/C, calibration test against the gold-NP benchmark, cache regen for the new λ axis if it ships as a §5 channel rather than a side computation).
+- **Blast radius:** diffusivity computation in `parameters.py`; potential §5 cache schema bump if λ becomes a scan axis; new test against the Laloyaux benchmark.
+- **API contract:** S2-refined diffusivities ship with `provisional=True` metadata; the design-tool entry points refuse provisional outputs without an explicit `accept_provisional=True` override (per [ADR 0002](adr/0002-v0.3-spec-anchoring.md) §"API surface — the `provisional=True` contract"). The flag clears when S1 (DLVO aggregation) lands in a later cycle.
+- **Decision:** **in-scope, first slice.** Dependency — none upstream; smaller blast radius than S1.
+
 ---
 
 ## 2. Out-of-scope candidates (firm-defer to a later cycle)
@@ -142,7 +164,7 @@ not v0.3.
 
 ---
 
-## 3. Forward-compatibility contract [OPEN]
+## 3. Forward-compatibility contract [OPEN — first slice covered]
 
 Two options:
 
@@ -158,33 +180,44 @@ Two options:
    case the contract is "v0.2 outputs reproduce when v0.3 features
    are at their compatibility-mode defaults."
 
-**Decision needed.** Option 2 is the v0.2 pattern (which used
-zero-default extensions per Pattern 14). Recommend option 2 unless
-v0.3 contains zero numerical-channel changes.
+**For item K (S2) specifically: Option 1.** `λ = 1.0` reproduces
+v0.2.1 to machine precision (Pattern 14 zero-default extension).
+The S2 slice ships under the v0.2.1 forward-compat target.
+
+**For other slices: D2 remains [OPEN].** If items A / G land and
+move numerical channels by design, those slices may need Option 2.
+Decided per slice as the §1 reshape happens.
 
 ---
 
-## 4. Phase plan [TBD]
+## 4. Phase plan [PARTIAL]
 
-Populated once §1 is fixed. v0.2 cycle ran Phases 10–15 with `.1`
-review-driven follow-ups; Phase 16 / 16.1 were FAIR metadata. v0.3
-cycle would presumably start at Phase 17.
+v0.2 cycle ran Phases 10–15 with `.1` review-driven follow-ups; Phase
+16 / 16.1 / 16.2 / 16.3 closed the v0.2.1 cycle and articulated the
+program context. v0.3 starts at Phase 17.
 
-A possible shape (assuming items A, B, C, F, H, J go in scope and
-D, E, G defer):
+Phase 17 is the cycle-opening ceremony; it has two parts:
 
 ```
-Phase 17  scope + spec-anchoring ADR 0002
-Phase 18  audit-gap pin resolution (item A)
-Phase 19  performance parallel walk (item H) — unblocks C
-Phase 20  mesh-convergence audit (item C)
-Phase 21  continuous regime thresholds (item B)
-Phase 22  continuous time-evolution channel (item J)
-Phase 23  δ_shell calibration (item F)
-Phase 24  release pilot-v0.3
+Phase 17 (opening, this commit)  ADR 0002 promoted to Accepted;
+                                 work-plan §0 / §5 D1 / D9 resolved.
+Phase 17 (continuation, TBD)     §1 candidate menu reshape against
+                                 D1 = Option 2; §4 fill below; §6 / §7.
+Phase 18  S2 (item K) — Stokes-Einstein corrections at sub-150-nm.
+                                 Forward-compat: λ = 1.0 reproduces v0.2.1.
+                                 API contract: provisional=True.
+Phase 19+ (TBD)                  Additional slices once §1 reshape
+                                 picks them — A / B / C / F / H / J
+                                 are the most plausible candidates;
+                                 D / E / G defer as parallel
+                                 breakouts under D1 = Option 2.
+Phase Z (release, ~Phase 24)     pilot-v0.3 release; re-pin policy
+                                 per ADR 0002.
 ```
 
-Hold the diagram empty until §1 / §3 are accepted.
+Phase 18 is the first concrete implementation phase; everything
+between Phase 18 and the release phase remains [TBD] until the
+Phase 17 continuation sets the §1 in-scope list.
 
 ---
 
@@ -192,23 +225,43 @@ Hold the diagram empty until §1 / §3 are accepted.
 
 | Id | Question | Status |
 |---|---|---|
-| D1 | Spec anchoring (§0 options 1 / 2 / 3) | [OPEN] |
-| D2 | Forward-compat baseline (§3 option 1 / 2) | [OPEN] |
-| D3 | Aggregation: in-scope, parallel breakout, or defer? (item D) | [OPEN] |
-| D4 | Wall hydrodynamics: in-scope or defer to v0.4? (item E) | [OPEN] |
+| D1 | Spec anchoring (§0 options 1 / 2 / 3) | **Resolved — Option 2** ([ADR 0002 Decision 1](adr/0002-v0.3-spec-anchoring.md)). |
+| D2 | Forward-compat baseline (§3 option 1 / 2) | [OPEN] — for item K (S2), `λ = 1.0` reproduces v0.2.1 to machine precision, favouring §3 Option 1 for that slice; other slices may differ. |
+| D3 | Aggregation: in-scope, parallel breakout, or defer? (item D / program-context S1) | [OPEN] — under D1 Option 2, S1 needs an upstream breakout note that does not yet exist; v0.3 may prepare scaffolding only. |
+| D4 | Wall hydrodynamics: in-scope or defer to v0.4? (item E / program-context S6) | [OPEN] — under D1 Option 2, likely deferred unless its breakout-note specifications fit the v0.2 envelope. |
 | D5 | Convection refinement: full κ(T) + gradients + evaporation, or just κ(T)? (item G) | [OPEN] |
-| D6 | `σ_geom` scan-axis promotion: wait on breakout-note authors, or carry as v0.3 candidate? (item I) | [OPEN] |
-| D7 | Development Status classifier: keep `3 - Alpha` through v0.3, or promote to `4 - Beta` if all pins resolve? | [OPEN] |
+| D6 | `σ_geom` scan-axis promotion: wait on breakout-note authors, or carry as v0.3 candidate? (item I) | [OPEN] — ADR 0001 delegated this upstream; status unchanged. |
+| D7 | Development Status classifier: keep `3 - Alpha` through v0.3, or promote to `4 - Beta` if all pins resolve? | [OPEN] — program-context §4.1 sets `4 - Beta` at v1.0, so v0.3 likely stays `3 - Alpha`. |
 | D8 | DOI mint at v0.3, or hold to v1.0 per Phase 16.1? | Resolved — hold to v1.0. |
+| D9 | First v0.3 implementation slice. | **Resolved — S2 (item K)** ([ADR 0002 Decision 2](adr/0002-v0.3-spec-anchoring.md)). |
 
-D8 is the only one already settled (Phase 16.1).
+D1, D8, D9 are settled. The rest get their own deliberation surfaces
+inside the Phase 17 ceremony's continuation.
 
 ---
 
-## 6. Risk register [TBD]
+## 6. Risk register [PARTIAL]
 
-Carry forward the v0.2-cycle structure. Concrete entries pending §1.
-Likely high-severity rows once scope fixes:
+Carry forward the v0.2-cycle structure. Item K (S2) is in scope as
+of this opening; the rest pending §1 reshape.
+
+In-scope (item K / S2):
+
+- **R-K1.** SE-correction λ-axis silently changes diffusivity in
+  cells where v0.2 was already trustworthy. **Mitigation:** `λ = 1.0`
+  default reproduces v0.2.1 to machine precision (Pattern 14
+  zero-default extension); regression test pinning the v0.2.1 cache.
+- **R-K2.** Downstream user trusts `provisional=True` outputs as if
+  L1 were complete. **Mitigation:** the `accept_provisional=True`
+  override is required at every design-tool entry point, no default,
+  no env-var, no config file (per ADR 0002 §"API surface").
+- **R-K3.** Laloyaux z₂ tabulations (the calibration source) prove
+  insufficient for the FND radius range. **Mitigation:** name the
+  fallback in the slice's lab note — likely an open-literature DLS
+  cross-check on bare FNDs at 100 nm — and treat it as an audit-gap
+  pin if no replacement is found.
+
+Likely high-severity rows once §1 reshape brings other items in:
 
 - κ(T) promotion (item G) silently drifts §5 cache numerics.
 - Continuous-threshold root-finding (item B) introduces non-deterministic
@@ -250,24 +303,40 @@ No outstanding pre-v0.3 doc fixes remain.
 
 This scaffold becomes a contract by:
 
-1. Resolving D1 / D2 / D3 / D4 / D5 / D6 (D7 can carry forward).
-2. Fixing §1 in-scope vs out-of-scope per the resolved decisions.
-3. Drafting ADR 0002 (spec anchoring for v0.3, mirroring ADR 0001).
-4. Filling §4 phase plan, §6 risk register, §7 schedule.
-5. Committing the contract version under the same filename
-   (`docs/work-plan-v0-3.md`), removing the `[SCAFFOLD]` status.
+1. ~~Drafting ADR 0002.~~ **Done — Phase 17 opening commit.** ADR 0002
+   is `Accepted`, resolving D1 (= Option 2) and D9 (S2 first slice).
+2. ~~Resolving D1.~~ **Done.** D8, D9 also resolved.
+3. Resolving D2 / D3 / D4 / D5 / D6 / D7 in their own deliberation
+   surfaces (Phase 17 continuation or later).
+4. Fixing §1 in-scope vs out-of-scope per the resolved decisions —
+   the D1 = Option 2 implication is recorded in §0, but per-item
+   in-scope vs out-of-scope tags still need to be applied to §1.
+5. Filling §4 phase plan, §6 risk register, §7 schedule (currently
+   `[PARTIAL]` / `[TBD]`).
+6. Committing the contract version under the same filename
+   (`docs/work-plan-v0-3.md`), removing the `SCAFFOLD` qualifier
+   from the status field.
 
-Until step 5 lands, this file is informational only and no v0.3 phase
-work should start.
+Phase 18 (the first concrete implementation phase, S2) is the
+*earliest* phase that may start under this opening, because the
+slice it implements is unambiguously fixed by ADR 0002. Other
+implementation phases must wait for the Phase 17 continuation to
+fix §1.
 
 ---
 
 ## 10. Cross-references
 
+- [`program-context.md`](program-context.md) — the long-horizon goal
+  document (Phase 16.3) that anchors what `pilot-v0.3` is for. v0.3
+  is a tactical sub-slice inside L1; this work plan implements the
+  S2 slice as the first concrete step.
 - [`work-plan-v0-2.md`](work-plan-v0-2.md) — the v0.2 contract used as
   the structural template.
 - [`adr/0001-v0.2-spec-anchoring.md`](adr/0001-v0.2-spec-anchoring.md)
-  — spec-anchoring pattern. ADR 0002 will mirror it for v0.3.
+  — spec-anchoring precedent. ADR 0002 mirrors it for v0.3.
+- [`adr/0002-v0.3-spec-anchoring.md`](adr/0002-v0.3-spec-anchoring.md)
+  — Accepted; resolves D1 (= Option 2) and D9 (S2 first slice).
 - [`deliverable-index.md`](deliverable-index.md) §"What `pilot-v0.3`
   would change" — original candidate list this scaffold expands.
 - [`experimental-envelope.md`](experimental-envelope.md) — deferred

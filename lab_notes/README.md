@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-30 | [Phase 17 (opening) — ADR 0002 promoted; work-plan-v0-3 opened against it](2026-04-30-phase17-opening-adr-0002-and-work-plan-v0-3.md) | 17 |
 | 2026-04-30 | [Phase 16.3 — program-context articulation (long-horizon goal v0.1)](2026-04-30-phase16-3-program-context.md) | 16.3 |
 | 2026-04-30 | [Phase 16.2 — v0.3 deliberation surfaces (work-plan scaffold + ADR 0002 stub)](2026-04-30-phase16-2-v0-3-deliberation-surfaces.md) | 16.2 |
 | 2026-04-30 | [Phase 16.1 — defer Zenodo DOI to pilot-v1.0](2026-04-30-phase16-1-defer-doi-to-v1-0.md) | 16.1 |

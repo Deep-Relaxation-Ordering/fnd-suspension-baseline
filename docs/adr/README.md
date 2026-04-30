@@ -15,7 +15,7 @@ they are accepted, so that `Proposed` stubs hold their final number.
 | ADR | Title | Status | Date | Phase |
 |---|---|---|---|---|
 | [0001](0001-v0.2-spec-anchoring.md) | `pilot-v0.2` spec-anchoring | Accepted | 2026-04-28 | 10 |
-| [0002](0002-v0.3-spec-anchoring.md) | `pilot-v0.3` spec-anchoring | **Proposed (stub)** | 2026-04-30 | (proposed) 17 |
+| [0002](0002-v0.3-spec-anchoring.md) | `pilot-v0.3` spec-anchoring and first-slice selection | Accepted | 2026-04-30 | 17 |
 
 ## Conventions
 
@@ -23,9 +23,12 @@ they are accepted, so that `Proposed` stubs hold their final number.
   records, not commitments. Promotion to `Accepted` is a deliberate
   act and should be recorded in a phase lab note plus a cross-linked
   work plan or ADR-side decision step.
-- **One ADR per decision.** ADR 0002 explicitly scopes itself to D1
-  only; D2 / D3 / D4 / D5 / D6 of the v0.3 work plan are decided in
-  their own deliberation surfaces.
+- **One ADR per coherent decision (or coupled set).** ADR 0002 bundles
+  the v0.3 spec anchor (D1) with the first-slice selection because
+  the two are tightly coupled: Option 2 ("v0.3 = implementation
+  tightenings under the v0.2 envelope") and "S2 first" are the same
+  architectural choice viewed from two angles. D2 / D3 / D4 / D5 / D6
+  of the v0.3 work plan remain in their own deliberation surfaces.
 - **Filenames** are `NNNN-short-kebab-title.md`. The number is
   zero-padded to four digits and never reused.
 - **Supersession.** When an ADR replaces an earlier one, both ADRs
