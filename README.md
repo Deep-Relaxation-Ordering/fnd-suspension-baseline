@@ -146,6 +146,7 @@ notebook regeneration commands.
 | 16 | FAIR metadata, data schemas, and v0.2 release note | done — [phase-16 note](lab_notes/2026-04-30-phase16-fair-metadata-and-v0-2-closeout.md) |
 | 16.1 | defer Zenodo DOI to `pilot-v1.0` | done — [phase-16.1 note](lab_notes/2026-04-30-phase16-1-defer-doi-to-v1-0.md) |
 | 16.2 | v0.3 deliberation surfaces ([work-plan scaffold](docs/work-plan-v0-3.md), [ADR 0002 stub](docs/adr/0002-v0.3-spec-anchoring.md), [ADR index](docs/adr/README.md)) | done — [phase-16.2 note](lab_notes/2026-04-30-phase16-2-v0-3-deliberation-surfaces.md) |
+| 16.3 | [program-context articulation](docs/program-context.md) — long-horizon goal v0.1 (L1 / L2 / L3 layers; S1–S7 slices; release criteria for `pilot-v1.0` / `v2.0` / `v3.0`) | done — [phase-16.3 note](lab_notes/2026-04-30-phase16-3-program-context.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
