@@ -120,23 +120,23 @@ Phase 10 (DONE) ────────► ADR 0001 + scoping             │
                                        │
                 ┌──────────────────────┼──────────────────────┐
                 ▼                      ▼                      ▼
-        Phase 11 (DONE)       Phase 12 (radius split)
+        Phase 11 (DONE)       Phase 12 (DONE)
                 │                      │
                 ▼                      ▼
-        Phase 11.1 (DONE)     Phase 12.1 regression audit
+        Phase 11.1 (DONE)     Phase 12.1 (DONE)
                 │                      │
                 └──────────┬───────────┘
                            ▼
-                  Phase 13 (cache regen)
+                  Phase 13 (DONE)
                            │
                            ▼
-                  Phase 14 (polydispersity)
+                  Phase 14 (DONE)
                            │
                            ▼
-                  Phase 14.1 review
+                  Phase 14.1 (DONE)
                            │
                            ▼
-                  Phase 15 (release + tag)
+                  Phase 15 (DONE)
                            │
                            ▼
                   Phase 15.1 (anticipated post-release)
