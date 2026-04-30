@@ -1,4 +1,4 @@
-# Deliverable index — `pilot-v0.1`
+# Deliverable index — `pilot-v0.2`
 
 *Endorsement Marker: Local stewardship — U. Warring, AG Schätz, Physikalisches
 Institut Freiburg.*
@@ -13,27 +13,30 @@ they can paste the rows below directly.
 | Field | Value |
 |---|---|
 | Repository | `Deep-Relaxation-Ordering/fnd-suspension-baseline` |
-| Pilot tag | `pilot-v0.1` |
+| Pilot tag | `pilot-v0.2` |
+| Package version | `0.2.0` |
 | Spec | breakout-note v0.2, pinned to `Deep-Relaxation-Ordering/diamonds_in_water` commit `3b7b18af7bd1739f3cb7b3360d2b75264dd5ad07` (see [`conventions.md`](conventions.md) §"Pilot-spec pin") |
 | cd-rules | pinned to `threehouse-plus-ec/cd-rules` commit `ee01c80352dd8446f189c3159a3d9e347463902c` (see [`conventions.md`](conventions.md) §"Inherited rules") |
-| Test suite at release | `92 passed, 0 skipped` (`pytest -q`) |
-| Lint at release | `ruff check src/ tests/ notebooks/` clean |
+| Test suite at release | `133 passed, 0 skipped` (`pytest -q`) |
+| Lint at release | `ruff check .` clean |
 
 ## §6 deliverable mapping
 
 | # | Deliverable | Artefact | Regen command |
 |---|---|---|---|
-| 1 | Methods / code (Method A analytical, Method B Langevin, Method C Smoluchowski FV) | [`src/parameters.py`](../src/parameters.py), [`src/analytical.py`](../src/analytical.py), [`src/langevin.py`](../src/langevin.py), [`src/fokker_planck.py`](../src/fokker_planck.py), [`src/regime_map.py`](../src/regime_map.py), [`src/scan_grid.py`](../src/scan_grid.py) | n/a — implementation source |
-| 2 | Baseline-validation notebook (Method A primitives, Einstein–Smoluchowski check) | [`notebooks/01_baseline_validation.py`](../notebooks/01_baseline_validation.py) + figures in [`notebooks/figures/01_baseline_validation/`](../notebooks/figures/01_baseline_validation/) | `PYTHONPATH=src python notebooks/01_baseline_validation.py` |
-| 3 | Regime-map figure (§5.1 classification across (r, h) at fixed (T, t_obs)) | [`notebooks/02_regime_map.py`](../notebooks/02_regime_map.py) + figures in [`notebooks/figures/02_regime_map/`](../notebooks/figures/02_regime_map/) | `PYTHONPATH=src python notebooks/02_regime_map.py` (reads cache) |
-| 4 | Parameter-scan supporting figures (Method A primitives across T, regime maps per-T, homogeneous-radius envelope vs T) | [`notebooks/03_parameter_scans.py`](../notebooks/03_parameter_scans.py) + figures in [`notebooks/figures/03_parameter_scans/`](../notebooks/figures/03_parameter_scans/) | `PYTHONPATH=src python notebooks/03_parameter_scans.py` (reads cache) |
-| 5 | Design table (per (h, t_obs, T): largest tested homogeneous radius, smallest tested sedimented radius) | [`notebooks/04_design_table.py`](../notebooks/04_design_table.py) + tables in [`notebooks/data/`](../notebooks/data/): `design_table_max_homogeneous_r.csv`, `design_table_min_sedimented_r.csv`, `design_table_room_T.md` | `PYTHONPATH=src python notebooks/04_design_table.py` (reads cache) |
+| 1 | Methods / code (Method A analytical, Method B Langevin, Method C Smoluchowski FV, Rayleigh convection side channel, hydrodynamic/material radius split, log-normal smearing) | [`src/parameters.py`](../src/parameters.py), [`src/analytical.py`](../src/analytical.py), [`src/langevin.py`](../src/langevin.py), [`src/fokker_planck.py`](../src/fokker_planck.py), [`src/convection.py`](../src/convection.py), [`src/regime_map.py`](../src/regime_map.py), [`src/polydispersity.py`](../src/polydispersity.py), [`src/scan_grid.py`](../src/scan_grid.py) | n/a — implementation source |
+| 2 | Baseline-validation notebook (Method A primitives, Einstein-Smoluchowski check, radius-split cell summary) | [`notebooks/01_baseline_validation.py`](../notebooks/01_baseline_validation.py) + figures in [`notebooks/figures/01_baseline_validation/`](../notebooks/figures/01_baseline_validation/) | `PYTHONPATH=src python notebooks/01_baseline_validation.py` |
+| 3 | Regime-map figure (§5.1 classification across (r, h) at fixed (T, t_obs)) plus experimental Rayleigh overlay | [`notebooks/02_regime_map.py`](../notebooks/02_regime_map.py) + figures in [`notebooks/figures/02_regime_map/`](../notebooks/figures/02_regime_map/) | `PYTHONPATH=src python notebooks/02_regime_map.py` (reads cache) |
+| 4 | Parameter-scan supporting figures (Method A primitives across T, regime maps per-T, homogeneous-radius envelope vs T, convection mask) | [`notebooks/03_parameter_scans.py`](../notebooks/03_parameter_scans.py) + figures in [`notebooks/figures/03_parameter_scans/`](../notebooks/figures/03_parameter_scans/) | `PYTHONPATH=src python notebooks/03_parameter_scans.py` (reads cache) |
+| 5 | Design table (per (h, t_obs, T): largest tested homogeneous radius, smallest tested sedimented radius) + authoritative §5 cache | [`notebooks/04_design_table.py`](../notebooks/04_design_table.py), [`notebooks/data/regime_map_grid.csv`](../notebooks/data/regime_map_grid.csv), tables in [`notebooks/data/`](../notebooks/data/): `design_table_max_homogeneous_r.csv`, `design_table_min_sedimented_r.csv`, `design_table_room_T.md` | `PYTHONPATH=src python notebooks/04_design_table.py` (reads cache) |
+| 6 | Polydispersity design table and figures (`sigma_geom` log-normal smearing over the §5 radius axis) | [`notebooks/05_polydispersity_smearing.py`](../notebooks/05_polydispersity_smearing.py), [`notebooks/data/design_table_polydispersity_room_T.csv`](../notebooks/data/design_table_polydispersity_room_T.csv), [`notebooks/data/design_table_polydispersity_room_T.md`](../notebooks/data/design_table_polydispersity_room_T.md), figures in [`notebooks/figures/05_polydispersity/`](../notebooks/figures/05_polydispersity/) | `PYTHONPATH=src python notebooks/05_polydispersity_smearing.py` (reads cache) |
 
 ## Validation surfaces (breakout-note §4.4)
 
 The §4.4 cross-method consistency surface — the five core checks listed
-in the spec plus the additional Method-C and Phase-4.1 surfaces added
-during implementation — is pinned end-to-end by the test suite:
+in the spec plus the additional Method-C, cache, convection,
+radius-split, and polydispersity surfaces added during implementation —
+is pinned end-to-end by the test suite:
 
 | §4.4 check | Pinning test |
 |---|---|
@@ -48,12 +51,27 @@ during implementation — is pinned end-to-end by the test suite:
 | Scharfetter-Gummel high-Pe drift-upwind / low-Pe central limits | `tests/test_method_consistency.py::test_method_c_high_pe_upwind_limit`, `test_method_c_low_pe_central_limit` |
 | Asymptotic-sedimentation fallback engagement + finite-time transient | `tests/test_method_consistency.py::test_method_c_asymptotic_sedimentation_fallback`, `test_method_c_asymptotic_fallback_keeps_finite_time_transient` |
 | Raw-operator mass conservation (Phase 4.1 addition) | `tests/test_method_consistency.py::test_method_c_operator_conserves_mass_to_machine_precision` |
+| Rayleigh convection gate, signed `alpha(T)`, rigid/free thresholds, and `h > 0` guard | `tests/test_convection.py` |
+| Convection flag as a §5.1 side channel with cache round-trip support | `tests/test_regime_map.py::test_convection_flag_is_side_channel`, `tests/test_regime_map.py::test_committed_regime_map_cache_uses_v02_zero_shell_schema` |
+| v0.1 / Phase-11 / v0.2 CSV compatibility across radius-schema migration | `tests/test_regime_map.py::test_results_from_csv_reads_v01_without_convection_flag`, `test_results_from_csv_reads_phase11_header`, `test_detect_csv_format_accepts_all_known_headers` |
+| Hydrodynamic-vs-material radius split with zero-default backward compatibility | `tests/test_hydrodynamic_split.py`, `tests/test_regime_map.py::test_classify_cell_accepts_geometry_and_records_shell` |
+| Log-normal smearing conservation, truncation mask/raise behavior, degenerate limit, and anchor regressions | `tests/test_polydispersity.py` |
 
 ## Cache as a first-class deliverable
 
 [`notebooks/data/regime_map_grid.csv`](../notebooks/data/regime_map_grid.csv)
-(612 530 bytes, 6300 rows) is the full §5 grid sweep, computed once
-in Phase 6. It is *both* a derived artefact and the authoritative
+(809 958 bytes, 6300 rows) is the full §5 grid sweep, migrated in
+Phase 13 to the v0.2 schema:
+
+```text
+r_material_m, r_hydro_m, delta_shell_m, temperature_kelvin,
+sample_depth_m, t_obs_s, regime, top_to_bottom_ratio,
+bottom_mass_fraction, used_homogeneous_short_circuit,
+used_equilibrated_short_circuit, used_method_c_fallback,
+convection_flag
+```
+
+The cache is both a derived artefact and the authoritative row-level
 form of deliverable 5. Regen command:
 
 ```sh
@@ -61,7 +79,10 @@ PYTHONPATH=src python -c "from regime_map import walk_grid, results_to_csv; \
     results_to_csv(walk_grid(), 'notebooks/data/regime_map_grid.csv')"
 ```
 
-Wall time: ~150 min single-threaded on the Phase 6 reference machine.
+Wall time remains ~150 min single-threaded on the Phase 6 reference
+machine. The Phase 13 migration was by load-and-rewrite after the
+Phase 12.1 audit established machine-precision identity to the
+post-9.3 baseline at `delta_shell_m = 0`.
 
 ## Provenance trail
 
@@ -69,57 +90,71 @@ The phase-by-phase development is recorded in
 [`lab_notes/`](../lab_notes/), reverse-chronological from
 [`lab_notes/README.md`](../lab_notes/README.md). Every commit on
 `main` is one phase; review-driven fixes appear as `.1` / `.2`
-follow-up commits. The complete audit trail from scaffold to
-release runs from `10d1d24` (initial scaffold) through to the
-`pilot-v0.1` tag.
+follow-up commits. The complete audit trail from scaffold to this
+release runs from `10d1d24` (initial scaffold) through the
+`pilot-v0.2` tag. The v0.2 scope was anchored in
+[`ADR 0001`](adr/0001-v0.2-spec-anchoring.md).
 
 ## Known caveats and audit-gap pins
-
-These are documented in their respective lab notes. The first set
-was intentionally not addressed at v0.1; later entries are v0.2-cycle
-audit-gap pins that will be folded into the Phase 15 release index.
 
 - **`scan_grid.T_OBS_S` audit-gap pin** — the six observation times
   (1 min, 10 min, 1 h, 4 h, 1 d, 1 w) are physically-motivated
   defaults; the breakout-note §5 table's specific values should be
-  cross-checked at the next spec drift (Phase 5 lab note).
+  cross-checked at the next spec drift.
 - **`scan_grid.DEPTHS_M` audit-gap pin** — same for the 5th depth
-  value (Phase 2.5 lab note).
+  value, pinned here as the standard 10 mm cuvette.
 - **§5 grid-snap in design tables** — the §5 r-axis is 30 log-spaced
-  points (~10 % bin spacing), so the design-table radius entries are
-  grid-snapped, not interpolated thresholds. Continuous analytic
-  equilibrium boundaries are in notebook 03's overlay (Phase 7.1
-  lab note).
+  points (~10 % bin spacing), so design-table radius entries are
+  grid-snapped, not interpolated thresholds.
 - **Method-C regime-map fidelity envelope** — resolved transient cells
   use a 120-cell first pass, with 240-cell refinement for cells near
   the `c(h)/c(0)` thresholds. The high-Pe bottom-mass boundary is still
   governed by the 10-nm regime-map fallback policy, not by a full
   1-nm resolved-mesh convergence sweep.
+- **`delta_shell_m = 0` in the shipped §5 cache** — the v0.2 schema can
+  carry distinct material and hydrodynamic radii, but the committed
+  §5 cache intentionally preserves the v0.1 physics surface with
+  `r_material_m == r_hydro_m`.
+- **`delta_T_assumed` split** — programmatic `classify_cell()` and
+  `walk_grid()` default to `0.0 K` so legacy labels and booleans
+  reproduce v0.1; notebooks pass
+  `DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K` explicitly when drawing
+  convection overlays.
+- **Convection side channel only** — `convection_flag` never changes
+  the §5.1 regime label. It warns that the 1-D transport assumption
+  may be experimentally invalid under the supplied thermal gradient.
+- **`SIGMA_GEOM_AXIS` pin** — deliverable 6 uses
+  `{1.05, 1.10, 1.20, 1.40, 1.60}`. Broad distributions at the §5
+  radius-axis edges are marked with `truncation_loss` and `accepted`
+  diagnostics instead of being silently omitted.
+- **Aggregation, adsorption, surfactants, and wall corrections** —
+  not modelled in v0.2. See
+  [`experimental-envelope.md`](experimental-envelope.md).
 - **`equilibrium_cell` `t_factor = 50` magic constant** — works for
-  every cell tested; not formally derived (Phase 4.1 lab note).
-- **`DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K` audit-gap pin** —
-  v0.2 notebook overlays use 0.1 K as the experimental Rayleigh
-  side-channel convention. The `classify_cell` API and cache walk
-  still default to `delta_T_assumed = 0.0 K` for v0.1 compatibility
-  (Phase 11 lab note).
+  every cell tested; not formally derived.
 
-## What `pilot-v1.0` would change
+## What `pilot-v0.3` would change
 
-If the pilot is promoted to a paper-grade artefact, the candidate
-tightenings are:
+Candidate tightenings for the next pilot slice:
 
-- Resolve the two audit-gap pins above against the breakout-note §5
-  table.
-- Replace the §5 grid-snapped design-table entries with continuous
+- Resolve the `T_OBS_S` and `DEPTHS_M` audit-gap pins against the
+  next frozen breakout-note §5 table.
+- Replace grid-snapped design-table entries with continuous
   interpolated thresholds via root-finding on `top_to_bottom_ratio
-  = 0.95` and `bottom_mass_fraction = 0.95`.
+  = 0.95`, `bottom_mass_fraction = 0.95`, and the smeared
+  `p_stratified` suitability criterion.
 - Add a formal mesh-convergence audit around the finite-time
   bottom-mass threshold.
-- Reduce the §5 grid walk wall time via either parallel walks
-  (joblib / multiprocessing) or an analytic short-circuit on the
-  remaining ~33 % of cells that go through Method C resolved-mesh.
-- Cite-grade prose pass on each of the four notebooks for paper
-  inclusion.
+- Add aggregation and wall-hydrodynamic correction models, or at
+  least quantified validity limits for them.
+- Calibrate `delta_shell_m` against representative functionalised FND
+  hydrodynamic measurements instead of leaving it as a user-supplied
+  geometry knob.
+- Refine thermal-convection modelling beyond a single Rayleigh
+  threshold: measured gradients, boundary-condition uncertainty,
+  water thermal diffusivity vs T, and optional open-cell evaporation.
+- Reduce the §5 grid walk wall time via parallel walks or a stronger
+  analytic short-circuit on the remaining Method-C-resolved cells.
 
-None of these are correctness fixes; they are quality-of-life
-improvements for downstream consumers.
+None of these are v0.2 correctness fixes; they are the next layer of
+experimental realism and consumer convenience.

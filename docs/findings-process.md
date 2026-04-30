@@ -5,7 +5,7 @@ Institut Freiburg.*
 
 This document records the *engineering* patterns the
 `fnd-suspension-baseline` pilot converged on between the scaffold
-commit (`10d1d24`) and the `pilot-v0.1` release tag (`9a0fc76`). It is
+commit (`10d1d24`) and the `pilot-v0.2` release tag. It is
 practitioner-facing — written for whoever runs the next numerical
 pilot in this group, or for a peer who wants to lift one of the
 patterns into their own project.
@@ -21,8 +21,8 @@ the §6 artefact map is [`deliverable-index.md`](deliverable-index.md).
 | Review-fix commit | `Phase N.1: <description>` — review feedback caught before the next phase starts. |
 | Re-fix on the same review | `Phase N.2: <description>` — second-pass review. |
 
-The pilot ran 9 numbered phases (0 through 8) and accumulated 6 `.1`
-or `.2` commits across them. The lab-notes index in
+The pilot ran 16 numbered phases (0 through 15) and accumulated
+review-driven `.1` / `.2` commits across them. The lab-notes index in
 [`../lab_notes/README.md`](../lab_notes/README.md) is the
 reverse-chronological audit trail.
 
@@ -38,9 +38,11 @@ traceability matters more than commit-count cosmetics.
 ## 2. Cache as a first-class deliverable
 
 The full §5 sweep is **6300 cells × ~150 min wall time**. Phase 6
-checked the resulting CSV (770 KB → corrected to 612 KB / 598 KiB
-in Phase 7.1) into git as
+checked the resulting CSV into git as
 [`../notebooks/data/regime_map_grid.csv`](../notebooks/data/regime_map_grid.csv).
+Phase 13 migrated the same rows into the v0.2 schema, growing the
+cache to 810 KB by adding explicit material/hydrodynamic radii,
+`delta_shell_m`, and `convection_flag` columns.
 
 **Why it works:**
 
@@ -53,7 +55,7 @@ in Phase 7.1) into git as
 
 **When this fails:** if the parameter grid is high-dimensional
 enough that the cache exceeds GitHub's 100 MB warning. For 6300
-rows × 10 columns × float-precision repr, 600 KB is comfortable. A
+rows × 13 columns × float-precision repr, 810 KB is comfortable. A
 finer §5 grid (300 radii × 70 temperatures × …) would force HDF5 +
 git-lfs.
 
@@ -152,8 +154,8 @@ Three test layers, each with its own runtime and concern:
 | Physics validation | `test_method_b_long_time_matches_barometric` | ~0.4 s | Method against analytic limit |
 | Cross-method consistency | `test_method_b_c_time_dependent_moments_agree` | ~1 s | Two methods on the same cell |
 
-The current post-release pilot suite (94 tests; 92 at `pilot-v0.1`)
-runs in ~3 s. Slow physics tests use *CI-time* parameter overrides
+The `pilot-v0.2` release suite (133 tests; 92 at `pilot-v0.1`)
+runs in a few seconds locally. Slow physics tests use *CI-time* parameter overrides
 (e.g. `n_cells=60`, `t_factor=10`) with an explicit comment that
 production scans should use the defaults — the test pins the
 contract, not the resolution.
@@ -307,9 +309,35 @@ Institut Freiburg.*
 document, not to a sidecar metadata file. If a single file gets
 copied out (paper draft, slides, etc.), the marker travels with it.
 
+## 14. Forward-compatible parameter splits via zero-default extension
+
+v0.2 had to add three pieces of experimental realism without breaking
+the v0.1 cache or downstream scripts:
+
+- `convection_flag` is a side channel; `delta_T_assumed = 0.0 K`
+  preserves the original §5.1 labels and booleans.
+- `ParticleGeometry` splits `r_material_m` from `r_hydro_m`;
+  `delta_shell_m = 0.0` reproduces the scalar-radius equations to
+  machine precision.
+- `sigma_geom` smears the committed grid in post-processing; the
+  monodisperse cache stays authoritative.
+
+**Why it works:** each extension has a zero-default path that is the
+old model, not an approximation to it. New consumers can opt into the
+extra channel; old consumers can keep calling the scalar wrappers and
+loading legacy CSVs. The explicit three-way CSV parser was the key
+guardrail: v0.1, Phase-11, and v0.2 headers are recognised as frozen
+formats instead of inferred from the current dataclass fields.
+
+**Pattern signature:** when adding a new physical knob to a released
+pilot, make the null value a first-class tested path. Store the new
+data explicitly, expose compatibility aliases for old readers, and
+pin the parser against every historical serialized format before
+propagating the physics change.
+
 ## Failure modes the patterns avoided
 
-For each of the thirteen patterns above, the failure mode it avoided
+For each of the fourteen patterns above, the failure mode it avoided
 in this pilot:
 
 | Pattern | Failure averted |
@@ -327,12 +355,13 @@ in this pilot:
 | Spec pinning | "v0.2" of the breakout note silently changing under our feet |
 | README-as-status | Reviewer ignoring README claims because they're stale |
 | Endorsement marker | Documents losing organisational provenance when paper-copied |
+| Zero-default extensions | Hydrodynamic shell or convection changes accidentally perturbing the released v0.1 label surface |
 
 Each was a real risk; the pilot caught and documented each one.
 
 ## What I'd carry forward to the next pilot
 
-The patterns above. Most of them generalise. The two that are
+The patterns above. Most of them generalise. The three that are
 specific to this project:
 
 - **`scan_grid` as a single source of truth** for the parameter axes
@@ -340,6 +369,9 @@ specific to this project:
   Cartesian-product parameter scan.
 - **The Markdown deliverable index** as the §6 closeout document.
   Generalises to any pilot whose spec has a numbered deliverable list.
+- **Zero-default physics extensions** for pilot follow-up releases.
+  Generalises to any numerical artefact whose first release has
+  consumers reading checked-in caches.
 
 The two that are unlikely to be reusable:
 

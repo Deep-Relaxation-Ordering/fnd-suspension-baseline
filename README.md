@@ -57,26 +57,28 @@ fnd-suspension-baseline/
 │   ├── regime_map.py               Orchestration; produces deliverables 3 and 5
 │   └── polydispersity.py           Log-normal smearing; produces deliverable 6
 ├── tests/                          (validation per breakout-note §4.4)
-├── notebooks/                      (deliverables 2–5: validation, regime map, scans, design table)
+├── notebooks/                      (deliverables 2–6: validation, maps, scans, design tables)
 ├── lab_notes/                      (dated session notes — breakout-note §4.5)
 ├── docs/
-│   └── conventions.md              cd-rules pin + per-rule applicability + breakout-note pin
+│   ├── conventions.md              cd-rules pin + per-rule applicability + breakout-note pin
+│   ├── deliverable-index.md        §6 artefact map
+│   └── experimental-envelope.md    pilot assumptions and experimental knobs
 └── archive/                        (cd-rules §0.8 — deprecation, not deletion)
 ```
 
 ## Status
 
-**`pilot-v0.2` cycle open.** v0.1 (tag `pilot-v0.1` at `9a0fc76`)
-remains the released reference: all five §6 deliverables shipped,
-full §5 grid cached, narrative triad (deliverable index, physics,
-process) published. v0.2 adds the Rayleigh-number convection gate,
-a hydrodynamic-vs-material radius split (`δ_shell`), and log-normal
-polydispersity post-processing — all forward-compatible with v0.1
-(defaults reproduce v0.1 arithmetic to machine precision). The
-spec-anchoring decision is recorded in
-[ADR 0001](docs/adr/0001-v0.2-spec-anchoring.md). Test suite on
-the current branch: `133 passed, 0 skipped` (`92 passed` at the
-`pilot-v0.1` tag). v0.2 tag will be `pilot-v0.2` at Phase 15.
+**`pilot-v0.2` released.** v0.1 (tag `pilot-v0.1` at `9a0fc76`)
+shipped the original five §6 deliverables. v0.2 (tag `pilot-v0.2`,
+package version `0.2.0`) adds the Rayleigh-number convection gate, a
+hydrodynamic-vs-material radius split (`δ_shell`), log-normal
+polydispersity post-processing, deliverable 6, and an explicit
+experimental-envelope document — all forward-compatible with v0.1
+(zero-default paths reproduce v0.1 arithmetic to machine precision).
+The spec-anchoring decision is recorded in
+[ADR 0001](docs/adr/0001-v0.2-spec-anchoring.md). Release suite:
+`133 passed, 0 skipped` (`92 passed` at the `pilot-v0.1` tag), with
+`ruff check .` clean.
 
 ## Environment
 
@@ -89,7 +91,7 @@ python -m venv .venv
 . .venv/bin/activate
 python -m pip install -e ".[dev]"
 pytest -q
-ruff check src/ tests/ notebooks/
+ruff check .
 ```
 
 Ad-hoc one-line scripts that import modules directly should either use
@@ -126,7 +128,7 @@ notebook regeneration commands.
 | 12.1 | regression audit (`δ_shell = 0` compatibility) | done — [phase-12.1 note](lab_notes/2026-04-30-phase12-1-regression-audit.md) |
 | 13 | re-walk §5 cache with new channels | done — [phase-13 note](lab_notes/2026-04-30-phase13-cache-regeneration.md) |
 | 14 | `src/polydispersity.py` + notebook 05 + deliverable 6 | done — [phase-14 note](lab_notes/2026-04-30-phase14-polydispersity-smearing.md) |
-| 15 | `pilot-v0.2` release tag | pending |
+| 15 | `pilot-v0.2` release tag | done — [phase-15 note](lab_notes/2026-04-30-phase15-pilot-v0-2-release.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in

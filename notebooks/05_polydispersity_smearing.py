@@ -239,7 +239,14 @@ def _table_rows() -> list[dict[str, str]]:
             trunc = smeared.truncation_loss[:, si, ti_room, hi, oi_1h]
             admissible = ok & (probs >= TARGET_P_STRATIFIED)
             rejected_count = int((~ok).sum())
-            best_idx = int(np.nanargmax(probs))
+            finite_probs = np.isfinite(probs)
+            if finite_probs.any():
+                best_idx = int(np.nanargmax(probs))
+                best_p = float(probs[best_idx])
+                best_r = float(r_axis[best_idx])
+            else:
+                best_p = np.nan
+                best_r = np.nan
             if admissible.any():
                 rs = r_axis[admissible]
                 status = "accepted" if rejected_count == 0 else "partial_rejected_truncation"
@@ -265,8 +272,8 @@ def _table_rows() -> list[dict[str, str]]:
                     if np.isnan(r_min)
                     else f"{_format_radius(r_min)} - {_format_radius(r_max)}"
                 ),
-                "best_p_stratified": repr(float(probs[best_idx])),
-                "best_r_geom_mean_m": repr(float(r_axis[best_idx])),
+                "best_p_stratified": repr(best_p),
+                "best_r_geom_mean_m": repr(best_r),
                 "max_truncation_loss": repr(float(np.nanmax(trunc))),
                 "rejected_rbar_count": str(rejected_count),
             })

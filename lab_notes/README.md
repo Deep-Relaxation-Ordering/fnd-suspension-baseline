@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-04-30 | [Phase 15 — `pilot-v0.2` release closeout](2026-04-30-phase15-pilot-v0-2-release.md) | 15 |
 | 2026-04-30 | [Phase 14 — polydispersity smearing and deliverable 6](2026-04-30-phase14-polydispersity-smearing.md) | 14 |
 | 2026-04-30 | [Phase 13 — cache regeneration and convection overlays](2026-04-30-phase13-cache-regeneration.md) | 13 |
 | 2026-04-30 | [Phase 12.1 — regression audit](2026-04-30-phase12-1-regression-audit.md) | 12.1 |

@@ -4,9 +4,11 @@
 Institut Freiburg.*
 
 This document distils the experimentally-actionable conclusions from
-the `pilot-v0.1` §5 sweep cache
+the `pilot-v0.2` §5 sweep cache
 ([`notebooks/data/regime_map_grid.csv`](../notebooks/data/regime_map_grid.csv),
-6300 cells of (r, T, h, t_obs) classified per breakout-note §5.1).
+6300 cells of (r, T, h, t_obs) classified per breakout-note §5.1),
+plus the v0.2 convection, radius-split, and polydispersity side
+channels.
 The deliverable index ([`docs/deliverable-index.md`](deliverable-index.md))
 maps each finding to the artefact that backs it; this document is
 the narrative companion.
@@ -39,10 +41,11 @@ bulk-diamond density, Stokes drag, Stokes-Einstein diffusivity, a
 one-dimensional vertical coordinate, no aggregation, no adsorption,
 no wall-hydrodynamic correction, and reflecting top/bottom boundaries.
 For r ≲ 20 nm, the material radius used for buoyant mass may differ
-from the hydrodynamic radius that controls drag; surface chemistry,
-functionalisation, polydispersity, and container-wall effects should
-therefore be treated as follow-on experimental corrections rather
-than as resolved by this sweep.
+from the hydrodynamic radius that controls drag. v0.2 can carry that
+split via `delta_shell_m`, but the committed §5 cache keeps
+`delta_shell_m = 0` to preserve the v0.1 physics surface. Surface
+chemistry, functionalisation, aggregation, and container-wall effects
+remain experimental corrections rather than resolved model terms.
 
 ## The homogeneous-edge boundary follows `r ∝ h^{-1/3}`
 
@@ -202,13 +205,77 @@ boundary on the small side, in-transit boundary on the large side,
 with the stratified band between — is the deliverable-5 design
 table's central narrative.
 
+## Convection caveat at h ≥ 1 mm
+
+The §5.1 labels are diffusion/sedimentation labels. v0.2 adds a
+separate Rayleigh-number side channel for the question "would a
+vertical thermal gradient make the one-dimensional transport model
+experimentally suspect?"
+
+The committed cache keeps `delta_T_assumed = 0.0 K`, so all 6300
+cached rows have `convection_flag = False` and the v0.1 labels are
+unchanged. Notebook overlays use the experimental convention
+`delta_T_assumed = 0.1 K`, rigid-rigid boundaries, and Tanaka-derived
+water expansion. Under that convention, only 3 of the 35 `(T, h)`
+pairs fire:
+
+| T | h | Rayleigh number |
+|---|---|---|
+| 25 °C | 10 mm | 2018 |
+| 30 °C | 10 mm | 2654 |
+| 35 °C | 10 mm | 3352 |
+
+The rigid-rigid threshold is 1707.762. The h-dependence is cubic, so
+the warning turns on abruptly with depth: at the warm end of the §5
+range, the minimum ΔT needed to cross threshold is ~51 K at 1 mm,
+~6.4 K at 2 mm, and ~0.051 K at 10 mm. The practical reading is not
+"all 1 mm cells convect"; it is that millimetre-scale and especially
+standard-cuvette geometries need explicit ΔT control before the 1-D
+sedimentation labels should be used as experimental design guidance.
+
+## Polydispersity broadens regime boundaries
+
+The §5 cache is monodisperse. Notebook 05 treats each nominal
+geometric mean radius `r_bar` as a log-normal distribution over the
+same 30-point §5 radius axis, with `sigma_geom` values
+`{1.05, 1.10, 1.20, 1.40, 1.60}`. It reports probabilities for the
+three §5.1 labels rather than replacing the deterministic label.
+
+At room temperature, h = 1 mm, and t_obs = 1 h, the deterministic
+stratified band becomes a suitability interval (`p_stratified ≥ 0.8`)
+whose edges move inward as the distribution broadens:
+
+| `sigma_geom` | admissible `r_bar` interval | best `p_stratified` | rejected edge samples |
+|---|---|---|---|
+| 1.05 | 19-196 nm | 1.000 | 0 |
+| 1.10 | 19-196 nm | 1.000 | 2 |
+| 1.20 | 24-151 nm | 1.000 | 2 |
+| 1.40 | 24-151 nm | 1.000 | 4 |
+| 1.60 | 31-116 nm | 0.993 | 6 |
+
+The center of the anchor cell is robust: the nearest §5 radius to
+100 nm (`89.35 nm`) remains mostly stratified even at
+`sigma_geom = 1.60` (`p_stratified = 0.974`, `p_sedimented = 0.025`).
+The edges are where polydispersity matters. At the 5 nm floor,
+`sigma_geom = 1.60` puts ~0.99 % probability into stratified radii
+but loses ~39 % of the log-normal mass outside the §5 axis, so the
+cell is explicitly marked rejected rather than treated as a valid
+design-table entry. At the ~945 nm sedimented anchor, the same broad
+distribution still has `p_sedimented = 0.999` but leaks
+`p_stratified ≈ 0.0011` into the lower-radius tail.
+
+The deliverable-6 message is therefore sharper than "use smaller
+particles": narrow batches preserve the monodisperse brackets, while
+broad batches turn boundary cells into mixtures and should be chosen
+from the interior of the stratified band.
+
 ## Practical guidance bracket
 
 For a typical room-temperature experiment in a 1 mm cuvette:
 
 - **Stay-mixed**: r ≲ 11 nm at any t_obs up to a week.
-- **Visibly stratified at minutes**: r ≈ 50 – 250 nm.
-- **Visibly stratified at hours**: r ≈ 30 – 250 nm.
+- **Visibly stratified at minutes**: r ≈ 50-250 nm.
+- **Visibly stratified at hours**: r ≈ 30-250 nm.
 - **Sedimented within 1 h**: r ≳ 255 nm.
 - **Sedimented within 1 minute**: r ≳ 1.6 µm.
 

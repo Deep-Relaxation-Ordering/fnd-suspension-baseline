@@ -5,12 +5,12 @@ Institut Freiburg.*
 
 | Field | Value |
 |---|---|
-| Status | **Accepted — Phase 14 complete; Phase 15 next.** Scope, D1–D6 decisions, and risk register accepted. |
+| Status | **Released — Phase 15 closeout complete; `pilot-v0.2` tag prepared.** Scope, D1–D6 decisions, and risk register accepted. |
 | Date | 2026-04-29 (accepted; drafted 2026-04-28) |
 | Drafted at | commit `42e819e` (Phase 10 ADR landed) |
 | Spec anchor | breakout-note v0.2 commit `3b7b18af` (frozen unless v0.3 lands during the cycle; see [ADR 0001](adr/0001-v0.2-spec-anchoring.md)) |
 | Predecessor | `pilot-v0.1` tag at `9a0fc76` |
-| Successor tag | `pilot-v0.2` (target — Phase 15) |
+| Successor tag | `pilot-v0.2` |
 | Working tempo | v0.1 baseline: ~1 phase per session; ~7 working days across ~10 sessions; calendar 1.5–2 weeks |
 
 This document is the contract for the v0.2 cycle. Each phase below
@@ -143,7 +143,7 @@ Phase 10 (DONE) ────────► ADR 0001 + scoping             │
 ```
 
 Phase 11 / 11.1, Phase 12 / 12.1, Phase 13, and Phase 14 are complete.
-Phase 15 is next.
+Phase 15 is complete.
 
 ---
 
@@ -896,19 +896,19 @@ edge-case behaviour at the §5 r-axis end-bins. ~0.25 d.
 
 The `pilot-v0.2` tag is created when *all* of these hold on `main`:
 
-- [ ] Forward-compatibility contract satisfied (Phase 12.1 evidence
+- [x] Forward-compatibility contract satisfied (Phase 12.1 evidence
       committed).
-- [ ] All new Phase 11 / 12 / 13 / 14 tests pass.
-- [ ] All v0.1 tests still pass (CI green).
-- [ ] ruff clean.
-- [ ] §5 cache re-walked; cache-derived artefacts regenerated.
-- [ ] Deliverable index updated; §6 deliverable 6 row populated.
-- [ ] Findings narratives extended; the two new §sections exist.
-- [ ] `docs/experimental-envelope.md` shipped (Veto-2 closeout).
-- [ ] ADR 0001 cross-referenced from Phase 15 lab note.
-- [ ] Phase 15 lab note records HEAD SHA before tagging,
+- [x] All new Phase 11 / 12 / 13 / 14 tests pass.
+- [x] All v0.1 tests still pass (CI green).
+- [x] ruff clean.
+- [x] §5 cache re-walked; cache-derived artefacts regenerated.
+- [x] Deliverable index updated; §6 deliverable 6 row populated.
+- [x] Findings narratives extended; the two new §sections exist.
+- [x] `docs/experimental-envelope.md` shipped (Veto-2 closeout).
+- [x] ADR 0001 cross-referenced from Phase 15 lab note.
+- [x] Phase 15 lab note records HEAD SHA before tagging,
       dependency versions, and the suite-count delta vs v0.1.
-- [ ] `pyproject.toml` version bumped.
+- [x] `pyproject.toml` version bumped.
 
 ### Phase 15.1 (anticipated post-release doc fixes)
 
