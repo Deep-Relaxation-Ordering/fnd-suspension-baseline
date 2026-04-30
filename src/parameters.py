@@ -180,22 +180,39 @@ def gamma_stokes(
     return gamma_stokes_geom(as_particle_geometry(radius_or_geom), temperature_kelvin)
 
 
-def diffusivity_geom(geom: ParticleGeometry, temperature_kelvin: float) -> float:
-    """Stokes–Einstein diffusivity D = k_B T / γ, in m²/s.
+def diffusivity_geom(
+    geom: ParticleGeometry,
+    temperature_kelvin: float,
+    *,
+    lambda_se: float = 1.0,
+) -> float:
+    """Stokes–Einstein diffusivity D = λ · k_B T / γ, in m²/s.
 
     Breakout-note §3, §11 (Lock 2). The Einstein–Smoluchowski relation
-    D · γ = k_B T must hold to machine precision; this is the test in
+    D · γ = λ · k_B T must hold to machine precision; this is the test in
     `tests/test_einstein_relation.py`.
+
+    ``lambda_se`` is the Stokes–Einstein breakdown coefficient.
+    ``lambda_se = 1.0`` reproduces the bare continuum SE relation
+    (v0.2 behaviour). ``lambda_se < 1.0`` reduces the effective
+    diffusivity, modelling sub-continuum breakdown at sub-150-nm
+    radii. The parameter is deliberately dimensionless and
+    phenomenological — calibration against the Laloyaux z₂ gold-
+    nanoparticle benchmark is a Phase-18 follow-up.
     """
-    return K_B * temperature_kelvin / gamma_stokes_geom(geom, temperature_kelvin)
+    return lambda_se * K_B * temperature_kelvin / gamma_stokes_geom(geom, temperature_kelvin)
 
 
 def diffusivity(
     radius_or_geom: float | ParticleGeometry,
     temperature_kelvin: float,
+    *,
+    lambda_se: float = 1.0,
 ) -> float:
     """Diffusivity wrapper accepting a scalar radius or `ParticleGeometry`."""
-    return diffusivity_geom(as_particle_geometry(radius_or_geom), temperature_kelvin)
+    return diffusivity_geom(
+        as_particle_geometry(radius_or_geom), temperature_kelvin, lambda_se=lambda_se
+    )
 
 
 def buoyant_mass_geom(

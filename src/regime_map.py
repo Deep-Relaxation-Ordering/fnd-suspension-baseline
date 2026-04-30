@@ -219,6 +219,7 @@ def classify_cell(
     min_resolvable_dz_m: float = REGIME_MAP_MIN_RESOLVABLE_DZ_M,
     delta_T_assumed: float = 0.0,
     boundary: BoundaryCondition = "rigid-rigid",
+    lambda_se: float = 1.0,
 ) -> RegimeResult:
     """Classify a single (r, T, h, t_obs) cell per breakout-note §5.1.
 
@@ -284,7 +285,7 @@ def classify_cell(
 
     # Short-circuit 2: equilibrated corner.
     v_sed = settling_velocity_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
-    d = diffusivity_geom(geom, temperature_kelvin)
+    d = diffusivity_geom(geom, temperature_kelvin, lambda_se=lambda_se)
     t_relax = min(sample_depth_m, ell_g) ** 2 / d
     t_arrival = sample_depth_m / v_sed if v_sed > 0.0 else math.inf
     t_full_eq = max(EQUILIBRATED_RELAXATION_FACTOR * t_relax, 1.01 * t_arrival)
@@ -314,6 +315,7 @@ def classify_cell(
         sample_depth_m,
         t_total=t_obs_s,
         rho_particle_kg_per_m3=rho_particle_kg_per_m3,
+        lambda_se=lambda_se,
         n_cells=n_cells,
         min_resolvable_dz_m=min_resolvable_dz_m,
     )
@@ -330,6 +332,7 @@ def classify_cell(
             sample_depth_m,
             t_total=t_obs_s,
             rho_particle_kg_per_m3=rho_particle_kg_per_m3,
+            lambda_se=lambda_se,
             n_cells=REGIME_MAP_REFINEMENT_N_CELLS,
             min_resolvable_dz_m=min_resolvable_dz_m,
         )

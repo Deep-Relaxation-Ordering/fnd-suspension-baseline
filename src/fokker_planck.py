@@ -459,12 +459,13 @@ def solve_cell(
     t_total: float,
     *,
     rho_particle_kg_per_m3: float = RHO_P_DIAMOND,
+    lambda_se: float = 1.0,
     **kwargs,
 ) -> FokkerPlanckResult:
     """Convenience wrapper: derive `(v_sed, D)` from a physical cell and solve."""
     geom = as_particle_geometry(radius_m)
     v = settling_velocity_geom(geom, temperature_kelvin, rho_particle_kg_per_m3)
-    d = diffusivity_geom(geom, temperature_kelvin)
+    d = diffusivity_geom(geom, temperature_kelvin, lambda_se=lambda_se)
     return solve(v_sed=v, diff=d, h=sample_depth_m, t_total=t_total, **kwargs)
 
 
