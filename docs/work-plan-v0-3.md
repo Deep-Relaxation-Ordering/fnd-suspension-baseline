@@ -1,11 +1,11 @@
-# Work plan — `pilot-v0.3` (scaffold)
+# Work plan — `pilot-v0.3`
 
 *Endorsement Marker: Local stewardship — U. Warring, AG Schätz, Physikalisches
 Institut Freiburg.*
 
 | Field | Value |
 |---|---|
-| Status | **OPENED against ADR 0002 (Phase 17 opening, 2026-04-30).** D1 (spec anchor) and the first-slice selection are resolved; D2 / D3 / D4 / D5 / D6 / D7 remain `[OPEN]`. Document remains a SCAFFOLD until §1 candidate menu, §4 phase plan, §6 risk register, and §7 schedule are filled — that promotion happens later in the Phase 17 ceremony, not in this opening commit. |
+| Status | **Accepted contract.** All open decisions (D1–D9) resolved. §1 in-scope list fixed against D1 = Option 2. §4 phase plan, §6 risk register, and §7 schedule filled. Phase 18 (S2 — Stokes-Einstein corrections) is cleared to open. |
 | Date | 2026-04-30 (drafted Phase 16.2; opened against ADR 0002 Phase 17) |
 | Drafted at | post-Phase 16.1, commit `e2639ff` (FAIR metadata + DOI deferral landed) |
 | Predecessor tag | `pilot-v0.2` at `dfbb94d` (also `pilot-v0.2.1` once tagged) |
@@ -57,78 +57,77 @@ needed.
 
 **First slice fixed: item K (S2 — Stokes-Einstein corrections at
 sub-150-nm radii)** per [ADR 0002 Decision 2](adr/0002-v0.3-spec-anchoring.md).
-The other items remain candidates pending the §1 reshape step of the
-Phase 17 ceremony.
+The other items are resolved below.
 
 ### A. Resolve audit-gap pins `T_OBS_S` and `DEPTHS_M`
 - **Source:** [`docs/deliverable-index.md` §"What pilot-v0.3 would change"](deliverable-index.md#what-pilot-v03-would-change), bullet 1.
 - **Why:** These are the two scan-grid pins still flagged "physically-motivated defaults; cross-check at next spec drift."
 - **Effort (rough):** 0.5–1 d if the breakout-note v0.3 names the values; 2–3 d if a §5 cache regen is required to validate alternatives.
 - **Blast radius:** §5 cache invalidation if the values move.
-- **Decision needed:** in-scope, gated on §0.
+- **Decision:** **in-scope.** D2 = Option 1 (anchor to `pilot-v0.2.1`) — no numerical-channel change; pin values get named and documented.
 
 ### B. Continuous regime thresholds (interpolated design-table entries)
 - **Source:** Deliverable-index "What v0.3 would change" bullet 2.
 - **Why:** v0.2 design-table entries are grid-snapped to the §5 r-axis. Root-finding on `top_to_bottom_ratio = 0.95`, `bottom_mass_fraction = 0.95`, and `p_stratified` suitability would replace 30-bin steps with continuous radii.
 - **Effort:** ~1 d (root-finder per metric + revised notebooks 04 / 05).
 - **Blast radius:** notebooks 04 / 05 + design-table CSV format. New tests pin the interpolation against the §5 cache rows at degenerate inputs.
-- **Decision needed:** in-scope.
+- **Decision:** **in-scope.** D2 = Option 1 — root-finding is additive; §5 cache unchanged at compatibility defaults.
 
 ### C. Mesh-convergence audit on the finite-time bottom-mass threshold
 - **Source:** Deliverable-index bullet 3.
 - **Why:** Method-C uses 120-cell first pass + 240-cell refinement around thresholds; the 10-nm fallback floor is empirical. v0.3 would document a convergence sweep so the fidelity envelope is formal, not "tested in practice."
 - **Effort:** ~1 d (sweep + audit lab note); no model change.
 - **Blast radius:** documentation only if the audit confirms current behaviour; cache regen if it surfaces drift.
-- **Decision needed:** in-scope.
+- **Decision:** **in-scope.** D2 = Option 1 — audit-only; no model change expected.
 
 ### D. Aggregation pre-screen (DLVO `τ_agg(ζ, I, pH)`)
 - **Source:** [`work-plan-v0-2.md` §1 "Out of scope (parallel tracks)"](work-plan-v0-2.md#out-of-scope-parallel-tracks), [`experimental-envelope.md`](experimental-envelope.md) deferred-variables list.
 - **Why:** Aggregation flips many of the dilute-limit assumptions; the v0.2 envelope flags it as experimentally important.
 - **Effort:** ~3 d per the v0.2 plan estimate.
 - **Blast radius:** new module + side-channel against §5 cache, or a separate sibling pilot. Not a §5.1 label override.
-- **Decision needed:** in-scope **or** parallel breakout (v0.2 plan §1 says "parallel"). §0 hybrid would split the difference.
+- **Decision:** **out-of-scope — parallel breakout.** D3 = parallel breakout. S1 (DLVO aggregation) requires an upstream breakout note from `Deep-Relaxation-Ordering/diamonds_in_water` that does not yet exist. v0.3 may prepare parameter stubs but not the trustworthiness flag.
 
 ### E. Wall-hydrodynamic correction
 - **Source:** Deliverable-index bullet 4, experimental-envelope "no wall-hydrodynamic correction" row.
 - **Why:** Most §5 cells have `r/h` small, but near-bottom transport is wall-sensitive. Faxén / Brenner corrections apply a position-dependent λ to the Stokes drag.
 - **Effort:** ~2 d (correction term + `RegimeResult` channel + Method-C boundary-layer integration).
 - **Blast radius:** Method-C cells where the bottom layer matters; Method-A unchanged.
-- **Decision needed:** in-scope. If yes, recommend zero-default (`λ ≡ 1` reproduces v0.2) per Pattern 14.
+- **Decision:** **out-of-scope — defer to v0.4.** D4 = defer. Wall-hydrodynamic corrections exceed the breakout-note v0.2 envelope. The λ ≡ 1 zero-default pattern is preserved for a future cycle.
 
 ### F. Calibrate `delta_shell_m` against measured FND hydrodynamic radii
 - **Source:** Deliverable-index bullet 5.
 - **Why:** v0.2 ships `δ_shell` as a user knob; v0.3 would translate that into a literature-anchored default range for representative functionalised FNDs.
 - **Effort:** ~0.5 d if a single literature pin is acceptable; longer if a survey is wanted.
 - **Blast radius:** documentation + a new audit-gap pin entry; no API change.
-- **Decision needed:** in-scope.
+- **Decision:** **in-scope.** D2 = Option 1 — documentation-only change; no API or numerical-channel change.
 
 ### G. Refined convection model (T-dependent κ, gradient profiles, evaporation)
 - **Source:** Deliverable-index bullet 6, [`work-plan-v0-2.md` §3 risk register](work-plan-v0-2.md), Phase 11 lab note.
 - **Why:** v0.2 uses a T-independent thermal diffusivity `κ ≈ 1.4·10⁻⁷ m²/s` and a single Rayleigh threshold. v0.3 candidate: promote `κ` to T-dependent (parameters.py), allow non-uniform gradients, and add an open-cell evaporation channel.
 - **Effort:** 1–2 d for κ(T); evaporation is a separate sub-phase.
 - **Blast radius:** convection module + cache schema (extra column or recomputed flag).
-- **Decision needed:** in-scope.
+- **Decision:** **out-of-scope — defer to v0.4.** D5 = defer. Even κ(T) alone changes §5 cache numerics by design; the full model (gradients + evaporation) is a physics-scope expansion beyond the v0.2 envelope.
 
 ### H. Performance: parallel §5 walk
 - **Source:** Deliverable-index bullet 7.
 - **Why:** v0.2 walk is ~150 min serial. `walk_grid` is already process-pool friendly; concretising would make cache regen less painful for the audits in items C / G.
 - **Effort:** ~0.5 d (joblib / multiprocessing harness + an integration test).
 - **Blast radius:** none (deterministic); CI matrix grows.
-- **Decision needed:** in-scope.
+- **Decision:** **in-scope.** D2 = Option 1 — no numerical change; deterministic output.
 
 ### I. Promote `σ_geom` to a §5 scan axis
 - **Source:** [ADR 0001](adr/0001-v0.2-spec-anchoring.md) §"Consequences"; [`work-plan-v0-2.md` §6 D4](work-plan-v0-2.md).
 - **Why:** v0.2 keeps `σ_geom` in `polydispersity.py` as a post-processing axis. Promotion to a §5 axis would let the cache carry per-σ_geom regime channels.
 - **Effort:** ~2–3 d (cache schema bump, dimension expansion, CSV size grows).
 - **Blast radius:** §5 cache schema change + notebook 02–05 axes.
-- **Decision needed:** **breakout-note authors own this per ADR 0001.** Defer until they decide.
+- **Decision:** **out-of-scope — wait on breakout-note authors.** D6 = wait. ADR 0001 delegated σ_geom promotion upstream; v0.3 does not pre-empt that decision.
 
 ### J. Continuous time-evolution channel
 - **Source:** [`docs/findings-physics.md` §"Time matters more than temperature"](findings-physics.md#L101), and the t_obs grid being discrete in v0.2.
 - **Why:** v0.2 evaluates regimes at six fixed `t_obs` values. v0.3 candidate: solve for the time at which a fixed criterion (e.g. `bottom_mass_fraction = 0.5`) is crossed, per cell.
 - **Effort:** ~1 d (root-find on Method-C output) if Method-C cache is reusable.
 - **Blast radius:** new design-table; no §5 cache change if the root-find runs on cached snapshots.
-- **Decision needed:** in-scope.
+- **Decision:** **in-scope.** D2 = Option 1 — root-find runs on cached §5 snapshots; no cache schema change.
 
 ### K. Stokes-Einstein corrections at sub-150-nm radii — **FIRST SLICE**
 - **Source:** [program-context §3.1, slice S2](program-context.md); [ADR 0002 Decision 2](adr/0002-v0.3-spec-anchoring.md). Adopted into Tier-1 from review R4 (see Phase-9.x lab notes).
@@ -184,40 +183,36 @@ Two options:
 v0.2.1 to machine precision (Pattern 14 zero-default extension).
 The S2 slice ships under the v0.2.1 forward-compat target.
 
-**For other slices: D2 remains [OPEN].** If items A / G land and
-move numerical channels by design, those slices may need Option 2.
-Decided per slice as the §1 reshape happens.
+**For all in-scope slices: D2 = Option 1.** Every in-scope item
+(A, B, C, F, H, J, K) reproduces `pilot-v0.2.1` at compatibility-mode
+defaults. Out-of-scope items (D, E, G, I) are not evaluated against
+the forward-compat contract in this cycle.
 
 ---
 
-## 4. Phase plan [PARTIAL]
+## 4. Phase plan
 
 v0.2 cycle ran Phases 10–15 with `.1` review-driven follow-ups; Phase
 16 / 16.1 / 16.2 / 16.3 closed the v0.2.1 cycle and articulated the
-program context. v0.3 starts at Phase 17.
+program context. v0.3 opens at Phase 17 and closes at Phase 24.
 
-Phase 17 is the cycle-opening ceremony; it has two parts:
+| Phase | Slice | Items | Effort estimate | Deliverable |
+|---|---|---|---|---|
+| 17 (opening) | Ceremony | ADR 0002 promoted; §0 / §5 D1 / D9 resolved. | 1 session | ADR 0002 `Accepted` |
+| 17 (continuation) | Ceremony | §1 reshape; D2–D7 resolved; §4 / §6 / §7 filled. | 1 session | This contract |
+| 18 | S2 | Item K — Stokes-Einstein corrections at sub-150-nm radii. λ-axis, Laloyaux calibration, `provisional=True` contract. | 2–3 sessions | `src/parameters.py` λ-aware diffusivity; tests; lab note |
+| 19 | Tightening | Item A — resolve audit-gap pins `T_OBS_S` / `DEPTHS_M`. Item H — parallel §5 walk. | 1 session | Updated scan grid + tests; CI matrix entry |
+| 20 | Tightening | Item B — continuous regime thresholds (interpolated design-table entries). | 1–2 sessions | Root-finder + revised notebooks 04/05 |
+| 21 | Audit + docs | Item C — mesh-convergence audit on bmf threshold. Item F — δ_shell calibration against literature. | 1 session | Audit lab note; calibration table |
+| 22 | Tightening | Item J — continuous time-evolution channel. | 1–2 sessions | `t_cross` root-finder on cached snapshots |
+| 23 | Integration | Regression audit across all in-scope items; cache regen if needed; notebook refresh. | 1 session | Phase 12.1-style byte-identical verification |
+| 24 | Release | Tag `pilot-v0.3`; update deliverable-index, release notes, pyproject.toml. | 1 session | Release artefacts |
 
-```
-Phase 17 (opening, this commit)  ADR 0002 promoted to Accepted;
-                                 work-plan §0 / §5 D1 / D9 resolved.
-Phase 17 (continuation, TBD)     §1 candidate menu reshape against
-                                 D1 = Option 2; §4 fill below; §6 / §7.
-Phase 18  S2 (item K) — Stokes-Einstein corrections at sub-150-nm.
-                                 Forward-compat: λ = 1.0 reproduces v0.2.1.
-                                 API contract: provisional=True.
-Phase 19+ (TBD)                  Additional slices once §1 reshape
-                                 picks them — A / B / C / F / H / J
-                                 are the most plausible candidates;
-                                 D / E / G defer as parallel
-                                 breakouts under D1 = Option 2.
-Phase Z (release, ~Phase 24)     pilot-v0.3 release; re-pin policy
-                                 per ADR 0002.
-```
+Total: ~9–12 sessions, ~7–10 working days at v0.2 tempo.
 
-Phase 18 is the first concrete implementation phase; everything
-between Phase 18 and the release phase remains [TBD] until the
-Phase 17 continuation sets the §1 in-scope list.
+Items D / E / G / I are out of scope for v0.3; they follow their own
+parallel breakout tracks (program-context §3.1 S1, S6, S5, and ADR 0001
+σ_geom delegation respectively).
 
 ---
 
@@ -226,12 +221,12 @@ Phase 17 continuation sets the §1 in-scope list.
 | Id | Question | Status |
 |---|---|---|
 | D1 | Spec anchoring (§0 options 1 / 2 / 3) | **Resolved — Option 2** ([ADR 0002 Decision 1](adr/0002-v0.3-spec-anchoring.md)). |
-| D2 | Forward-compat baseline (§3 option 1 / 2) | [OPEN] — for item K (S2), `λ = 1.0` reproduces v0.2.1 to machine precision, favouring §3 Option 1 for that slice; other slices may differ. |
-| D3 | Aggregation: in-scope, parallel breakout, or defer? (item D / program-context S1) | [OPEN] — under D1 Option 2, S1 needs an upstream breakout note that does not yet exist; v0.3 may prepare scaffolding only. |
-| D4 | Wall hydrodynamics: in-scope or defer to v0.4? (item E / program-context S6) | [OPEN] — under D1 Option 2, likely deferred unless its breakout-note specifications fit the v0.2 envelope. |
-| D5 | Convection refinement: full κ(T) + gradients + evaporation, or just κ(T)? (item G) | [OPEN] |
-| D6 | `σ_geom` scan-axis promotion: wait on breakout-note authors, or carry as v0.3 candidate? (item I) | [OPEN] — ADR 0001 delegated this upstream; status unchanged. |
-| D7 | Development Status classifier: keep `3 - Alpha` through v0.3, or promote to `4 - Beta` if all pins resolve? | [OPEN] — program-context §4.1 sets `4 - Beta` at v1.0, so v0.3 likely stays `3 - Alpha`. |
+| D2 | Forward-compat baseline (§3 option 1 / 2) | **Resolved — Option 1 for all in-scope items.** Every in-scope slice reproduces `pilot-v0.2.1` at compatibility defaults. |
+| D3 | Aggregation: in-scope, parallel breakout, or defer? (item D / program-context S1) | **Resolved — parallel breakout.** S1 requires an upstream breakout note that does not yet exist. |
+| D4 | Wall hydrodynamics: in-scope or defer to v0.4? (item E / program-context S6) | **Resolved — defer to v0.4.** Exceeds the breakout-note v0.2 envelope. |
+| D5 | Convection refinement: full κ(T) + gradients + evaporation, or just κ(T)? (item G) | **Resolved — defer to v0.4.** Even κ(T) alone changes §5 cache numerics by design. |
+| D6 | `σ_geom` scan-axis promotion: wait on breakout-note authors, or carry as v0.3 candidate? (item I) | **Resolved — wait on breakout-note authors.** ADR 0001 delegation stands. |
+| D7 | Development Status classifier: keep `3 - Alpha` through v0.3, or promote to `4 - Beta` if all pins resolve? | **Resolved — keep `3 - Alpha`.** program-context §4.1 sets `4 - Beta` at v1.0; v0.3 is a tactical tightening cycle. |
 | D8 | DOI mint at v0.3, or hold to v1.0 per Phase 16.1? | Resolved — hold to v1.0. |
 | D9 | First v0.3 implementation slice. | **Resolved — S2 (item K)** ([ADR 0002 Decision 2](adr/0002-v0.3-spec-anchoring.md)). |
 
@@ -242,11 +237,33 @@ inside the Phase 17 ceremony's continuation.
 
 ## 6. Risk register [PARTIAL]
 
-Carry forward the v0.2-cycle structure. Item K (S2) is in scope as
-of this opening; the rest pending §1 reshape.
+Carry forward the v0.2-cycle structure. All in-scope items (A, B, C,
+F, H, J, K) are listed below; out-of-scope items (D, E, G, I) carry
+no mitigation in this cycle.
 
-In-scope (item K / S2):
+In-scope risks:
 
+- **R-A1.** Pin values (`T_OBS_S`, `DEPTHS_M`) chosen without direct
+  experimental validation. **Mitigation:** document as "best-estimate
+  pending campaign"; no API or cache change if values are confirmed
+  current.
+- **R-B1.** Root-finder for continuous thresholds fails or oscillates
+  at degenerate inputs (exactly on a regime boundary). **Mitigation:**
+  test at degenerate §5 cache rows; fall back to grid-snapped value
+  with a warning flag.
+- **R-C1.** Mesh-convergence audit reveals drift larger than empirical
+  tolerance. **Mitigation:** if drift is < 1 %, document as known
+  limitation; if > 1 %, escalate to a Phase 21.1 fix before release.
+- **R-F1.** Literature DLS measurements for functionalised FNDs
+  conflict. **Mitigation:** pick the most-cited open-literature value,
+  flag as audit-gap pin, note the conflict in the calibration table.
+- **R-H1.** Parallel walk produces non-deterministic CSV row ordering.
+  **Mitigation:** sort by `(r, T, h, t)` before write; verify
+  byte-identical against serial walk at same inputs.
+- **R-J1.** Continuous time-evolution root-find requires finer time
+  mesh than the §5 cache holds. **Mitigation:** reuse cached snapshots
+  with local interpolation; if insufficient, document as requiring a
+  denser `t_obs` grid.
 - **R-K1.** SE-correction λ-axis silently changes diffusivity in
   cells where v0.2 was already trustworthy. **Mitigation:** `λ = 1.0`
   default reproduces v0.2.1 to machine precision (Pattern 14
@@ -261,19 +278,30 @@ In-scope (item K / S2):
   cross-check on bare FNDs at 100 nm — and treat it as an audit-gap
   pin if no replacement is found.
 
-Likely high-severity rows once §1 reshape brings other items in:
+Out-of-scope residual risk (acknowledged, not mitigated in v0.3):
 
-- κ(T) promotion (item G) silently drifts §5 cache numerics.
-- Continuous-threshold root-finding (item B) introduces non-deterministic
-  outputs if tolerances are loose.
-- Parallel walk (item H) introduces ordering bugs in the persisted CSV.
+- **R-D-E-G-I.** Aggregation, wall hydrodynamics, refined convection,
+  and σ_geom scan-axis promotion are deferred. The v0.2 validity
+  envelope remains honest but narrower than L1 requires.
+  **Acceptance:** acknowledged in `docs/experimental-envelope.md`.
 
 ---
 
-## 7. Schedule [TBD]
+## 7. Schedule
 
-Populate after §1 / §4 fix. Reuse v0.2 working-tempo estimate (1 phase
-per session; ~7 working days).
+| Milestone | Target sessions | Calendar span (approx.) |
+|---|---|---|
+| Phase 17 continuation (contract) | Current | 2026-04-30 |
+| Phase 18 (S2 — SE corrections) | +2–3 sessions | 2026-05-01 – 2026-05-05 |
+| Phase 19 (A + H) | +1 session | 2026-05-05 – 2026-05-06 |
+| Phase 20 (B) | +1–2 sessions | 2026-05-06 – 2026-05-08 |
+| Phase 21 (C + F) | +1 session | 2026-05-08 – 2026-05-09 |
+| Phase 22 (J) | +1–2 sessions | 2026-05-09 – 2026-05-12 |
+| Phase 23 (integration) | +1 session | 2026-05-12 – 2026-05-13 |
+| Phase 24 (release) | +1 session | 2026-05-13 – 2026-05-14 |
+
+Total: ~9–12 sessions, ~7–10 working days of active development.
+Calendar span: ~2 weeks (allowing for session gaps).
 
 ---
 
@@ -301,27 +329,17 @@ No outstanding pre-v0.3 doc fixes remain.
 
 ## 9. Acceptance / next step
 
-This scaffold becomes a contract by:
+This contract is accepted when all six steps below are complete:
 
-1. ~~Drafting ADR 0002.~~ **Done — Phase 17 opening commit.** ADR 0002
-   is `Accepted`, resolving D1 (= Option 2) and D9 (S2 first slice).
-2. ~~Resolving D1.~~ **Done.** D8, D9 also resolved.
-3. Resolving D2 / D3 / D4 / D5 / D6 / D7 in their own deliberation
-   surfaces (Phase 17 continuation or later).
-4. Fixing §1 in-scope vs out-of-scope per the resolved decisions —
-   the D1 = Option 2 implication is recorded in §0, but per-item
-   in-scope vs out-of-scope tags still need to be applied to §1.
-5. Filling §4 phase plan, §6 risk register, §7 schedule (currently
-   `[PARTIAL]` / `[TBD]`).
-6. Committing the contract version under the same filename
-   (`docs/work-plan-v0-3.md`), removing the `SCAFFOLD` qualifier
-   from the status field.
+1. ~~Drafting ADR 0002.~~ **Done.**
+2. ~~Resolving D1.~~ **Done.**
+3. ~~Resolving D2 / D3 / D4 / D5 / D6 / D7.~~ **Done.**
+4. ~~Fixing §1 in-scope vs out-of-scope.~~ **Done.**
+5. ~~Filling §4 phase plan, §6 risk register, §7 schedule.~~ **Done.**
+6. ~~Removing the `SCAFFOLD` qualifier.~~ **Done.**
 
-Phase 18 (the first concrete implementation phase, S2) is the
-*earliest* phase that may start under this opening, because the
-slice it implements is unambiguously fixed by ADR 0002. Other
-implementation phases must wait for the Phase 17 continuation to
-fix §1.
+The v0.3 cycle is now under contract. Phase 18 (S2 — Stokes-Einstein
+corrections at sub-150-nm radii) is cleared to open.
 
 ---
 

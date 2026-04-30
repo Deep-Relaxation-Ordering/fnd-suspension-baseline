@@ -149,6 +149,7 @@ notebook regeneration commands.
 | 16.3 | [program-context articulation](docs/program-context.md) — long-horizon goal v0.1 (L1 / L2 / L3 layers; S1–S7 slices; release criteria for `pilot-v1.0` / `v2.0` / `v3.0`) | done — [phase-16.3 note](lab_notes/2026-04-30-phase16-3-program-context.md) |
 | **`pilot-v0.3` cycle (S2 — Stokes-Einstein corrections at sub-150-nm)** | | |
 | 17 (opening) | [ADR 0002](docs/adr/0002-v0.3-spec-anchoring.md) promoted to `Accepted` (D1 = Option 2; first slice = S2); [`docs/work-plan-v0-3.md`](docs/work-plan-v0-3.md) opened against it | done — [phase-17 (opening) note](lab_notes/2026-04-30-phase17-opening-adr-0002-and-work-plan-v0-3.md) |
+| 17 (continuation) | v0.3 work-plan contract acceptance — §1 reshape; D2–D7 resolved; §4 / §6 / §7 filled; SCAFFOLD → contract | done — [phase-17 (continuation) note](lab_notes/2026-04-30-phase17-continuation-contract-acceptance.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
