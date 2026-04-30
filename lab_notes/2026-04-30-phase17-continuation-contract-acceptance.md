@@ -77,7 +77,7 @@ This continuation commit finishes the acceptance ceremony.
 |---|---|---|
 | D (S1) | Parallel breakout | `Deep-Relaxation-Ordering/diamonds_in_water` owes breakout note |
 | E (S6) | Defer to v0.4 | program-context §3.1 S6 |
-| G (S5) | Defer to v0.4 | program-context §3.1 S5 |
+| G (S7) | Defer to v0.4 | program-context §3.1 S7 |
 | I | Wait on authors | ADR 0001 delegation |
 
 ## Next step

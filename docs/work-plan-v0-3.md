@@ -211,7 +211,7 @@ program context. v0.3 opens at Phase 17 and closes at Phase 24.
 Total: ~9–12 sessions, ~7–10 working days at v0.2 tempo.
 
 Items D / E / G / I are out of scope for v0.3; they follow their own
-parallel breakout tracks (program-context §3.1 S1, S6, S5, and ADR 0001
+parallel breakout tracks (program-context §3.1 S1, S6, S7, and ADR 0001
 σ_geom delegation respectively).
 
 ---
