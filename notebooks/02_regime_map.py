@@ -42,6 +42,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import ListedColormap
 
+from convection import (
+    DEFAULT_EXPERIMENTAL_DELTA_T_K,
+    is_convection_dominated,
+    rayleigh_number,
+)
 from regime_map import results_from_csv, results_to_grid, walk_grid
 from scan_grid import DEPTHS_M, T_OBS_LABELS, T_OBS_S
 
@@ -299,6 +304,77 @@ ax.legend(handles=path_handles, loc="upper right", framealpha=0.95)
 fig.tight_layout()
 fig.savefig(figures_dir / "path_provenance_room_T_1h.png", dpi=140)
 fig.savefig(figures_dir / "path_provenance_room_T_1h.pdf")
+plt.show()
+
+# %% [markdown]
+# ## Figure 4 — experimental convection side channel
+#
+# The persisted §5 cache is generated in compatibility mode
+# (`delta_T_assumed = 0.0 K`), so its `convection_flag` column is
+# intentionally all-False. For experimental interpretation, overlay the
+# Phase-11 side channel at the notebook convention
+# `DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K`. The hatch marks cells whose
+# Rayleigh number exceeds the rigid-rigid threshold; it does not alter
+# the §5.1 regime colour.
+
+# %%
+def _draw_convection_hatches(
+    ax: plt.Axes,
+    _radii_axis: list[float],
+    depths_axis: list[float],
+    convection_slice: np.ndarray,
+) -> None:
+    """Overlay hatches where the experimental convection side channel is True."""
+    hs = np.asarray(depths_axis)
+    log_h = np.log10(hs)
+    edges_h = 10.0 ** np.concatenate([
+        [log_h[0] - (log_h[1] - log_h[0]) / 2],
+        (log_h[:-1] + log_h[1:]) / 2,
+        [log_h[-1] + (log_h[-1] - log_h[-2]) / 2],
+    ])
+    convection_by_depth = convection_slice.any(axis=0)
+    for hi, flagged in enumerate(convection_by_depth):
+        if flagged:
+            ax.axhspan(
+                edges_h[hi] * 1e3,
+                edges_h[hi + 1] * 1e3,
+                facecolor="none",
+                edgecolor="#333333",
+                hatch="////",
+                linewidth=0.0,
+                zorder=5,
+            )
+
+
+convection_by_depth = np.array([
+    is_convection_dominated(
+        rayleigh_number(h, DEFAULT_EXPERIMENTAL_DELTA_T_K, T_room),
+        boundary="rigid-rigid",
+    )
+    for h in unique_depths
+])
+convection_room_slice = np.tile(convection_by_depth[None, :], (len(unique_radii), 1))
+
+fig, ax = plt.subplots(figsize=(8.0, 5.5))
+_draw_regime_panel(
+    ax,
+    unique_radii,
+    unique_depths,
+    regime_grid[:, ti_room, :, t_idx_1h],
+    title=(
+        rf"Regime map with convection side channel, $T = {T_room:.2f}$ K, "
+        rf"$\Delta T = {DEFAULT_EXPERIMENTAL_DELTA_T_K:g}$ K"
+    ),
+)
+_draw_convection_hatches(ax, unique_radii, unique_depths, convection_room_slice)
+conv_handle = plt.Rectangle(
+    (0, 0), 1, 1, facecolor="white", edgecolor="black", hatch="////",
+    label="convection flag"
+)
+ax.legend(handles=legend_handles + [conv_handle], loc="upper right", framealpha=0.95)
+fig.tight_layout()
+fig.savefig(figures_dir / "regime_map_room_T_1h_convection_overlay.png", dpi=140)
+fig.savefig(figures_dir / "regime_map_room_T_1h_convection_overlay.pdf")
 plt.show()
 
 # %% [markdown]

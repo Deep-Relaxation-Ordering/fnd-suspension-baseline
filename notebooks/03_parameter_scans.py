@@ -43,9 +43,14 @@ import numpy as np
 from matplotlib.colors import ListedColormap
 
 from analytical import diffusivity, scale_height, settling_velocity
+from convection import (
+    DEFAULT_EXPERIMENTAL_DELTA_T_K,
+    is_convection_dominated,
+    rayleigh_number,
+)
 from parameters import K_B, RHO_P_DIAMOND, G, rho_water
 from regime_map import HOMOGENEOUS_RATIO_THRESHOLD, results_from_csv, results_to_grid
-from scan_grid import T_OBS_LABELS, T_OBS_S, radii_m, temperatures_k
+from scan_grid import DEPTHS_M, T_OBS_LABELS, T_OBS_S, radii_m, temperatures_k
 
 # %% [markdown]
 # ## Method-A primitives across temperature
@@ -290,6 +295,69 @@ if have_cache:
     plt.show()
 else:
     print(f"cache {CACHE_PATH} not found; skipping homogeneous-envelope figure")
+
+# %% [markdown]
+# ## Experimental convection side channel across T and h
+#
+# The §5 cache stores the compatibility-mode `convection_flag`
+# (`delta_T_assumed = 0.0 K`, all-False). This panel shows the
+# experimental side-channel convention used for overlays:
+# `DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K`, rigid-rigid boundaries.
+# The flag depends on `(T, h)` only, so it is plotted independently of
+# particle radius and observation time.
+
+# %%
+depths_for_convection = tuple(grid.depths) if have_cache else DEPTHS_M
+temps_for_convection = tuple(grid.temperatures) if have_cache else tuple(temps)
+convection_mask = np.array([
+    [
+        is_convection_dominated(
+            rayleigh_number(h, DEFAULT_EXPERIMENTAL_DELTA_T_K, T),
+            boundary="rigid-rigid",
+        )
+        for h in depths_for_convection
+    ]
+    for T in temps_for_convection
+], dtype=bool)
+
+T_axis = np.asarray(temps_for_convection) - 273.15
+h_axis = np.asarray(depths_for_convection)
+T_edges = np.concatenate([
+    [T_axis[0] - (T_axis[1] - T_axis[0]) / 2],
+    (T_axis[:-1] + T_axis[1:]) / 2,
+    [T_axis[-1] + (T_axis[-1] - T_axis[-2]) / 2],
+])
+log_h = np.log10(h_axis)
+h_edges = 10.0 ** np.concatenate([
+    [log_h[0] - (log_h[1] - log_h[0]) / 2],
+    (log_h[:-1] + log_h[1:]) / 2,
+    [log_h[-1] + (log_h[-1] - log_h[-2]) / 2],
+])
+
+fig, ax = plt.subplots(figsize=(7.0, 4.8))
+conv_cmap = ListedColormap(["#f7f7f7", "#525252"])
+mesh = ax.pcolormesh(
+    T_edges,
+    h_edges * 1e3,
+    convection_mask.T.astype(int),
+    cmap=conv_cmap,
+    vmin=-0.5,
+    vmax=1.5,
+    edgecolors="white",
+    linewidth=0.5,
+)
+ax.set_yscale("log")
+ax.set_xlabel("temperature  [°C]")
+ax.set_ylabel("sample depth h  [mm]")
+ax.set_title(
+    rf"Convection flag at $\Delta T = {DEFAULT_EXPERIMENTAL_DELTA_T_K:g}$ K"
+)
+cbar = fig.colorbar(mesh, ax=ax, ticks=[0, 1])
+cbar.ax.set_yticklabels(["False", "True"])
+fig.tight_layout()
+fig.savefig(figures_dir / "convection_flag_vs_T_h.png", dpi=140)
+fig.savefig(figures_dir / "convection_flag_vs_T_h.pdf")
+plt.show()
 
 # %% [markdown]
 # ## Status

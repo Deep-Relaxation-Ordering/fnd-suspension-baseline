@@ -342,6 +342,20 @@ def test_detect_csv_format_accepts_v01_phase11_and_current_headers() -> None:
     assert _detect_csv_format(_CSV_FIELDS) == "current"
 
 
+def test_committed_regime_map_cache_uses_v02_zero_shell_schema() -> None:
+    """Phase-13 cache migration preserves labels while using explicit radii."""
+    cache_path = Path(__file__).resolve().parents[1] / "notebooks/data/regime_map_grid.csv"
+    header = cache_path.read_text().splitlines()[0].split(",")
+
+    assert _detect_csv_format(header) == "current"
+    assert "radius_m" not in header
+    results = results_from_csv(cache_path)
+    assert len(results) == 6300
+    assert {r.convection_flag for r in results} == {False}
+    assert {r.delta_shell_m for r in results} == {0.0}
+    assert all(r.r_material_m == r.r_hydro_m == r.radius_m for r in results)
+
+
 def test_results_from_csv_rejects_mismatched_header(tmp_path: Path) -> None:
     """Wrong header raises rather than silently mis-mapping fields."""
     path = tmp_path / "broken.csv"
