@@ -28,4 +28,5 @@ repository-code: "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-bas
 url: "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline"
 version: 0.2.1
 date-released: 2026-04-30
-# TODO(v0.2.2): add the Zenodo DOI after the pilot-v0.2.1 tag is pushed and minted.
+# DOI is intentionally deferred to the pilot-v1.0 release. Until then, cite
+# the GitHub repository URL and tag (pilot-v0.2.1). See Phase 16.1 lab note.

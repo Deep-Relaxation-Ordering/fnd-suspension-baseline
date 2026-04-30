@@ -21,7 +21,7 @@ v0.2 artefact easier to cite, index, validate, and reuse.
 
 | File | Purpose | FAIR |
 |---|---|---|
-| `CITATION.cff` | CFF 1.2.0 citation metadata; DOI field added after Zenodo minting | F2, F3, R1.1 |
+| `CITATION.cff` | CFF 1.2.0 citation metadata; DOI deferred to pilot-v1.0 (Phase 16.1) | F2, F3, R1.1 |
 | `codemeta.json` | CodeMeta / schema.org JSON-LD software metadata | F2, I2, R1 |
 | `notebooks/data/schemas/*.json` | Frictionless Table Schema for each committed CSV | I1, I2, R1.3 |
 | `notebooks/data/README.md` | Data-file index, schema pointers, provenance lineage | F2, R1.2 |
@@ -56,19 +56,33 @@ CSV schemas cover:
   documents. The v0.2-specific story lives in
   `docs/release-notes/v0.2.md` and in the existing v0.2 sections of
   the cumulative findings documents.
-- No Zenodo badge until a DOI is minted.
+- No Zenodo DOI mint or DOI badge for the v0.2.x series — deferred to
+  `pilot-v1.0` (Phase 16.1 decision; see lab note
+  [`2026-04-30-phase16-1-defer-doi-to-v1-0.md`](../lab_notes/2026-04-30-phase16-1-defer-doi-to-v1-0.md)).
 - No v0.3 features.
 
 ## 3. DOI Handling
 
-Use the two-step path:
+DOI minting is deferred to the `pilot-v1.0` release. Rationale:
+the v0.2.x series is a pre-v1.0 pilot with a deliberately unstable
+physics scope (aggregation, wall hydrodynamics, capsule geometry are
+all out-of-scope and slated for later cycles). Minting a Zenodo DOI
+now would either need to be reissued at v1.0 (concept-DOI churn) or
+lock pre-v1.0 pilots into a citation surface they were not designed
+to carry.
 
-1. Ship `0.2.1` with DOI TODOs in the citation metadata.
-2. Push the `pilot-v0.2.1` tag so Zenodo can mint the DOI, then patch
-   the DOI into `CITATION.cff` and `codemeta.json` in a tiny
-   `0.2.2` follow-up.
+Until v1.0:
 
-This avoids tag rewrites and keeps the metadata history auditable.
+- `CITATION.cff` and `codemeta.json` carry no DOI field; both record
+  the deferral reason in a comment / property.
+- Citations use the GitHub repository URL plus the release tag
+  (e.g. `pilot-v0.2.1`).
+- Lab notes cross-reference the Phase 16.1 decision so the trail
+  is auditable.
+
+At v1.0 a DOI will be minted by enabling the Zenodo–GitHub integration
+and pushing the v1.0 tag; the resolved DOI will then be added to
+`CITATION.cff` and `codemeta.json` as part of the v1.0 release.
 
 ## 4. Acceptance Criteria
 
@@ -89,6 +103,6 @@ This avoids tag rewrites and keeps the metadata history auditable.
 
 | Risk | Mitigation |
 |---|---|
-| DOI placeholder rot | TODO in metadata plus lab-note checklist for `0.2.2` DOI patch |
+| DOI placeholder rot | Deferral to v1.0 means no placeholder lives in metadata; CITATION.cff and codemeta.json record the deferral reason directly. |
 | Schema drift later | `tests/test_data_schemas.py` fails on CSV/header/value drift |
 | Frictionless dependency weight | Use Frictionless schema files but validate with a small local pytest helper instead of adding a heavy dependency |

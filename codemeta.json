@@ -71,7 +71,7 @@
     {
       "@type": "PropertyValue",
       "propertyID": "DOI status",
-      "value": "TODO(v0.2.2): add Zenodo DOI after the pilot-v0.2.1 tag is pushed and minted."
+      "value": "Deferred to pilot-v1.0; pre-v1.0 pilots are cited by GitHub repository URL and tag."
     }
   ],
   "isBasedOn": "https://github.com/Deep-Relaxation-Ordering/diamonds_in_water/blob/3b7b18af7bd1739f3cb7b3360d2b75264dd5ad07/breakout-note-brownian-sedimentation.md"

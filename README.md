@@ -46,7 +46,7 @@ repo is amended.
 ```
 fnd-suspension-baseline/
 ├── README.md                       (this file)
-├── CITATION.cff                    citation metadata (DOI patched after Zenodo minting)
+├── CITATION.cff                    citation metadata (DOI deferred to pilot-v1.0)
 ├── codemeta.json                   CodeMeta / schema.org software metadata
 ├── LICENCE                         (MIT — code/tooling layer per cd-rules §0.3)
 ├── pyproject.toml                  (Python ≥ 3.11; NumPy / SciPy / Matplotlib)
@@ -86,10 +86,12 @@ cache values, or notebook outputs. Patch suite: `135 passed, 0 skipped`.
 
 ## How to cite
 
-Use [`CITATION.cff`](CITATION.cff) for citation metadata. The DOI is
-intentionally pending until the `pilot-v0.2.1` tag is pushed and
-Zenodo mints it; the DOI will be patched into `CITATION.cff` and
-[`codemeta.json`](codemeta.json) in a follow-up metadata-only release.
+Use [`CITATION.cff`](CITATION.cff) for citation metadata. A Zenodo DOI
+is intentionally deferred to the `pilot-v1.0` release — the v0.2.x
+series is a pre-v1.0 pilot, and minting a citation-grade DOI before
+the physics scope stabilises would lock in a moving target. Until v1.0,
+cite this repository by its GitHub URL and tag (e.g. `pilot-v0.2.1`).
+See the Phase 16.1 lab note for the deferral rationale.
 
 ## Environment
 
