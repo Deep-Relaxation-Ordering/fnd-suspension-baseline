@@ -124,12 +124,14 @@ Phase 16. The v0.2 scope was anchored in
 
 ## Known caveats and audit-gap pins
 
-- **`scan_grid.T_OBS_S` audit-gap pin** — the six observation times
-  (1 min, 10 min, 1 h, 4 h, 1 d, 1 w) are physically-motivated
-  defaults; the breakout-note §5 table's specific values should be
-  cross-checked at the next spec drift.
-- **`scan_grid.DEPTHS_M` audit-gap pin** — same for the 5th depth
-  value, pinned here as the standard 10 mm cuvette.
+- ~~**`scan_grid.T_OBS_S` audit-gap pin**~~ — **resolved in Phase 19.**
+  The six observation times (1 min, 10 min, 1 h, 4 h, 1 d, 1 w) are
+  formal v0.3 defaults under [ADR 0002 D1](adr/0002-v0.3-spec-anchoring.md)
+  (anchored to breakout-note v0.2 commit `3b7b18af`); the v0.2 spec
+  does not override these values, so they stand as authoritative.
+- ~~**`scan_grid.DEPTHS_M` audit-gap pin**~~ — **resolved in Phase 19.**
+  Same logic for the 10 mm cuvette: v0.2 spec is the authority and
+  does not override.
 - **§5 grid-snap in design tables** — the §5 r-axis is 30 log-spaced
   points (~10 % bin spacing), so design-table radius entries are
   grid-snapped, not interpolated thresholds.
@@ -168,8 +170,10 @@ Phase 16. The v0.2 scope was anchored in
 
 Candidate tightenings for the next pilot slice:
 
-- Resolve the `T_OBS_S` and `DEPTHS_M` audit-gap pins against the
-  next frozen breakout-note §5 table.
+- ~~Resolve the `T_OBS_S` and `DEPTHS_M` audit-gap pins against the
+  next frozen breakout-note §5 table.~~ — **done in Phase 19**
+  (resolved against ADR 0002 D1 / breakout-note v0.2 commit
+  `3b7b18af`; values stand as v0.3 defaults).
 - Replace grid-snapped design-table entries with continuous
   interpolated thresholds via root-finding on `top_to_bottom_ratio
   = 0.95`, `bottom_mass_fraction = 0.95`, and the smeared

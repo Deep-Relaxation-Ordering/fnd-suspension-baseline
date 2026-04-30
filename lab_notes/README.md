@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-05-01 | [Phase 19 — audit-gap pin resolution + parallel §5 walk](2026-05-01-phase19-audit-gap-pins-and-parallel-walk.md) | 19 |
 | 2026-05-01 | [Phase 18 — S2: Stokes–Einstein corrections at sub-150-nm radii](2026-05-01-phase18-s2-stokes-einstein-corrections.md) | 18 |
 | 2026-04-30 | [Phase 17 (continuation) — v0.3 work-plan contract acceptance](2026-04-30-phase17-continuation-contract-acceptance.md) | 17 |
 | 2026-04-30 | [Phase 17 (opening) — ADR 0002 promoted; work-plan-v0-3 opened against it](2026-04-30-phase17-opening-adr-0002-and-work-plan-v0-3.md) | 17 |

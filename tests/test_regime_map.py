@@ -254,6 +254,30 @@ def test_walk_grid_propagates_convection_flag() -> None:
     assert results[0].convection_flag
 
 
+def test_walk_grid_parallel_byte_identical_to_serial() -> None:
+    """Phase 19 item H: ``n_workers > 1`` must reproduce serial output exactly.
+
+    Walks a small (3×2×2×2 = 24) slice including a Method-C-resolved
+    radius row so the parallel path actually exercises the heavy
+    Smoluchowski solver. Byte-identical equality is required because the
+    §5 cache contract (ADR 0001) is machine-precision, not "approximately
+    equal".
+    """
+    axes = {
+        "radii": (5e-9, 1e-7, 1e-6),
+        "temperatures": (288.15, 308.15),
+        "depths": (1e-4, 1e-3),
+        "t_obs": (3600.0, 86400.0),
+    }
+
+    serial = walk_grid(**axes, n_workers=1)
+    parallel = walk_grid(**axes, n_workers=2)
+
+    assert len(parallel) == len(serial) == 24
+    for i, (s, p) in enumerate(zip(serial, parallel, strict=True)):
+        assert s == p, f"cell {i} differs: serial={s} parallel={p}"
+
+
 # ---------------------------------------------------------------------------
 # CSV cache round-trip
 # ---------------------------------------------------------------------------

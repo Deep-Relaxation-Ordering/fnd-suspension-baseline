@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import csv
 import math
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Literal
@@ -356,6 +357,15 @@ def classify_cell(
     )
 
 
+def _classify_cell_unpack(
+    payload: tuple[tuple[float, float, float, float], dict],
+) -> RegimeResult:
+    """Top-level helper for ``ProcessPoolExecutor.map`` — unpacks (cell, kwargs)."""
+    cell, kwargs = payload
+    r, t, h, t_obs_val = cell
+    return classify_cell(r, t, h, t_obs_val, **kwargs)
+
+
 def walk_grid(
     *,
     radii: tuple[float, ...] | None = None,
@@ -367,6 +377,7 @@ def walk_grid(
     min_resolvable_dz_m: float = REGIME_MAP_MIN_RESOLVABLE_DZ_M,
     delta_T_assumed: float = 0.0,
     boundary: BoundaryCondition = "rigid-rigid",
+    n_workers: int = 1,
 ) -> list[RegimeResult]:
     """Walk a (sub-)grid of (r, T, h, t_obs) cells and classify each one.
 
@@ -375,31 +386,43 @@ def walk_grid(
     used by tests to walk small slices, and by the deliverable-3
     notebook to slice along a single axis (e.g. fixed temperature, vary
     r and h).
+
+    ``n_workers`` controls parallelism. Default ``1`` runs the serial
+    nested loop unchanged (preserves v0.2 behaviour byte-identical to
+    machine precision). ``n_workers > 1`` distributes cells across a
+    ``ProcessPoolExecutor``; deterministic input order is preserved
+    via ``executor.map``, so the returned list is identical regardless
+    of worker count. Per ADR 0001 the §5 cache contract is byte-
+    identical at compatibility defaults — the integration test in
+    ``tests/test_regime_map.py`` pins this for parallel walks.
     """
     rs = tuple(radii_m()) if radii is None else radii
     ts = tuple(temperatures_k()) if temperatures is None else temperatures
     hs = DEPTHS_M if depths is None else depths
     t_obs_axis = T_OBS_S if t_obs is None else t_obs
 
-    results: list[RegimeResult] = []
-    for r in rs:
-        for t in ts:
-            for h in hs:
-                for t_obs_val in t_obs_axis:
-                    results.append(
-                        classify_cell(
-                            r,
-                            t,
-                            h,
-                            t_obs_val,
-                            rho_particle_kg_per_m3=rho_particle_kg_per_m3,
-                            n_cells=n_cells,
-                            min_resolvable_dz_m=min_resolvable_dz_m,
-                            delta_T_assumed=delta_T_assumed,
-                            boundary=boundary,
-                        )
-                    )
-    return results
+    cells: list[tuple[float, float, float, float]] = [
+        (r, t, h, t_obs_val)
+        for r in rs
+        for t in ts
+        for h in hs
+        for t_obs_val in t_obs_axis
+    ]
+
+    cell_kwargs = {
+        "rho_particle_kg_per_m3": rho_particle_kg_per_m3,
+        "n_cells": n_cells,
+        "min_resolvable_dz_m": min_resolvable_dz_m,
+        "delta_T_assumed": delta_T_assumed,
+        "boundary": boundary,
+    }
+
+    if n_workers <= 1:
+        return [_classify_cell_unpack((cell, cell_kwargs)) for cell in cells]
+
+    payloads = [(cell, cell_kwargs) for cell in cells]
+    with ProcessPoolExecutor(max_workers=n_workers) as executor:
+        return list(executor.map(_classify_cell_unpack, payloads))
 
 
 # ---------------------------------------------------------------------------

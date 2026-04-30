@@ -53,12 +53,12 @@ def temperatures_k() -> NDArray[np.float64]:
 # Sample-depth axis — breakout-note §5 (Ibidi µ-slide → standard cuvette)
 # ---------------------------------------------------------------------------
 #
-# The §5 grid declares 5 depths; the current pin captures the four
-# physically-motivated short-path values (Ibidi µ-slide regime through
-# 2 mm) plus the standard 10 mm cuvette. Confirm the 10 mm value against
-# the breakout-note §5 table when the next spec drift is reconciled —
-# tracked in the 2026-04-27 review-fixes lab note as the single
-# remaining spec-vs-impl ambiguity from this pass.
+# The §5 grid declares 5 depths: four physically-motivated short-path
+# values (Ibidi µ-slide regime through 2 mm) plus the standard 10 mm
+# cuvette. Resolved in Phase 19 against ADR 0002 D1 (work-plan-v0-3
+# anchored to breakout-note v0.2 commit `3b7b18af`); the v0.2 spec is
+# the authority and does not override these values. No longer an
+# audit-gap pin.
 
 DEPTHS_M: Final[tuple[float, ...]] = (1e-4, 5e-4, 1e-3, 2e-3, 1e-2)
 """Sample depths h, in metres: 0.1, 0.5, 1, 2, 10 mm."""
@@ -97,9 +97,9 @@ ad-hoc literal in the notebook.
 #   - 1 day      (overnight)
 #   - 1 week     (long observation / shelf life)
 #
-# Confirm these against the breakout-note §5 table at the next spec
-# drift — same audit-gap pattern as the depth grid (tracked in the
-# 2026-04-27 review-fixes lab note).
+# Resolved in Phase 19 against ADR 0002 D1 (anchored to breakout-note
+# v0.2 commit `3b7b18af`); the v0.2 spec is the authority and does
+# not override these values. No longer an audit-gap pin.
 
 T_OBS_S: Final[tuple[float, ...]] = (60.0, 600.0, 3600.0, 14400.0, 86400.0, 604800.0)
 """Observation times t_obs, in seconds: 1 min, 10 min, 1 h, 4 h, 1 d, 1 w."""
