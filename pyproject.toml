@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fnd-suspension-baseline"
-version = "0.2.1"
+version = "0.3.0"
 description = "Numerical pilot: Brownian motion and sedimentation of diamond particles in aqueous suspension as a function of particle size."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -57,7 +57,7 @@ notebooks = [
 "Specification" = "https://github.com/Deep-Relaxation-Ordering/diamonds_in_water/blob/main/breakout-note-brownian-sedimentation.md"
 "Project rules" = "https://github.com/threehouse-plus-ec/cd-rules"
 "Deliverable index" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/docs/deliverable-index.md"
-"Release notes" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/docs/release-notes/v0.2.md"
+"Release notes" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/docs/release-notes/v0.3.md"
 "Citation metadata" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/CITATION.cff"
 "Data schemas" = "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/tree/main/notebooks/data/schemas"
 

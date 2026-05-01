@@ -2,16 +2,16 @@
   "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
   "@type": "SoftwareSourceCode",
   "name": "fnd-suspension-baseline",
-  "version": "0.2.1",
-  "description": "Numerical pilot for Brownian motion and gravitational sedimentation of diamond particles in aqueous suspension, with v0.2 extensions for Rayleigh convection screening, material-vs-hydrodynamic radius splitting, and log-normal polydispersity smearing.",
+  "version": "0.3.0",
+  "description": "Numerical pilot for Brownian motion and gravitational sedimentation of diamond particles in aqueous suspension, with v0.3 extensions for Stokes–Einstein corrections at sub-150-nm radii, continuous regime thresholds, mesh-convergence fidelity envelope, parallel grid walks, and continuous time-evolution crossing times. Zero-default paths reproduce v0.2 arithmetic to machine precision.",
   "codeRepository": "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline",
   "url": "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline",
-  "downloadUrl": "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/archive/refs/tags/pilot-v0.2.1.zip",
+  "downloadUrl": "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/archive/refs/tags/pilot-v0.3.zip",
   "issueTracker": "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/issues",
   "license": "https://spdx.org/licenses/MIT",
   "dateCreated": "2026-04-27",
-  "dateModified": "2026-04-30",
-  "datePublished": "2026-04-30",
+  "dateModified": "2026-05-01",
+  "datePublished": "2026-05-01",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "Python",
@@ -58,15 +58,15 @@
   "relatedLink": [
     "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/CITATION.cff",
     "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/docs/deliverable-index.md",
-    "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/docs/release-notes/v0.2.md",
+    "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/docs/release-notes/v0.3.md",
     "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/notebooks/data/README.md"
   ],
   "identifier": [
     {
       "@type": "PropertyValue",
       "propertyID": "GitHub release tag",
-      "value": "pilot-v0.2.1",
-      "url": "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/releases/tag/pilot-v0.2.1"
+      "value": "pilot-v0.3",
+      "url": "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/releases/tag/pilot-v0.3"
     },
     {
       "@type": "PropertyValue",

@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-05-01 | [Phase 24 — `pilot-v0.3` release](2026-05-01-phase24-pilot-v0-3-release.md) | 24 |
 | 2026-05-01 | [Phase 23 — integration audit (cache reproducibility + smoke tests + full suite)](2026-05-01-phase23-integration-audit.md) | 23 |
 | 2026-05-01 | [Phase 22 — continuous time-evolution channel (item J)](2026-05-01-phase22-continuous-time-evolution.md) | 22 |
 | 2026-05-01 | [Phase 21 — mesh-convergence audit + δ_shell literature calibration (items C + F)](2026-05-01-phase21-mesh-convergence-and-shell-calibration.md) | 21 |

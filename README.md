@@ -70,19 +70,24 @@ fnd-suspension-baseline/
 
 ## Status
 
-**`pilot-v0.2` released.** v0.1 (tag `pilot-v0.1` at `9a0fc76`)
-shipped the original five §6 deliverables. v0.2 (tag `pilot-v0.2`,
-release package version `0.2.0`) adds the Rayleigh-number convection gate, a
-hydrodynamic-vs-material radius split (`δ_shell`), log-normal
-polydispersity post-processing, deliverable 6, and an explicit
-experimental-envelope document — all forward-compatible with v0.1
-(zero-default paths reproduce v0.1 arithmetic to machine precision).
-The spec-anchoring decision is recorded in
-[ADR 0001](docs/adr/0001-v0.2-spec-anchoring.md). Release suite:
-`133 passed, 0 skipped` (`92 passed` at the `pilot-v0.1` tag), with
-`ruff check .` clean. The current `0.2.1` patch adds FAIR citation,
-CodeMeta, and data-schema metadata only; it does not change physics,
-cache values, or notebook outputs. Patch suite: `135 passed, 0 skipped`.
+**`pilot-v0.3` released.** v0.3 (tag `pilot-v0.3`, release package
+version `0.3.0`) adds Stokes–Einstein corrections at sub-150-nm
+radii (`lambda_se`), continuous regime thresholds via root-finding, a
+mesh-convergence fidelity envelope, a provisional `delta_shell_m`
+literature calibration table, parallel `walk_grid`, and a continuous
+time-evolution channel (`time_series`, `crossing_time`) — all
+forward-compatible with v0.2 (zero-default paths reproduce v0.2
+arithmetic to machine precision). The spec-anchoring decision is
+recorded in [ADR 0002](docs/adr/0002-v0.3-spec-anchoring.md).
+Release suite: `171 passed, 0 skipped`, `ruff check .` clean.
+
+v0.2 (tag `pilot-v0.2`, release package version `0.2.0`) added the
+Rayleigh-number convection gate, a hydrodynamic-vs-material radius
+split (`δ_shell`), log-normal polydispersity post-processing,
+deliverable 6, and an explicit experimental-envelope document — all
+forward-compatible with v0.1. The `0.2.1` patch added FAIR citation,
+CodeMeta, and data-schema metadata only. v0.1 (tag `pilot-v0.1` at
+`9a0fc76`) shipped the original five §6 deliverables.
 
 ## How to cite
 
