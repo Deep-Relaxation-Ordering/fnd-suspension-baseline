@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-05-01 | [Phase 22 — continuous time-evolution channel (item J)](2026-05-01-phase22-continuous-time-evolution.md) | 22 |
 | 2026-05-01 | [Phase 21 — mesh-convergence audit + δ_shell literature calibration (items C + F)](2026-05-01-phase21-mesh-convergence-and-shell-calibration.md) | 21 |
 | 2026-05-01 | [Phase 20 — continuous regime thresholds (item B)](2026-05-01-phase20-continuous-thresholds.md) | 20 |
 | 2026-05-01 | [Phase 19 — audit-gap pin resolution + parallel §5 walk](2026-05-01-phase19-audit-gap-pins-and-parallel-walk.md) | 19 |

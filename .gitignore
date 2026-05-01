@@ -53,3 +53,6 @@ notebooks/figures/**/*.pdf
 # Audit outputs — generated CSVs from one-off analysis scripts
 notebooks/*_audit.csv
 notebooks/data/*_audit.csv
+
+# Design-table outputs — generated from notebooks and reproducible from scripts
+notebooks/data/design_table_crossing_times.csv
