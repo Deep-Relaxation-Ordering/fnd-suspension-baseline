@@ -49,3 +49,6 @@ runs/
 # byte-for-byte on every notebook re-run even when the plotted data is
 # identical. PNG previews stay tracked; PDFs are regenerated on demand.
 notebooks/figures/**/*.pdf
+
+# Audit outputs — generated CSVs from one-off analysis scripts
+notebooks/*_audit.csv

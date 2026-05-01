@@ -50,6 +50,12 @@ from pathlib import Path
 
 import numpy as np
 
+from continuous_thresholds import (
+    bracket_homogeneous_from_grid,
+    bracket_sedimented_from_grid,
+    find_max_homogeneous_radius,
+    find_min_sedimented_radius,
+)
 from regime_map import RegimeGrid, results_from_csv, results_to_grid
 
 # %% [markdown]
@@ -278,6 +284,184 @@ print(_markdown_band_table(
         "design_table_max_homogeneous_r.csv)*"
     ),
 ))
+
+# %% [markdown]
+# ## Continuous-threshold root-finding (Phase 20 — item B)
+#
+# The grid-snapped tables above leave a ~10 % uncertainty band on
+# each band-edge radius (the §5 r-axis bin spacing). Phase 20 closes
+# that gap with `scipy.optimize.brentq` on the underlying
+# `top_to_bottom_ratio` (homogeneous boundary) and
+# `bottom_mass_fraction` (sedimented boundary) channels — see
+# `src/continuous_thresholds.py` and the Phase 20 lab note.
+#
+# The continuous tables are *additive* — the grid-snapped CSVs above
+# remain the v0.2.1-reproducible baseline (D2 Option 1). The
+# continuous outputs ship as new CSVs alongside, scoped to room
+# temperature (25 °C) for the headline summary; multi-T continuous
+# sweeps are deferred to a future phase if needed.
+
+# %%
+def _continuous_room_t_columns(
+    grid: RegimeGrid,
+    ti: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return (max_homog_continuous, min_sed_continuous) at temperature index ``ti``.
+
+    Each output has shape (n_h, n_t_obs); NaN where no transition or
+    where the sedimented guard fails.
+    """
+    radii = tuple(float(r) for r in grid.radii)
+    n_h = len(grid.depths)
+    n_t_obs = len(grid.t_obs)
+    out_homog = np.full((n_h, n_t_obs), np.nan, dtype=np.float64)
+    out_sed = np.full((n_h, n_t_obs), np.nan, dtype=np.float64)
+
+    label_lookup = {0: "homogeneous", 1: "stratified", 2: "sedimented"}
+    temperature_k = grid.temperatures[ti]
+
+    for hi, h in enumerate(grid.depths):
+        for oi, t_obs in enumerate(grid.t_obs):
+            column = tuple(
+                label_lookup[int(grid.regime[ri, ti, hi, oi])]
+                for ri in range(len(radii))
+            )
+
+            br_h = bracket_homogeneous_from_grid(radii, column)
+            if br_h is not None:
+                root = find_max_homogeneous_radius(
+                    temperature_k, h, t_obs, r_lo=br_h[0], r_hi=br_h[1]
+                )
+                if root is not None:
+                    out_homog[hi, oi] = root
+
+            br_s = bracket_sedimented_from_grid(radii, column)
+            if br_s is not None:
+                root = find_min_sedimented_radius(
+                    temperature_k, h, t_obs, r_lo=br_s[0], r_hi=br_s[1]
+                )
+                if root is not None:
+                    out_sed[hi, oi] = root
+
+    return out_homog, out_sed
+
+
+max_homog_r_cont, min_sed_r_cont = _continuous_room_t_columns(grid, ti_room)
+print(f"continuous max_homog_r (room T) shape: {max_homog_r_cont.shape}")
+print(f"continuous min_sed_r   (room T) shape: {min_sed_r_cont.shape}")
+
+# %%
+def _write_room_t_continuous_csv(
+    path: Path,
+    band: np.ndarray,
+    grid: RegimeGrid,
+    label: str,
+) -> None:
+    """One row per (h, t_obs); single radius column at room T."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    headers = ["sample_depth_m", "t_obs_s", f"{label}_continuous_m"]
+    with path.open("w", newline="\n") as fh:
+        writer = csv.writer(fh, lineterminator="\n")
+        writer.writerow(headers)
+        for hi, h in enumerate(grid.depths):
+            for oi, t in enumerate(grid.t_obs):
+                val = band[hi, oi]
+                writer.writerow(
+                    [repr(float(h)), repr(float(t)), "" if np.isnan(val) else repr(float(val))]
+                )
+
+
+_write_room_t_continuous_csv(
+    DATA_DIR / "design_table_max_homogeneous_r_continuous_room_T.csv",
+    max_homog_r_cont,
+    grid,
+    label="max_homog_r",
+)
+_write_room_t_continuous_csv(
+    DATA_DIR / "design_table_min_sedimented_r_continuous_room_T.csv",
+    min_sed_r_cont,
+    grid,
+    label="min_sed_r",
+)
+print(f"wrote {DATA_DIR / 'design_table_max_homogeneous_r_continuous_room_T.csv'}")
+print(f"wrote {DATA_DIR / 'design_table_min_sedimented_r_continuous_room_T.csv'}")
+
+# %% [markdown]
+# ## Continuous vs grid-snapped — room-T side-by-side
+
+# %%
+def _markdown_continuous_band_table(
+    band_grid: np.ndarray,
+    band_cont: np.ndarray,
+    grid: RegimeGrid,
+    ti: int,
+    title: str,
+    rule: str,
+) -> str:
+    """Render continuous vs grid-snapped radii side by side at temperature ``ti``."""
+    out: list[str] = []
+    out.append(f"### {title}")
+    out.append("")
+    out.append(rule)
+    out.append("")
+    header = "| h \\ t_obs | " + " | ".join(_format_t_obs(t) for t in grid.t_obs) + " |"
+    sep = "|---" * (len(grid.t_obs) + 1) + "|"
+    out.append(header)
+    out.append(sep)
+    for hi, h in enumerate(grid.depths):
+        cells = []
+        for oi in range(len(grid.t_obs)):
+            grid_val = band_grid[hi, oi, ti]
+            cont_val = band_cont[hi, oi]
+            cells.append(
+                f"{_format_radius(cont_val)} *(grid: {_format_radius(grid_val)})*"
+            )
+        out.append(f"| {_format_h(h)} | {' | '.join(cells)} |")
+    out.append("")
+    return "\n".join(out)
+
+
+cont_md_path = DATA_DIR / "design_table_room_T_continuous.md"
+cont_md_lines: list[str] = []
+cont_md_lines.append("# Design table — room temperature, continuous boundaries (Phase 20)")
+cont_md_lines.append("")
+cont_md_lines.append(
+    "Auto-generated by `notebooks/04_design_table.py` from the §5 grid "
+    "cache and `src/continuous_thresholds.py`. The headline value in "
+    "each cell is the **continuous root-found radius** (brentq on the "
+    "underlying ratio / bmf channel); the parenthetical is the "
+    "**grid-snapped** value from the §5 r-axis (~10 % bin spacing). "
+    "'—' = no transition in the §5 column or the round-4 second-criterion "
+    "guard refused the bmf-only root."
+)
+cont_md_lines.append("")
+cont_md_lines.append(_markdown_continuous_band_table(
+    max_homog_r,
+    max_homog_r_cont,
+    grid,
+    ti_room,
+    title="Largest homogeneous radius — continuous (grid-snapped)",
+    rule=(
+        "*Root of `top_to_bottom_ratio(r) = 0.95` between adjacent §5 "
+        "samples. Continuous value sits between the last homogeneous "
+        "radius and the next one (the parenthesised grid value).*"
+    ),
+))
+cont_md_lines.append(_markdown_continuous_band_table(
+    min_sed_r,
+    min_sed_r_cont,
+    grid,
+    ti_room,
+    title="Smallest sedimented radius — continuous (grid-snapped)",
+    rule=(
+        "*Root of `bottom_mass_fraction(r) = 0.95` between adjacent §5 "
+        "samples, under the round-4 second-criterion guard "
+        "(`top_to_bottom_ratio ≤ 0.05` at the root). '—' if the guard "
+        "refuses the bmf-only root.*"
+    ),
+))
+cont_md_path.write_text("\n".join(cont_md_lines))
+print(f"wrote {cont_md_path}")
 
 # %% [markdown]
 # ## Status
