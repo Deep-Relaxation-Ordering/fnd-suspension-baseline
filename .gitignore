@@ -52,3 +52,4 @@ notebooks/figures/**/*.pdf
 
 # Audit outputs — generated CSVs from one-off analysis scripts
 notebooks/*_audit.csv
+notebooks/data/*_audit.csv

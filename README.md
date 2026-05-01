@@ -153,6 +153,7 @@ notebook regeneration commands.
 | 18 | S2 — Stokes-Einstein corrections at sub-150-nm radii (`lambda_se` parameter, side-computation module, audit) | done — [phase-18 note](lab_notes/2026-05-01-phase18-s2-stokes-einstein-corrections.md) |
 | 19 | items A + H — `T_OBS_S` / `DEPTHS_M` audit-gap pins resolved (no value change); parallel `walk_grid` via `ProcessPoolExecutor` (`n_workers=1` default reproduces v0.2 byte-identical) | done — [phase-19 note](lab_notes/2026-05-01-phase19-audit-gap-pins-and-parallel-walk.md) |
 | 20 | item B — continuous regime thresholds via `scipy.optimize.brentq` on the ratio / bmf channels; new room-T continuous CSVs alongside the unchanged grid-snapped tables | done — [phase-20 note](lab_notes/2026-05-01-phase20-continuous-thresholds.md) |
+| 21 | items C + F — mesh-convergence audit confirms current 120/240-cell strategy (bmf drift < 0.006 % at 30 cells; ratio < 0.4 % at 240); `δ_shell` literature calibration table (provisional, marked as audit-gap pin pending campaign DLS) | done — [phase-21 note](lab_notes/2026-05-01-phase21-mesh-convergence-and-shell-calibration.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
