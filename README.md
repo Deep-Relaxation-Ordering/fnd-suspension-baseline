@@ -155,6 +155,7 @@ notebook regeneration commands.
 | 20 | item B — continuous regime thresholds via `scipy.optimize.brentq` on the ratio / bmf channels; new room-T continuous CSVs alongside the unchanged grid-snapped tables | done — [phase-20 note](lab_notes/2026-05-01-phase20-continuous-thresholds.md) |
 | 21 | items C + F — mesh-convergence audit confirms current 120/240-cell strategy (bmf drift < 0.006 % at 30 cells; ratio < 0.4 % at 240); `δ_shell` literature calibration table (provisional, marked as audit-gap pin pending campaign DLS) | done — [phase-21 note](lab_notes/2026-05-01-phase21-mesh-convergence-and-shell-calibration.md) |
 | 22 | item J — continuous time-evolution channel (`time_series`, `crossing_time` with PCHIP + Brent); design-table generator for crossing times | done — [phase-22 note](lab_notes/2026-05-01-phase22-continuous-time-evolution.md) |
+| 23 | Integration audit — focused cache-subset byte-identical verification; module smoke tests; full 171-test suite | done — [phase-23 note](lab_notes/2026-05-01-phase23-integration-audit.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
