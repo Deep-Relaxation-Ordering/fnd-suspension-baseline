@@ -3,440 +3,849 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>fnd-suspension-baseline — diamond particles in aqueous suspension</title>
-<meta name="description" content="A numerical pilot for the Brownian motion and gravitational sedimentation of nano- to micrometre diamond particles in water. Programme overview, current status (pilot-v0.3), key findings, and implications for experimental design." />
+<title>fnd-suspension-baseline — diamonds in water, open to correction</title>
+<meta name="description" content="Numerical pilot for the Brownian motion and gravitational sedimentation of nano- to micrometre diamond particles in water. Programme overview, current status (pilot-v0.3), key findings, and implications for the surrounding programme." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="tokens.css" />
 <style>
-  :root {
-    --bg: #fafaf7;
-    --fg: #1c1c1a;
-    --muted: #5a5a55;
-    --accent: #2a4365;
-    --accent-soft: #ebf2fa;
-    --rule: #d8d6cf;
-    --code-bg: #f1efe9;
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--parchment); color: var(--ink); }
+  body {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    line-height: 1.68;
+    background-image:
+      linear-gradient(to right, rgba(224, 219, 210, 0.22) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(224, 219, 210, 0.22) 1px, transparent 1px);
+    background-size: 3rem 3rem;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #15171a;
-      --fg: #e8e6e0;
-      --muted: #9ea29c;
-      --accent: #88b6e6;
-      --accent-soft: #1f2a3a;
-      --rule: #2c2f33;
-      --code-bg: #1c1f23;
+  @media (max-width: 640px) { body { font-size: 16px; } }
+
+  a, button, [role="button"], input, select, textarea {
+    min-height: var(--min-target-aa);
+  }
+  :focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+    .reveal { opacity: 0; transform: translateY(1.1rem); animation: rise 720ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    .reveal-delay-1 { animation-delay: 100ms; }
+    .reveal-delay-2 { animation-delay: 200ms; }
+    .reveal-delay-3 { animation-delay: 300ms; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
-  html { box-sizing: border-box; }
-  *, *::before, *::after { box-sizing: inherit; }
-  body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: ui-serif, Georgia, "Times New Roman", serif;
-    font-size: 17px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(1.1rem); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  main {
-    max-width: 760px;
+
+  .skip-link {
+    position: absolute; top: -100%; left: 0;
+    padding: 0.75rem 1.5rem;
+    background: var(--ink); color: var(--parchment);
+    font-family: var(--font-mono); font-size: 0.75rem;
+    z-index: 1000;
+  }
+  .skip-link:focus { top: 0; }
+
+  .site-shell { width: min(calc(100% - 3rem), 72rem); margin: 0 auto; }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(10px);
+    background: rgba(245, 240, 232, 0.9);
+    border-bottom: 1px solid var(--grid);
+  }
+  .site-header__inner {
+    width: min(calc(100% - 3rem), 72rem);
     margin: 0 auto;
-    padding: 3rem 1.5rem 5rem;
-  }
-  header.hero {
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 2rem;
-    margin-bottom: 3rem;
-  }
-  h1 {
-    font-size: 2.05rem;
-    line-height: 1.2;
-    margin: 0 0 0.5rem;
-    letter-spacing: -0.01em;
-  }
-  .tagline {
-    font-size: 1.1rem;
-    color: var(--muted);
-    margin: 0 0 1.25rem;
-    font-style: italic;
-  }
-  .meta {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.85rem;
-    color: var(--muted);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1.25rem;
-  }
-  .meta span code {
-    background: var(--accent-soft);
-    color: var(--accent);
-    padding: 0.1rem 0.45rem;
-    border-radius: 3px;
-    font-size: 0.95em;
-  }
-  h2 {
-    font-size: 1.35rem;
-    margin: 3rem 0 1rem;
-    line-height: 1.3;
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 0.4rem;
-  }
-  h3 {
-    font-size: 1.05rem;
-    margin: 1.75rem 0 0.5rem;
-    line-height: 1.3;
-  }
-  p, ul, ol { margin: 0 0 1rem; }
-  ul, ol { padding-left: 1.4rem; }
-  li { margin-bottom: 0.4rem; }
-  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 120ms; }
-  a:hover { border-bottom-color: var(--accent); }
-  code {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.9em;
-    background: var(--code-bg);
-    padding: 0.1rem 0.35rem;
-    border-radius: 3px;
-  }
-  blockquote {
-    border-left: 3px solid var(--accent);
-    background: var(--accent-soft);
-    margin: 1.5rem 0;
-    padding: 0.75rem 1.25rem;
-    font-style: italic;
-    color: var(--fg);
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0 1.5rem;
-    font-size: 0.95rem;
-  }
-  th, td {
-    text-align: left;
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--rule);
-  }
-  th {
-    font-weight: 600;
-    color: var(--muted);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  td code { font-size: 0.85em; }
-  .layer-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: auto 1fr auto;
     gap: 1rem;
-    margin: 1.5rem 0;
+    align-items: center;
+    padding: 1rem 0;
   }
-  @media (min-width: 640px) {
-    .layer-grid { grid-template-columns: repeat(3, 1fr); }
-  }
-  .layer-card {
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 1rem 1.1rem;
-    background: var(--bg);
-  }
-  .layer-card h3 {
-    margin: 0 0 0.4rem;
-    font-size: 1rem;
-    color: var(--accent);
-  }
-  .layer-card p { font-size: 0.9rem; margin: 0 0 0.5rem; color: var(--muted); }
-  .layer-card .release {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.78rem;
-    color: var(--muted);
-  }
-  .layer-card .release code { font-size: 1em; }
-  .layer-card.current {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-  }
-  .key-finding {
-    margin: 1.25rem 0;
-    padding-left: 1rem;
-    border-left: 2px solid var(--rule);
-  }
-  .key-finding h3 { margin-top: 0; color: var(--accent); }
-  .key-finding p:last-child { margin-bottom: 0; }
-  footer {
-    margin-top: 4rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--rule);
+  .brand-lockup {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    min-height: 44px;
+    text-decoration: none; color: inherit;
+    font-family: var(--font-mono);
     font-size: 0.85rem;
-    color: var(--muted);
+    letter-spacing: 0.01em;
   }
-  footer p { margin-bottom: 0.5rem; }
+  .brand-lockup .brand-mark {
+    width: 32px; height: 32px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 500;
+    color: var(--ink);
+    background: var(--warm-white);
+  }
+  .brand-lockup .brand-text { color: var(--ink); }
+  .site-nav__list {
+    display: flex; gap: 0.5rem;
+    list-style: none; margin: 0; padding: 0;
+    justify-self: end;
+  }
+  .site-nav a {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: var(--min-target);
+    padding: 0.5rem 0.9rem;
+    font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.3;
+    color: var(--sea); text-decoration: none;
+    border: 1px solid transparent;
+  }
+  .site-nav a:hover, .site-nav a:focus-visible {
+    border-color: var(--grid); background: rgba(250, 248, 244, 0.88);
+  }
+
+  main { display: block; padding: 0 0 4rem; }
+
+  .hero {
+    padding: 6rem 0 3rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.85fr);
+    gap: 2rem;
+    align-items: end;
+  }
+  .eyebrow, .section-heading, .label, .table-caption,
+  .research-callout__label, .hero-metrics dt {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.3;
+    color: var(--sea);
+  }
+  .hero h1 {
+    max-width: 16ch;
+    margin: 1rem 0 1rem;
+    font-family: var(--font-serif);
+    font-size: clamp(2.4rem, 6.5vw, 4.5rem);
+    line-height: 0.98;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .hero p { max-width: var(--measure); margin: 0 0 0.85rem; font-size: 1rem; }
+  .hero-intro { font-size: 1.15rem; line-height: 1.55; }
+  .hero-actions {
+    display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem;
+  }
+  .button-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: var(--min-target);
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--ink);
+    background: var(--warm-white);
+    color: var(--ink);
+    font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.3;
+    text-decoration: none;
+  }
+  .button-link--secondary {
+    border-color: var(--grid);
+    color: var(--sea);
+    background: transparent;
+  }
+  .hero-panel, .research-callout, .demonstrator-table, .colophon, .evidence-card {
+    background: rgba(250, 248, 244, 0.92);
+    border: 1px solid var(--grid);
+  }
+  .hero-panel { padding: 1.4rem; position: relative; overflow: clip; }
+  .hero-panel::before {
+    content: "";
+    position: absolute; inset: auto -3rem -3rem auto;
+    width: 10rem; height: 10rem; border-radius: 50%;
+    background: radial-gradient(circle, rgba(224, 219, 210, 0.85) 0%, rgba(224, 219, 210, 0) 72%);
+    pointer-events: none;
+  }
+  .hero-panel h2 {
+    font-family: var(--font-serif);
+    font-size: 1.35rem; line-height: 1.55; font-weight: 400;
+    margin: 0.4rem 0 1rem;
+  }
+  .hero-panel p { margin: 0 0 0.85rem; }
+  .hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin: 1.4rem 0 0;
+  }
+  .hero-metrics div { padding-top: 0.8rem; border-top: 1px solid var(--grid); }
+  .hero-metrics dt { margin-bottom: 0.3rem; }
+  .hero-metrics dd {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.2rem; line-height: 1.2;
+    color: var(--ink);
+  }
+
+  section { padding-top: 3.5rem; }
+  .section-rule {
+    width: 1.5rem; height: 1px; margin: 0 0 1.2rem;
+    border: 0; background: var(--grid);
+  }
+  .section-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 24rem);
+    gap: 2rem;
+    align-items: start;
+    margin-bottom: 1.8rem;
+  }
+  .section-header h2 {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-serif);
+    font-size: 1.9rem; line-height: 1.12; font-weight: 400;
+    max-width: 22ch;
+  }
+  .section-header p { max-width: 32rem; font-size: 1rem; margin: 0; }
+
+  .layer-stack {
+    display: grid; gap: 1px;
+    border: 1px solid var(--grid); background: var(--grid);
+  }
+  .layer-row {
+    display: grid;
+    grid-template-columns: 3.4rem minmax(0, 1fr);
+    background: var(--warm-white);
+  }
+  .layer-marker {
+    display: flex; align-items: center; justify-content: center;
+    border-right: 1px solid var(--grid);
+    font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.3;
+    color: var(--stone);
+  }
+  .layer-row--current { background: var(--parchment); }
+  .layer-row--current .layer-marker { color: var(--sea); }
+  .layer-copy { padding: 1rem 1.1rem 1.1rem; }
+  .layer-copy h3 {
+    margin: 0 0 0.2rem;
+    font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.3;
+    font-weight: 500;
+    color: var(--sea);
+  }
+  .layer-copy p { margin: 0 0 0.4rem; max-width: var(--measure); }
+  .layer-copy p:last-child { margin-bottom: 0; }
+  .layer-copy .release-tag {
+    display: inline-block;
+    margin-top: 0.4rem;
+    font-family: var(--font-mono); font-size: 0.75rem;
+    color: var(--stone);
+  }
+  .layer-copy .release-tag code { color: var(--ink); }
+
+  .research-callout {
+    padding: 1.25rem 1.25rem 1.25rem 1.4rem;
+    border-left: 3px solid var(--sea);
+    margin-top: 1rem;
+  }
+  .research-callout--signal { border-left-color: var(--signal); }
+  .research-callout--signal .research-callout__label { color: var(--signal); }
+  .research-callout__label {
+    display: inline-block; margin-bottom: 0.6rem;
+    font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .research-callout p { margin: 0 0 0.6rem; max-width: var(--measure); }
+  .research-callout p:last-child { margin-bottom: 0; }
+
+  .evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+  .evidence-grid--narrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .evidence-card { padding: 1rem; }
+  .evidence-card h3 {
+    margin: 0 0 0.35rem;
+    font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.3;
+    font-weight: 500; color: var(--sea);
+  }
+  .evidence-card p { margin: 0; }
+  .evidence-card a { color: var(--sea); text-decoration: none; border-bottom: 1px solid transparent; }
+  .evidence-card a:hover, .evidence-card a:focus-visible { border-bottom-color: var(--sea); }
+
+  .table-wrap {
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+  }
+  .table-wrap:focus-visible { outline: var(--focus-ring); outline-offset: 0.25rem; }
+  .table-caption {
+    display: block; padding: 1rem 1rem 0;
+  }
+  .demonstrator-table { padding-bottom: 0.5rem; margin-top: 1rem; }
+  table {
+    width: 100%; border-collapse: collapse; border-spacing: 0;
+    font-variant-numeric: tabular-nums; margin: 0;
+  }
+  thead th {
+    font-family: var(--font-mono);
+    font-weight: 500; font-size: 0.75rem; line-height: 1.3;
+    color: var(--ink);
+    text-align: left;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--stone);
+    vertical-align: bottom;
+  }
+  tbody td {
+    font-family: var(--font-serif);
+    font-size: 0.92rem; line-height: 1.5;
+    color: var(--ink);
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--grid);
+    vertical-align: top;
+  }
+  tbody td code, tbody th code, .hero-metrics dd code, .label code {
+    font-family: var(--font-mono); font-size: 0.85em;
+    color: inherit; background: transparent;
+  }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  @media (hover: hover) { tbody tr:hover { background: var(--warm-white); } }
+
+  .body-copy { max-width: var(--measure); margin: 0 0 1rem; }
+  .body-copy + .body-copy { margin-top: 0; }
+  .body-copy ul { padding-left: 1.4rem; max-width: var(--measure); }
+  .body-copy li { margin-bottom: 0.55rem; }
+  .body-copy li:last-child { margin-bottom: 0; }
+  .body-copy a { color: var(--sea); border-bottom: 1px solid transparent; text-decoration: none; }
+  .body-copy a:hover, .body-copy a:focus-visible { border-bottom-color: var(--sea); }
+  .body-copy code, .body-copy strong code { font-family: var(--font-mono); font-size: 0.9em; background: transparent; color: inherit; }
+  .body-copy strong { font-weight: 600; }
+
+  .colophon {
+    margin-top: 4rem;
+    padding: 1.4rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.45rem;
+  }
+  .colophon .status {
+    font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.3;
+    color: var(--ink);
+    margin: 0;
+  }
+  .colophon .maxim {
+    margin: 0.45rem 0 0;
+    font-style: italic; color: var(--ink);
+  }
+  .colophon .meta {
+    margin: 0.7rem 0 0;
+    font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.5;
+    color: var(--stone);
+  }
+  .colophon .meta a { color: var(--sea); text-decoration: none; border-bottom: 1px solid transparent; }
+  .colophon .meta a:hover, .colophon .meta a:focus-visible { border-bottom-color: var(--sea); }
+
+  @media (max-width: 880px) {
+    .hero, .section-header, .evidence-grid, .evidence-grid--narrow {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 640px) {
+    .site-shell, .site-header__inner { width: min(calc(100% - 2.5rem), 72rem); }
+    .site-header__inner { padding: 0.7rem 0; grid-template-columns: auto 1fr; }
+    .site-nav { grid-column: 1 / -1; }
+    .site-nav__list { flex-wrap: wrap; gap: 0.35rem; }
+    .hero { padding-top: 4rem; }
+    section { padding-top: 2.5rem; }
+    .section-rule { margin-bottom: 1rem; }
+    .layer-row { grid-template-columns: 2.4rem minmax(0, 1fr); }
+    .hero-metrics { grid-template-columns: 1fr; }
+    table.stackable thead { display: none; }
+    table.stackable tr {
+      display: block;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--grid);
+    }
+    table.stackable td {
+      display: block; padding: 0.4rem 0.75rem; border: none; font-size: 0.92rem;
+    }
+    table.stackable td::before {
+      content: attr(data-label);
+      display: block;
+      font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.3;
+      font-weight: 500; color: var(--stone);
+      margin-bottom: 0.15rem;
+    }
+  }
 </style>
 </head>
 <body>
-<main>
+<a href="#content" class="skip-link">Skip to content</a>
 
-<header class="hero">
-  <h1>fnd-suspension-baseline</h1>
-  <p class="tagline">Brownian motion and gravitational sedimentation of diamond particles in aqueous suspension &mdash; a numerical pilot.</p>
-  <div class="meta">
-    <span>Current release: <code>pilot-v0.3</code></span>
-    <span>Tests: <code>171 passed</code></span>
-    <span>Stewardship: U.&nbsp;Warring, AG&nbsp;Sch&auml;tz, Universit&auml;t Freiburg</span>
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand-lockup" href="#top" aria-label="fnd-suspension-baseline home">
+      <span class="brand-mark" aria-hidden="true">fnd</span>
+      <span class="brand-text">fnd-suspension-baseline</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <ul class="site-nav__list">
+        <li><a href="#topic">Topic</a></li>
+        <li><a href="#programme">Programme</a></li>
+        <li><a href="#status">Status</a></li>
+        <li><a href="#findings">Findings</a></li>
+        <li><a href="#resources">Resources</a></li>
+      </ul>
+    </nav>
   </div>
 </header>
 
-<section>
-<h2>What this is</h2>
-<p>
-  <strong>Fluorescent nanodiamonds (FNDs) in water</strong> are an emerging
-  platform for cellular-scale sensing &mdash; their nitrogen-vacancy (NV) centres
-  read out local temperature, magnetic field, and pH from inside biological
-  samples. But before any of that physics is interesting, an experimentalist
-  has to know whether the particles in their cuvette are <em>actually
-  suspended</em>, <em>partly stratified</em>, or <em>already on the bottom</em>
-  by the time the measurement starts.
-</p>
-<p>
-  This repository is the simulation that answers that question. Given a
-  particle radius, sample temperature, cell depth, and observation time, it
-  classifies a suspension into one of three regimes &mdash;
-  <code>homogeneous</code>, <code>stratified</code>, or
-  <code>sedimented</code> &mdash; and reports continuous boundary radii, fidelity
-  envelopes, and design tables that an experimentalist can read directly.
-</p>
-<p>
-  The implementation is a numerical pilot: three independent solvers
-  (analytical, Langevin ensemble, Smoluchowski PDE) cross-validate each
-  other across a 30&nbsp;&times;&nbsp;7&nbsp;&times;&nbsp;5&nbsp;&times;&nbsp;6
-  parameter sweep. Every conclusion below is grounded in that sweep.
-</p>
-</section>
+<main id="content">
+<div class="site-shell">
 
-<section>
-<h2>The long-horizon programme</h2>
-<p>
-  This pilot is the first layer of a three-layer programme. Each layer
-  closes one scientific question and earns the next major release; the
-  programme&rsquo;s navigation chart lives in
-  <a href="program-context.md">docs/program-context.md</a>.
-</p>
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="reveal">
+      <p class="eyebrow">Numerical pilot &middot; pilot-v0.3</p>
+      <h1 id="hero-title">Diamonds in water, open to correction.</h1>
+      <p class="hero-intro">
+        A simulator that answers the prior question every fluorescent-nanodiamond experiment
+        depends on: <em>is the suspension still suspended at the moment of measurement?</em>
+      </p>
+      <p>
+        Three independent solvers cross-validated across a 6300-cell parameter sweep,
+        anchored to a frozen physics spec, kept honest by 171 tests. The implementation
+        is the first layer of a three-layer programme; the page below sketches what that
+        layer found, and what the next two have to do.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href="#findings">Read the findings</a>
+        <a class="button-link button-link--secondary" href="#programme">See the programme</a>
+      </div>
+    </div>
 
-<div class="layer-grid">
-  <div class="layer-card current">
-    <h3>L1 &middot; Realism</h3>
-    <p>Can a student plan a sealed-cuvette FND tracking experiment from this repository&rsquo;s deliverables and cited references &mdash; with realistic aggregation, hydrodynamics, and polydispersity?</p>
-    <div class="release">target: <code>pilot-v1.0</code></div>
-  </div>
-  <div class="layer-card">
-    <h3>L2 &middot; Thermometry</h3>
-    <p>Given an FND trajectory, does the simulator recover the local temperature consistently with NV-centre fluorescence on the same particle?</p>
-    <div class="release">target: <code>pilot-v2.0</code></div>
-  </div>
-  <div class="layer-card">
-    <h3>L3 &middot; Nucleation</h3>
-    <p>Given an FND batch in a sealed micro-cell under a cooling protocol, can the simulator predict the distribution of nucleation temperatures and times within experimental error bars?</p>
-    <div class="release">target: <code>pilot-v3.0</code></div>
-  </div>
+    <aside class="hero-panel reveal reveal-delay-1" aria-labelledby="hero-panel-title">
+      <p class="label">Release pin</p>
+      <h2 id="hero-panel-title">pilot-v0.3 anchored to breakout-note v0.2.</h2>
+      <p>
+        Seven additive tightenings landed without changing the v0.2.1 cache numerics at
+        compatibility defaults. The §5 cache is byte-identical; the new surfaces sit on top.
+      </p>
+      <dl class="hero-metrics" aria-label="Release metrics">
+        <div>
+          <dt>Tag</dt>
+          <dd><code>pilot-v0.3</code></dd>
+        </div>
+        <div>
+          <dt>Tests</dt>
+          <dd>171 passed</dd>
+        </div>
+        <div>
+          <dt>Cells</dt>
+          <dd>6300 / §5</dd>
+        </div>
+      </dl>
+    </aside>
+  </section>
+
+  <section id="topic" aria-labelledby="topic-title">
+    <hr class="section-rule" />
+    <div class="section-header reveal">
+      <div>
+        <p class="section-heading">Topic</p>
+        <h2 id="topic-title">Fluorescent nanodiamonds make exquisite cellular sensors — but only if they are still in suspension.</h2>
+      </div>
+      <p>
+        Nitrogen-vacancy centres in nanodiamond read out local temperature, magnetic field,
+        and pH from inside biological samples. None of that physics is interesting if the
+        particles in the cuvette have already settled to the bottom by the time the camera
+        captures the first frame.
+      </p>
+    </div>
+    <div class="body-copy reveal reveal-delay-1">
+      <p>
+        This repository is the simulation that answers the prior question. Given a particle
+        radius, sample temperature, cell depth, and observation time, it classifies a
+        suspension as <code>homogeneous</code>, <code>stratified</code>, or
+        <code>sedimented</code>; reports continuous boundary radii via root-finding;
+        emits a fidelity envelope; and ships a design table an experimentalist can read
+        directly.
+      </p>
+      <p>
+        The implementation is a numerical pilot in the literal sense: three independent
+        solvers (analytical, Langevin ensemble, Smoluchowski PDE) cross-validate one
+        another across a 30 × 7 × 5 × 6 parameter sweep. Every conclusion below is
+        grounded in that sweep.
+      </p>
+    </div>
+  </section>
+
+  <section id="programme" aria-labelledby="programme-title">
+    <hr class="section-rule" />
+    <div class="section-header reveal">
+      <div>
+        <p class="section-heading">Long horizon</p>
+        <h2 id="programme-title">The pilot is the first of three layers; each closes one scientific question and earns one major release.</h2>
+      </div>
+      <p>
+        Each layer is gated by an experimental campaign — not an internal "looks right"
+        check. The simulator is the platform; the science sits on top. Full chart in
+        <a href="program-context.md" class="body-copy">program-context.md</a>.
+      </p>
+    </div>
+
+    <div class="layer-stack reveal reveal-delay-1" aria-label="Three-layer programme">
+      <article class="layer-row layer-row--current">
+        <div class="layer-marker">L1</div>
+        <div class="layer-copy">
+          <h3 class="label">Realism &middot; current</h3>
+          <p>
+            Can a student plan a sealed-cuvette FND tracking experiment from this repository's
+            deliverables and cited references — with realistic aggregation, hydrodynamics, and
+            polydispersity — without re-deriving regime boundaries?
+          </p>
+          <span class="release-tag">target: <code>pilot-v1.0</code> &middot; in flight</span>
+        </div>
+      </article>
+      <article class="layer-row">
+        <div class="layer-marker">L2</div>
+        <div class="layer-copy">
+          <h3 class="label">Thermometry</h3>
+          <p>
+            Given an FND trajectory, does the simulator recover the local temperature
+            consistently with NV-centre fluorescence on the same particle? Two thermometers
+            on the same batch should agree.
+          </p>
+          <span class="release-tag">target: <code>pilot-v2.0</code></span>
+        </div>
+      </article>
+      <article class="layer-row">
+        <div class="layer-marker">L3</div>
+        <div class="layer-copy">
+          <h3 class="label">Nucleation</h3>
+          <p>
+            Given an FND batch in a sealed micro-cell under a cooling protocol, can the
+            simulator predict the distribution of nucleation temperatures and times within
+            experimental error bars?
+          </p>
+          <span class="release-tag">target: <code>pilot-v3.0</code></span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="status" aria-labelledby="status-title">
+    <hr class="section-rule" />
+    <div class="section-header reveal">
+      <div>
+        <p class="section-heading">Current release</p>
+        <h2 id="status-title">pilot-v0.3 ships seven additive tightenings against the v0.2 spec anchor.</h2>
+      </div>
+      <p>
+        Implementation-side improvements only — the breakout-note physics scope is unchanged
+        and the v0.2.1 cache reproduces byte-identical at compatibility defaults. Full
+        narrative in the <a href="release-notes/v0.3.md" class="body-copy">v0.3 release notes</a>.
+      </p>
+    </div>
+
+    <div class="demonstrator-table reveal reveal-delay-1">
+      <span class="table-caption" id="status-table-caption">Scope delta vs pilot-v0.2</span>
+      <div class="table-wrap" role="region" aria-labelledby="status-table-caption" tabindex="0">
+        <table class="stackable">
+          <thead>
+            <tr>
+              <th scope="col">Item</th>
+              <th scope="col">What it adds</th>
+              <th scope="col">Surface</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="Item"><code>K (S2)</code></td>
+              <td data-label="What it adds">Stokes&ndash;Einstein corrections at sub-150&nbsp;nm radii.</td>
+              <td data-label="Surface"><code>parameters.lambda_se</code> + provisional flag</td>
+            </tr>
+            <tr>
+              <td data-label="Item"><code>A</code></td>
+              <td data-label="What it adds">Audit-gap pins formally resolved against the v0.2 spec.</td>
+              <td data-label="Surface"><code>scan_grid.T_OBS_S</code>, <code>DEPTHS_M</code></td>
+            </tr>
+            <tr>
+              <td data-label="Item"><code>H</code></td>
+              <td data-label="What it adds">Parallel grid walk; serial path stays byte-identical.</td>
+              <td data-label="Surface"><code>walk_grid(n_workers=&hellip;)</code></td>
+            </tr>
+            <tr>
+              <td data-label="Item"><code>B</code></td>
+              <td data-label="What it adds">Continuous regime thresholds via root-finding.</td>
+              <td data-label="Surface"><code>continuous_thresholds.find_*</code></td>
+            </tr>
+            <tr>
+              <td data-label="Item"><code>C</code></td>
+              <td data-label="What it adds">Mesh-convergence audit: bmf drift &lt; 0.006&nbsp;%; ratio &lt; 0.4&nbsp;%.</td>
+              <td data-label="Surface"><code>notebooks/07_mesh_convergence_audit.py</code></td>
+            </tr>
+            <tr>
+              <td data-label="Item"><code>F</code></td>
+              <td data-label="What it adds">Provisional &delta;<sub>shell</sub> table for five FND classes.</td>
+              <td data-label="Surface"><code>docs/delta_shell_calibration.md</code></td>
+            </tr>
+            <tr>
+              <td data-label="Item"><code>J</code></td>
+              <td data-label="What it adds">Continuous time-evolution channel via PCHIP + Brent.</td>
+              <td data-label="Surface"><code>time_evolution.crossing_time</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="research-callout research-callout--signal reveal reveal-delay-2">
+      <span class="research-callout__label">Open repair channel</span>
+      <p>
+        The &delta;<sub>shell</sub> calibration table is provisional pending experimental-campaign
+        DLS measurements on a named FND batch. It is committed as a literature survey, not
+        a measurement. See <a href="delta_shell_calibration.md">docs/delta_shell_calibration.md</a>
+        for the full survey and the resolution path.
+      </p>
+    </div>
+  </section>
+
+  <section id="findings" aria-labelledby="findings-title">
+    <hr class="section-rule" />
+    <div class="section-header reveal">
+      <div>
+        <p class="section-heading">Findings</p>
+        <h2 id="findings-title">Five conclusions follow directly from the §5 sweep.</h2>
+      </div>
+      <p>
+        Each is grounded in the 6300-cell cache committed at
+        <code>notebooks/data/regime_map_grid.csv</code>. Full narrative with regime tables
+        and anchor-cell case studies in
+        <a href="findings-physics.md" class="body-copy">findings &mdash; physics</a>.
+      </p>
+    </div>
+
+    <div class="research-callout reveal reveal-delay-1">
+      <span class="research-callout__label">Headline</span>
+      <p>
+        Across the full sweep, <strong>45&nbsp;%</strong> of cells are sedimented and only
+        <strong>18&nbsp;%</strong> stay homogeneous. By unique experimental cell, 57&nbsp;%
+        sediment at least once within a week and only 13&nbsp;% remain homogeneous at every
+        observation time. The diamond–water system is gravity-dominated almost everywhere
+        in the spec's parameter envelope.
+      </p>
+    </div>
+
+    <div class="evidence-grid reveal reveal-delay-2">
+      <article class="evidence-card">
+        <h3>Depth dominates</h3>
+        <p>
+          The largest stay-mixed radius scales analytically as
+          <code>r &prop; h<sup>-1/3</sup></code>. A 100&times; change in cell depth shifts the
+          homogeneous edge by exactly the analytic 4.64&times; ratio. Halving the cuvette is
+          worth more than halving the particle.
+        </p>
+      </article>
+      <article class="evidence-card">
+        <h3>Temperature is sub-bin</h3>
+        <p>
+          Across 5&nbsp;&deg;C&nbsp;&rarr;&nbsp;35&nbsp;&deg;C the homogeneous edge moves by
+          ~3.4&nbsp;%; the §5 r-axis (~10&nbsp;% bin spacing) cannot resolve it. Holding cell
+          depth constant matters more than holding temperature constant.
+        </p>
+      </article>
+      <article class="evidence-card">
+        <h3>Time matters more than temperature</h3>
+        <p>
+          At fixed depth and temperature, the sedimented column more than doubles between
+          1&nbsp;min and 1&nbsp;h. Long-time distributions converge to the analytic equilibrium
+          ratio; short-time distributions drift toward it.
+        </p>
+      </article>
+      <article class="evidence-card">
+        <h3>Two-thirds is closed-form</h3>
+        <p>
+          67&nbsp;% of §5 cells are decided by the homogeneous-corner short-circuit, the
+          equilibrated-corner short-circuit, or the asymptotic-sedimentation fallback. Only
+          the remaining 33&nbsp;% needs the Smoluchowski finite-volume solver, and that
+          one-third sets the wall time.
+        </p>
+      </article>
+      <article class="evidence-card">
+        <h3>Round-4 second criterion</h3>
+        <p>
+          The §5.1 sedimented rule is conjunctive: <code>c(h)/c(0) &le; 0.05</code>
+          <em>and</em> <code>&int;<sub>0</sub><sup>0.05·h</sup>&nbsp;c&nbsp;dz &ge; 0.95</code>.
+          The second condition prevents finite-time profiles in transit from being
+          mis-labelled as sedimented.
+        </p>
+      </article>
+      <article class="evidence-card">
+        <h3>Convection caveat</h3>
+        <p>
+          For cells with <code>h &ge; 1&nbsp;mm</code>, even a 0.1&nbsp;K vertical gradient
+          can put the suspension into a Rayleigh-unstable regime, breaking the 1-D transport
+          assumption. The simulator flags it; the experimentalist owns the choice.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section id="bracket" aria-labelledby="bracket-title">
+    <hr class="section-rule" />
+    <div class="section-header reveal">
+      <div>
+        <p class="section-heading">Practical bracket</p>
+        <h2 id="bracket-title">What the design table says for a 1&nbsp;mm cuvette at room temperature.</h2>
+      </div>
+      <p>
+        Read the bracket as a quick sanity check before designing a measurement. Changing
+        cell depth shifts every row downward — the long-time edge by
+        <code>h<sup>-1/3</sup></code>; the finite-time edge more steeply.
+      </p>
+    </div>
+
+    <div class="demonstrator-table reveal reveal-delay-1">
+      <span class="table-caption" id="bracket-table-caption">25 °C, 1 mm depth</span>
+      <div class="table-wrap" role="region" aria-labelledby="bracket-table-caption" tabindex="0">
+        <table class="stackable">
+          <thead>
+            <tr>
+              <th scope="col">Particle radius</th>
+              <th scope="col">Behaviour</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td data-label="Particle radius"><code>r &lesssim; 11&nbsp;nm</code></td><td data-label="Behaviour">Stays mixed at any observation time up to one week.</td></tr>
+            <tr><td data-label="Particle radius"><code>r &asymp; 30&ndash;250&nbsp;nm</code></td><td data-label="Behaviour">Visibly stratified at hours.</td></tr>
+            <tr><td data-label="Particle radius"><code>r &asymp; 50&ndash;250&nbsp;nm</code></td><td data-label="Behaviour">Visibly stratified at minutes.</td></tr>
+            <tr><td data-label="Particle radius"><code>r &gtrsim; 255&nbsp;nm</code></td><td data-label="Behaviour">Sedimented within one hour.</td></tr>
+            <tr><td data-label="Particle radius"><code>r &gtrsim; 1.6&nbsp;µm</code></td><td data-label="Behaviour">Sedimented within one minute.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="implications" aria-labelledby="implications-title">
+    <hr class="section-rule" />
+    <div class="section-header reveal">
+      <div>
+        <p class="section-heading">Implications</p>
+        <h2 id="implications-title">What the L1 result enables for the surrounding programme.</h2>
+      </div>
+      <p>
+        The L1 layer matters even before L2 thermometry and L3 nucleation enter the
+        picture, because every downstream measurement inherits the suspension state at the
+        moment of observation.
+      </p>
+    </div>
+
+    <div class="body-copy reveal reveal-delay-1">
+      <ul>
+        <li>
+          <strong>For NV thermometry experiments.</strong> A Brownian-motion measurement
+          only makes sense in cells the simulator labels <em>homogeneous</em> or
+          <em>stratified</em> at the chosen <code>t<sub>obs</sub></code>. Sedimented cells
+          are stationary by the time the camera captures the first frame; the apparent
+          temperature read from track diffusivity is then a measurement of the wall, not
+          the bulk fluid.
+        </li>
+        <li>
+          <strong>For nucleation studies.</strong> Diamond surfaces as heterogeneous
+          nucleation seeds need particles distributed through the cell at <em>t = 0</em> of
+          the cooling protocol — not concentrated against the bottom. The L3 question is
+          bracketed by L1: the regime map tells you which (radius, depth, cooling time)
+          combinations even <em>have</em> a meaningful nucleation experiment to run.
+        </li>
+        <li>
+          <strong>For the wider programme.</strong> The simulator's job is to encode the
+          physics literature already has, flag where measurement and theory disagree, and
+          ground uncertainty bounds. It is not a replacement for measurements — a v3.0
+          result that disagrees with a careful experiment is a model failure, not a
+          measurement failure. See
+          <a href="program-context.md">programme-level falsification</a>.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="resources" aria-labelledby="resources-title">
+    <hr class="section-rule" />
+    <div class="section-header reveal">
+      <div>
+        <p class="section-heading">Resources</p>
+        <h2 id="resources-title">Where to read further, in the order most readers find useful.</h2>
+      </div>
+      <p>
+        The repository is the artefact; the page above is its specimen sheet. Each link
+        below is a maintained surface — written for readers, not generated for compliance.
+      </p>
+    </div>
+
+    <div class="evidence-grid reveal reveal-delay-1">
+      <article class="evidence-card">
+        <h3>Source repository</h3>
+        <p><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline">github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline</a> — code, tests, notebooks.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>Release tag</h3>
+        <p><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/releases/tag/pilot-v0.3"><code>pilot-v0.3</code></a> — current snapshot.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>Programme context</h3>
+        <p><a href="program-context.md">program-context.md</a> — long-horizon goal, L1–L3 layers, open decisions.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>v0.3 release notes</h3>
+        <p><a href="release-notes/v0.3.md">release-notes/v0.3.md</a> — what changed since v0.2.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>Findings &mdash; physics</h3>
+        <p><a href="findings-physics.md">findings-physics.md</a> — full regime-map narrative.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>Findings &mdash; process</h3>
+        <p><a href="findings-process.md">findings-process.md</a> — engineering patterns from the pilot.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>Deliverable index</h3>
+        <p><a href="deliverable-index.md">deliverable-index.md</a> — map from breakout-note §6 to shipped artefacts.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>Experimental envelope</h3>
+        <p><a href="experimental-envelope.md">experimental-envelope.md</a> — what the model covers and what it doesn't.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>&delta;<sub>shell</sub> calibration</h3>
+        <p><a href="delta_shell_calibration.md">delta_shell_calibration.md</a> — provisional literature survey for functionalised FND classes.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>ADRs</h3>
+        <p><a href="adr/">docs/adr/</a> — spec-anchoring and slice-selection rationale.</p>
+      </article>
+      <article class="evidence-card">
+        <h3>Lab notes</h3>
+        <p><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/tree/main/lab_notes">lab_notes/</a> — one note per phase, full implementation history.</p>
+      </article>
+    </div>
+  </section>
+
+  <footer class="colophon reveal reveal-delay-2">
+    <p class="status">Page status: active specimen, anchored to <code>pilot-v0.3</code>.</p>
+    <p class="maxim">A survey marker that knows it is fallible and has encoded how to find truth again.</p>
+    <p class="meta">
+      Local stewardship — U. Warring, AG&nbsp;Schätz, Physikalisches Institut Freiburg.
+      Pilot implementation, not a Coastline. Cite by GitHub URL and tag (<code>pilot-v0.3</code>);
+      a Zenodo DOI is intentionally deferred to <code>pilot-v1.0</code>.
+      <br />
+      Visual register adapted from
+      <a href="https://github.com/threehouse-plus-ec/cd-rules">threehouse-plus-ec/cd-rules</a>
+      under MIT.
+    </p>
+  </footer>
+
 </div>
-
-<p>
-  Each layer is gated by a falsifiable acceptance criterion against an
-  experimental campaign &mdash; not an internal "looks right" check. The
-  scientific destinations sit on top of the simulator: it is the platform,
-  not the prediction. See the layer detail and acceptance gates in the
-  <a href="program-context.md">program context</a>.
-</p>
-</section>
-
-<section>
-<h2>Where we are now &mdash; <code>pilot-v0.3</code></h2>
-<p>
-  <code>pilot-v0.3</code> is the first L1 tightening cycle. It anchors against
-  breakout-note v0.2 (the frozen physics spec) and ships seven additive
-  improvements without changing the v0.2.1 cache numerics at compatibility
-  defaults.
-</p>
-
-<table>
-  <thead>
-    <tr><th>Item</th><th>What it adds</th></tr>
-  </thead>
-  <tbody>
-    <tr><td><strong>K (S2)</strong></td><td>Stokes&ndash;Einstein corrections at sub-150&nbsp;nm radii (<code>lambda_se</code> sweep with provisional&nbsp;flag).</td></tr>
-    <tr><td><strong>A</strong></td><td>Audit-gap pins <code>T_OBS_S</code> and <code>DEPTHS_M</code> formally resolved.</td></tr>
-    <tr><td><strong>H</strong></td><td>Parallel <code>walk_grid</code> via <code>ProcessPoolExecutor</code>; serial path is byte-identical.</td></tr>
-    <tr><td><strong>B</strong></td><td>Continuous regime thresholds via <code>brentq</code> root-finding on the ratio / bmf channels.</td></tr>
-    <tr><td><strong>C</strong></td><td>Mesh-convergence audit: bmf drift &lt; 0.006&nbsp;% at 30 cells; ratio &lt; 0.4&nbsp;% at 240.</td></tr>
-    <tr><td><strong>F</strong></td><td><code>delta_shell</code> literature calibration table for five FND classes (provisional, audit-gap pin pending campaign DLS).</td></tr>
-    <tr><td><strong>J</strong></td><td>Continuous time-evolution channel: <code>crossing_time(criterion, target)</code> via PCHIP&nbsp;+&nbsp;Brent.</td></tr>
-  </tbody>
-</table>
-
-<p>
-  Full release narrative: <a href="release-notes/v0.3.md">v0.3 release notes</a>.
-  Deliverable map: <a href="deliverable-index.md">deliverable index</a>.
-  Per-phase implementation notes:
-  <a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/tree/main/lab_notes">lab notes</a>.
-</p>
-</section>
-
-<section>
-<h2>Key findings</h2>
-
-<div class="key-finding">
-<h3>The diamond&ndash;water system is gravity-dominated almost everywhere.</h3>
-<p>
-  Across the breakout-note&nbsp;&sect;5 sweep (6300 cells of <em>r&times;T&times;h&times;t<sub>obs</sub></em>),
-  about <strong>45&nbsp;%</strong> of cells are sedimented and only
-  <strong>18&nbsp;%</strong> stay homogeneous. By unique experimental cell,
-  57&nbsp;% of <em>(r,T,h)</em> tuples sediment at least once within a week;
-  only 13&nbsp;% remain homogeneous at every observation time. The headline
-  experimental implication is that <strong>a tracking measurement on diamond
-  is racing the clock against settling</strong>, not the other way around.
-</p>
-</div>
-
-<div class="key-finding">
-<h3>Cell depth is the dominant experimental knob.</h3>
-<p>
-  The largest stay-mixed radius scales analytically as
-  <code>r &prop; h<sup>-1/3</sup></code>. A 100&times; change in sample depth
-  shifts the homogeneous edge by exactly the analytic 4.64&times; ratio.
-  Halving the cell depth is worth more than halving the particle size.
-</p>
-</div>
-
-<div class="key-finding">
-<h3>Temperature is a sub-bin secondary knob.</h3>
-<p>
-  Across 5&nbsp;&deg;C&nbsp;&rarr;&nbsp;35&nbsp;&deg;C, the homogeneous edge moves
-  by ~3.4&nbsp;%. The &sect;5 r-axis (~10&nbsp;% bin spacing) cannot resolve
-  this: <em>holding cell depth constant matters more than holding
-  temperature constant.</em>
-</p>
-</div>
-
-<div class="key-finding">
-<h3>Time matters more than temperature.</h3>
-<p>
-  At fixed depth and temperature, the sedimented column more than
-  doubles between 1&nbsp;min and 1&nbsp;h. Long-time distributions are set by
-  the analytic equilibrium ratio; short-time distributions drift toward
-  it. The classifier is bit-identical from ~4&nbsp;h onward at most cells.
-</p>
-</div>
-
-<div class="key-finding">
-<h3>Two-thirds of the parameter space is closed-form.</h3>
-<p>
-  In the §5 sweep, 67&nbsp;% of cells are decided analytically &mdash; by the
-  homogeneous-corner short-circuit, the equilibrated-corner short-circuit,
-  or the asymptotic-sedimentation fallback. Only 33&nbsp;% require the
-  Smoluchowski finite-volume solver, and that one-third sets the wall
-  time. Future tightenings of the radius axis are expensive; tightenings
-  of the temperature or t<sub>obs</sub> axes are cheap.
-</p>
-</div>
-
-<p>
-  Full narrative with regime tables, anchor-cell case studies, and the
-  convection caveat: <a href="findings-physics.md">findings &mdash; physics</a>.
-</p>
-</section>
-
-<section>
-<h2>Practical bracket for an experimentalist</h2>
-<p>
-  At room temperature in a <strong>1 mm cuvette</strong>:
-</p>
-<table>
-  <thead>
-    <tr><th>Particle radius</th><th>Behaviour</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>r &lesssim; 11 nm</td><td>Stays mixed at any observation time up to a week.</td></tr>
-    <tr><td>r &asymp; 30&ndash;250 nm</td><td>Visibly stratified at hours.</td></tr>
-    <tr><td>r &asymp; 50&ndash;250 nm</td><td>Visibly stratified at minutes.</td></tr>
-    <tr><td>r &gtrsim; 255 nm</td><td>Sedimented within 1 hour.</td></tr>
-    <tr><td>r &gtrsim; 1.6 µm</td><td>Sedimented within 1 minute.</td></tr>
-  </tbody>
-</table>
-<p>
-  Changing cell depth shifts these brackets downward: the long-time
-  homogeneous edge follows the analytic <code>h<sup>-1/3</sup></code>
-  scaling; the finite-time sedimented edge moves more steeply with depth
-  because both travel and relaxation times depend on it.
-</p>
-</section>
-
-<section>
-<h2>Implications for the wider exploration</h2>
-<p>
-  The L1 layer matters even before L2 thermometry and L3 nucleation enter
-  the picture, because every downstream measurement inherits the
-  suspension state at the moment of observation. Three concrete
-  consequences for the surrounding programme:
-</p>
-<ul>
-  <li>
-    <strong>For NV thermometry experiments:</strong> a Brownian-motion
-    measurement only makes sense in cells the simulator labels
-    <em>homogeneous</em> or <em>stratified</em> at the chosen
-    t<sub>obs</sub>. Sedimented cells are stationary by the time the camera
-    captures the first frame; the apparent temperature read from track
-    diffusivity is then a measurement of the wall, not the bulk fluid.
-  </li>
-  <li>
-    <strong>For nucleation studies:</strong> diamond surfaces as
-    heterogeneous nucleation seeds need particles distributed through the
-    cell at <em>t = 0</em> of the cooling protocol &mdash; not concentrated
-    against the bottom. The L3 question is bracketed by L1: the regime map
-    tells you which (radius, depth, cooling time) combinations even
-    <em>have</em> a meaningful nucleation experiment to run.
-  </li>
-  <li>
-    <strong>For the wider programme:</strong> the simulator&rsquo;s job is to
-    encode the physics literature already has, flag where measurement and
-    theory disagree, and ground uncertainty bounds. It is not a
-    replacement for measurements &mdash; a v3.0 result that disagrees with a
-    careful experiment is a model failure, not a measurement failure. See
-    <a href="program-context.md#15-what-falsifies-the-programme-not-just-a-release">programme-level falsification</a>.
-  </li>
-</ul>
-</section>
-
-<section>
-<h2>Resources</h2>
-<ul>
-  <li><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline">Source repository</a> &mdash; code, tests, notebooks.</li>
-  <li><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/releases/tag/pilot-v0.3"><code>pilot-v0.3</code> release tag</a> &mdash; current snapshot.</li>
-  <li><a href="program-context.md">Programme context</a> &mdash; long-horizon goal, L1&ndash;L3 layers, open decisions.</li>
-  <li><a href="release-notes/v0.3.md">v0.3 release notes</a> &mdash; what changed since v0.2.</li>
-  <li><a href="findings-physics.md">Findings &mdash; physics</a> &mdash; full regime-map narrative.</li>
-  <li><a href="findings-process.md">Findings &mdash; process</a> &mdash; engineering patterns from the pilot.</li>
-  <li><a href="deliverable-index.md">Deliverable index</a> &mdash; map from breakout-note &sect;6 to shipped artefacts.</li>
-  <li><a href="experimental-envelope.md">Experimental envelope</a> &mdash; what the model covers and what it doesn&rsquo;t.</li>
-  <li><a href="delta_shell_calibration.md">&delta;<sub>shell</sub> calibration</a> &mdash; literature survey for functionalised FND classes.</li>
-  <li><a href="adr/">Architecture decision records</a> &mdash; spec-anchoring and slice selection rationale.</li>
-  <li><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/tree/main/lab_notes">Lab notes</a> &mdash; one note per phase, full implementation history.</li>
-</ul>
-</section>
-
-<footer>
-  <p>
-    <em>Endorsement Marker</em>: Local stewardship &mdash; U. Warring,
-    AG&nbsp;Sch&auml;tz, Physikalisches Institut Freiburg. Pilot
-    implementation, not a Coastline.
-  </p>
-  <p>
-    Cite this repository by its GitHub URL and tag (<code>pilot-v0.3</code>).
-    A Zenodo DOI is intentionally deferred to <code>pilot-v1.0</code>.
-  </p>
-</footer>
-
 </main>
+
 </body>
 </html>
