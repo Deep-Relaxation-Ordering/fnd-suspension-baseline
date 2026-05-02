@@ -37,7 +37,7 @@ repo is amended.
 
 | Rule (cd-rules §14) | Standard | This repo | Justification |
 |---|---|---|---|
-| `index.html` at root | Required for web-rendered specimen | Omitted | Numerical pilot — no web specimen layer is intended. README + lab notes are the authored surfaces. If a rendered specimen is needed later, it will be added under `docs/` rather than at root. |
+| `index.html` at root | Required for web-rendered specimen | Omitted at root; rendered specimen lives under [`docs/index.html`](docs/index.html) | Numerical pilot — README + lab notes are the authored surfaces. The public-facing landing page (programme overview, current status, key findings, implications) is served from `docs/` via GitHub Pages, leaving the root layout for the breakout-note artefact map. |
 | `assets/` with `LICENCE` + `SOURCE.md` | Required for repos consuming cd-rules visual assets | Omitted | This pilot does not consume cd-rules visual assets (emblem, tokens.css). The folder will be added under Model B (§0.10) only when assets are first needed. |
 | `src/`, `tests/`, `notebooks/`, `lab_notes/` | Not in the cd-rules standard tree | Added | Required by the breakout-note spec §4.3 (the implementation surfaces of a numerical pilot). These extend, not replace, the cd-rules tree. |
 

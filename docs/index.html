@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>fnd-suspension-baseline — diamond particles in aqueous suspension</title>
+<meta name="description" content="A numerical pilot for the Brownian motion and gravitational sedimentation of nano- to micrometre diamond particles in water. Programme overview, current status (pilot-v0.3), key findings, and implications for experimental design." />
+<style>
+  :root {
+    --bg: #fafaf7;
+    --fg: #1c1c1a;
+    --muted: #5a5a55;
+    --accent: #2a4365;
+    --accent-soft: #ebf2fa;
+    --rule: #d8d6cf;
+    --code-bg: #f1efe9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15171a;
+      --fg: #e8e6e0;
+      --muted: #9ea29c;
+      --accent: #88b6e6;
+      --accent-soft: #1f2a3a;
+      --rule: #2c2f33;
+      --code-bg: #1c1f23;
+    }
+  }
+  html { box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+  header.hero {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 2rem;
+    margin-bottom: 3rem;
+  }
+  h1 {
+    font-size: 2.05rem;
+    line-height: 1.2;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .tagline {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin: 0 0 1.25rem;
+    font-style: italic;
+  }
+  .meta {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+  }
+  .meta span code {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 0.1rem 0.45rem;
+    border-radius: 3px;
+    font-size: 0.95em;
+  }
+  h2 {
+    font-size: 1.35rem;
+    margin: 3rem 0 1rem;
+    line-height: 1.3;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.4rem;
+  }
+  h3 {
+    font-size: 1.05rem;
+    margin: 1.75rem 0 0.5rem;
+    line-height: 1.3;
+  }
+  p, ul, ol { margin: 0 0 1rem; }
+  ul, ol { padding-left: 1.4rem; }
+  li { margin-bottom: 0.4rem; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 120ms; }
+  a:hover { border-bottom-color: var(--accent); }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--code-bg);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+  blockquote {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    margin: 1.5rem 0;
+    padding: 0.75rem 1.25rem;
+    font-style: italic;
+    color: var(--fg);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  td code { font-size: 0.85em; }
+  .layer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  @media (min-width: 640px) {
+    .layer-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .layer-card {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1rem 1.1rem;
+    background: var(--bg);
+  }
+  .layer-card h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+    color: var(--accent);
+  }
+  .layer-card p { font-size: 0.9rem; margin: 0 0 0.5rem; color: var(--muted); }
+  .layer-card .release {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .layer-card .release code { font-size: 1em; }
+  .layer-card.current {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .key-finding {
+    margin: 1.25rem 0;
+    padding-left: 1rem;
+    border-left: 2px solid var(--rule);
+  }
+  .key-finding h3 { margin-top: 0; color: var(--accent); }
+  .key-finding p:last-child { margin-bottom: 0; }
+  footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  footer p { margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <h1>fnd-suspension-baseline</h1>
+  <p class="tagline">Brownian motion and gravitational sedimentation of diamond particles in aqueous suspension &mdash; a numerical pilot.</p>
+  <div class="meta">
+    <span>Current release: <code>pilot-v0.3</code></span>
+    <span>Tests: <code>171 passed</code></span>
+    <span>Stewardship: U.&nbsp;Warring, AG&nbsp;Sch&auml;tz, Universit&auml;t Freiburg</span>
+  </div>
+</header>
+
+<section>
+<h2>What this is</h2>
+<p>
+  <strong>Fluorescent nanodiamonds (FNDs) in water</strong> are an emerging
+  platform for cellular-scale sensing &mdash; their nitrogen-vacancy (NV) centres
+  read out local temperature, magnetic field, and pH from inside biological
+  samples. But before any of that physics is interesting, an experimentalist
+  has to know whether the particles in their cuvette are <em>actually
+  suspended</em>, <em>partly stratified</em>, or <em>already on the bottom</em>
+  by the time the measurement starts.
+</p>
+<p>
+  This repository is the simulation that answers that question. Given a
+  particle radius, sample temperature, cell depth, and observation time, it
+  classifies a suspension into one of three regimes &mdash;
+  <code>homogeneous</code>, <code>stratified</code>, or
+  <code>sedimented</code> &mdash; and reports continuous boundary radii, fidelity
+  envelopes, and design tables that an experimentalist can read directly.
+</p>
+<p>
+  The implementation is a numerical pilot: three independent solvers
+  (analytical, Langevin ensemble, Smoluchowski PDE) cross-validate each
+  other across a 30&nbsp;&times;&nbsp;7&nbsp;&times;&nbsp;5&nbsp;&times;&nbsp;6
+  parameter sweep. Every conclusion below is grounded in that sweep.
+</p>
+</section>
+
+<section>
+<h2>The long-horizon programme</h2>
+<p>
+  This pilot is the first layer of a three-layer programme. Each layer
+  closes one scientific question and earns the next major release; the
+  programme&rsquo;s navigation chart lives in
+  <a href="program-context.md">docs/program-context.md</a>.
+</p>
+
+<div class="layer-grid">
+  <div class="layer-card current">
+    <h3>L1 &middot; Realism</h3>
+    <p>Can a student plan a sealed-cuvette FND tracking experiment from this repository&rsquo;s deliverables and cited references &mdash; with realistic aggregation, hydrodynamics, and polydispersity?</p>
+    <div class="release">target: <code>pilot-v1.0</code></div>
+  </div>
+  <div class="layer-card">
+    <h3>L2 &middot; Thermometry</h3>
+    <p>Given an FND trajectory, does the simulator recover the local temperature consistently with NV-centre fluorescence on the same particle?</p>
+    <div class="release">target: <code>pilot-v2.0</code></div>
+  </div>
+  <div class="layer-card">
+    <h3>L3 &middot; Nucleation</h3>
+    <p>Given an FND batch in a sealed micro-cell under a cooling protocol, can the simulator predict the distribution of nucleation temperatures and times within experimental error bars?</p>
+    <div class="release">target: <code>pilot-v3.0</code></div>
+  </div>
+</div>
+
+<p>
+  Each layer is gated by a falsifiable acceptance criterion against an
+  experimental campaign &mdash; not an internal "looks right" check. The
+  scientific destinations sit on top of the simulator: it is the platform,
+  not the prediction. See the layer detail and acceptance gates in the
+  <a href="program-context.md">program context</a>.
+</p>
+</section>
+
+<section>
+<h2>Where we are now &mdash; <code>pilot-v0.3</code></h2>
+<p>
+  <code>pilot-v0.3</code> is the first L1 tightening cycle. It anchors against
+  breakout-note v0.2 (the frozen physics spec) and ships seven additive
+  improvements without changing the v0.2.1 cache numerics at compatibility
+  defaults.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Item</th><th>What it adds</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>K (S2)</strong></td><td>Stokes&ndash;Einstein corrections at sub-150&nbsp;nm radii (<code>lambda_se</code> sweep with provisional&nbsp;flag).</td></tr>
+    <tr><td><strong>A</strong></td><td>Audit-gap pins <code>T_OBS_S</code> and <code>DEPTHS_M</code> formally resolved.</td></tr>
+    <tr><td><strong>H</strong></td><td>Parallel <code>walk_grid</code> via <code>ProcessPoolExecutor</code>; serial path is byte-identical.</td></tr>
+    <tr><td><strong>B</strong></td><td>Continuous regime thresholds via <code>brentq</code> root-finding on the ratio / bmf channels.</td></tr>
+    <tr><td><strong>C</strong></td><td>Mesh-convergence audit: bmf drift &lt; 0.006&nbsp;% at 30 cells; ratio &lt; 0.4&nbsp;% at 240.</td></tr>
+    <tr><td><strong>F</strong></td><td><code>delta_shell</code> literature calibration table for five FND classes (provisional, audit-gap pin pending campaign DLS).</td></tr>
+    <tr><td><strong>J</strong></td><td>Continuous time-evolution channel: <code>crossing_time(criterion, target)</code> via PCHIP&nbsp;+&nbsp;Brent.</td></tr>
+  </tbody>
+</table>
+
+<p>
+  Full release narrative: <a href="release-notes/v0.3.md">v0.3 release notes</a>.
+  Deliverable map: <a href="deliverable-index.md">deliverable index</a>.
+  Per-phase implementation notes:
+  <a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/tree/main/lab_notes">lab notes</a>.
+</p>
+</section>
+
+<section>
+<h2>Key findings</h2>
+
+<div class="key-finding">
+<h3>The diamond&ndash;water system is gravity-dominated almost everywhere.</h3>
+<p>
+  Across the breakout-note&nbsp;&sect;5 sweep (6300 cells of <em>r&times;T&times;h&times;t<sub>obs</sub></em>),
+  about <strong>45&nbsp;%</strong> of cells are sedimented and only
+  <strong>18&nbsp;%</strong> stay homogeneous. By unique experimental cell,
+  57&nbsp;% of <em>(r,T,h)</em> tuples sediment at least once within a week;
+  only 13&nbsp;% remain homogeneous at every observation time. The headline
+  experimental implication is that <strong>a tracking measurement on diamond
+  is racing the clock against settling</strong>, not the other way around.
+</p>
+</div>
+
+<div class="key-finding">
+<h3>Cell depth is the dominant experimental knob.</h3>
+<p>
+  The largest stay-mixed radius scales analytically as
+  <code>r &prop; h<sup>-1/3</sup></code>. A 100&times; change in sample depth
+  shifts the homogeneous edge by exactly the analytic 4.64&times; ratio.
+  Halving the cell depth is worth more than halving the particle size.
+</p>
+</div>
+
+<div class="key-finding">
+<h3>Temperature is a sub-bin secondary knob.</h3>
+<p>
+  Across 5&nbsp;&deg;C&nbsp;&rarr;&nbsp;35&nbsp;&deg;C, the homogeneous edge moves
+  by ~3.4&nbsp;%. The &sect;5 r-axis (~10&nbsp;% bin spacing) cannot resolve
+  this: <em>holding cell depth constant matters more than holding
+  temperature constant.</em>
+</p>
+</div>
+
+<div class="key-finding">
+<h3>Time matters more than temperature.</h3>
+<p>
+  At fixed depth and temperature, the sedimented column more than
+  doubles between 1&nbsp;min and 1&nbsp;h. Long-time distributions are set by
+  the analytic equilibrium ratio; short-time distributions drift toward
+  it. The classifier is bit-identical from ~4&nbsp;h onward at most cells.
+</p>
+</div>
+
+<div class="key-finding">
+<h3>Two-thirds of the parameter space is closed-form.</h3>
+<p>
+  In the §5 sweep, 67&nbsp;% of cells are decided analytically &mdash; by the
+  homogeneous-corner short-circuit, the equilibrated-corner short-circuit,
+  or the asymptotic-sedimentation fallback. Only 33&nbsp;% require the
+  Smoluchowski finite-volume solver, and that one-third sets the wall
+  time. Future tightenings of the radius axis are expensive; tightenings
+  of the temperature or t<sub>obs</sub> axes are cheap.
+</p>
+</div>
+
+<p>
+  Full narrative with regime tables, anchor-cell case studies, and the
+  convection caveat: <a href="findings-physics.md">findings &mdash; physics</a>.
+</p>
+</section>
+
+<section>
+<h2>Practical bracket for an experimentalist</h2>
+<p>
+  At room temperature in a <strong>1 mm cuvette</strong>:
+</p>
+<table>
+  <thead>
+    <tr><th>Particle radius</th><th>Behaviour</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>r &lesssim; 11 nm</td><td>Stays mixed at any observation time up to a week.</td></tr>
+    <tr><td>r &asymp; 30&ndash;250 nm</td><td>Visibly stratified at hours.</td></tr>
+    <tr><td>r &asymp; 50&ndash;250 nm</td><td>Visibly stratified at minutes.</td></tr>
+    <tr><td>r &gtrsim; 255 nm</td><td>Sedimented within 1 hour.</td></tr>
+    <tr><td>r &gtrsim; 1.6 µm</td><td>Sedimented within 1 minute.</td></tr>
+  </tbody>
+</table>
+<p>
+  Changing cell depth shifts these brackets downward: the long-time
+  homogeneous edge follows the analytic <code>h<sup>-1/3</sup></code>
+  scaling; the finite-time sedimented edge moves more steeply with depth
+  because both travel and relaxation times depend on it.
+</p>
+</section>
+
+<section>
+<h2>Implications for the wider exploration</h2>
+<p>
+  The L1 layer matters even before L2 thermometry and L3 nucleation enter
+  the picture, because every downstream measurement inherits the
+  suspension state at the moment of observation. Three concrete
+  consequences for the surrounding programme:
+</p>
+<ul>
+  <li>
+    <strong>For NV thermometry experiments:</strong> a Brownian-motion
+    measurement only makes sense in cells the simulator labels
+    <em>homogeneous</em> or <em>stratified</em> at the chosen
+    t<sub>obs</sub>. Sedimented cells are stationary by the time the camera
+    captures the first frame; the apparent temperature read from track
+    diffusivity is then a measurement of the wall, not the bulk fluid.
+  </li>
+  <li>
+    <strong>For nucleation studies:</strong> diamond surfaces as
+    heterogeneous nucleation seeds need particles distributed through the
+    cell at <em>t = 0</em> of the cooling protocol &mdash; not concentrated
+    against the bottom. The L3 question is bracketed by L1: the regime map
+    tells you which (radius, depth, cooling time) combinations even
+    <em>have</em> a meaningful nucleation experiment to run.
+  </li>
+  <li>
+    <strong>For the wider programme:</strong> the simulator&rsquo;s job is to
+    encode the physics literature already has, flag where measurement and
+    theory disagree, and ground uncertainty bounds. It is not a
+    replacement for measurements &mdash; a v3.0 result that disagrees with a
+    careful experiment is a model failure, not a measurement failure. See
+    <a href="program-context.md#15-what-falsifies-the-programme-not-just-a-release">programme-level falsification</a>.
+  </li>
+</ul>
+</section>
+
+<section>
+<h2>Resources</h2>
+<ul>
+  <li><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline">Source repository</a> &mdash; code, tests, notebooks.</li>
+  <li><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/releases/tag/pilot-v0.3"><code>pilot-v0.3</code> release tag</a> &mdash; current snapshot.</li>
+  <li><a href="program-context.md">Programme context</a> &mdash; long-horizon goal, L1&ndash;L3 layers, open decisions.</li>
+  <li><a href="release-notes/v0.3.md">v0.3 release notes</a> &mdash; what changed since v0.2.</li>
+  <li><a href="findings-physics.md">Findings &mdash; physics</a> &mdash; full regime-map narrative.</li>
+  <li><a href="findings-process.md">Findings &mdash; process</a> &mdash; engineering patterns from the pilot.</li>
+  <li><a href="deliverable-index.md">Deliverable index</a> &mdash; map from breakout-note &sect;6 to shipped artefacts.</li>
+  <li><a href="experimental-envelope.md">Experimental envelope</a> &mdash; what the model covers and what it doesn&rsquo;t.</li>
+  <li><a href="delta_shell_calibration.md">&delta;<sub>shell</sub> calibration</a> &mdash; literature survey for functionalised FND classes.</li>
+  <li><a href="adr/">Architecture decision records</a> &mdash; spec-anchoring and slice selection rationale.</li>
+  <li><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/tree/main/lab_notes">Lab notes</a> &mdash; one note per phase, full implementation history.</li>
+</ul>
+</section>
+
+<footer>
+  <p>
+    <em>Endorsement Marker</em>: Local stewardship &mdash; U. Warring,
+    AG&nbsp;Sch&auml;tz, Physikalisches Institut Freiburg. Pilot
+    implementation, not a Coastline.
+  </p>
+  <p>
+    Cite this repository by its GitHub URL and tag (<code>pilot-v0.3</code>).
+    A Zenodo DOI is intentionally deferred to <code>pilot-v1.0</code>.
+  </p>
+</footer>
+
+</main>
+</body>
+</html>
