@@ -5,13 +5,13 @@ Institut Freiburg.*
 
 | Field | Value |
 |---|---|
-| Status | **SCAFFOLD — decisions [OPEN], not accepted.** Drafted as a deliberation surface so the v0.4 cycle has a stable place to record scope, spec anchor, and first-slice selection without committing prematurely. |
-| Date | 2026-05-05 (drafted Phase 25; opened against [ADR 0003](adr/0003-v0.4-spec-anchoring.md) `Proposed (stub)`) |
+| Status | **SCAFFOLD — D1 / D9 resolved (Phase 26 opening); D2–D7 still [OPEN].** §0 reflects the spec-anchor resolution; §1 first-slice fixed against item B (S3). The §1 reshape (in-scope vs out-of-scope), §3 forward-compat baseline (D2), §4 phase plan, §6 risk register, and §7 schedule are filled in the Phase 26 continuation session. |
+| Date | 2026-05-05 (drafted Phase 25); 2026-05-06 (Phase 26 opening — D1 / D9 resolved) |
 | Drafted at | post-Phase 24, commit `00f2fc7` (`pilot-v0.3` released; Pages landing page adopted) |
 | Predecessor tag | `pilot-v0.3` at `ad48b0b` |
 | Successor tag (proposed) | `pilot-v0.4` |
-| Spec anchor | **[OPEN — D1].** Three options surveyed in §0; ADR 0003 will resolve. |
-| First implementation slice | **[OPEN — D9].** Candidate menu in §1; ADR 0003 will couple to D1 the way ADR 0002 coupled S2 to D1 for v0.3. |
+| Spec anchor | **breakout-note v0.2 commit `3b7b18af`** — Option 2, resolved by [ADR 0003](adr/0003-v0.4-spec-anchoring.md). Same pin as v0.2 / v0.2.1 / v0.3. |
+| First implementation slice | **item B (S3 — Hydrodynamic-shell calibration per FND class)** ([`program-context.md` §3.1](program-context.md), [ADR 0003 Decision 2](adr/0003-v0.4-spec-anchoring.md)). See §1 item B. |
 | Working tempo | v0.3 baseline: ~7 working days across ~10 sessions; calendar 1.5–2 weeks |
 
 The scaffold structure mirrors [`work-plan-v0-3.md`](work-plan-v0-3.md)
@@ -25,42 +25,46 @@ deliberation surface for that question. Acceptance criteria are in
 
 ---
 
-## 0. Spec anchoring [OPEN — D1]
+## 0. Spec anchoring — RESOLVED
 
-`pilot-v0.3` was anchored to breakout-note v0.2 commit `3b7b18af`
-under [ADR 0002](adr/0002-v0.3-spec-anchoring.md) (Option 2). The
-v0.4 cycle's spec anchor is the same question, but the upstream
-landscape may have shifted. Three options:
+**Decision: Option 2.** `pilot-v0.4` stays anchored to breakout-note
+v0.2 commit `3b7b18af`. Recorded in
+[ADR 0003 Decision 1](adr/0003-v0.4-spec-anchoring.md). Resolves
+D1 in §5.
 
-1. **Re-anchor to breakout-note v0.3 if/when it lands.** The
-   `Deep-Relaxation-Ordering/diamonds_in_water` repo owes a v0.3
-   breakout note for at least the S1 (aggregation) slice. If it
-   lands by the v0.4 cycle's open, this option is available.
-2. **Stay anchored to breakout-note v0.2 commit `3b7b18af`.** Same
-   pin v0.2, v0.2.1, and v0.3 used. Forward-compat with `pilot-v0.3`
-   is automatic.
-3. **Hybrid.** v0.4 in-scope items that fit the v0.2 envelope stay
-   on `3b7b18af`; items that require physics-scope expansion (e.g.
-   S1 once its breakout lands, S6 wall hydrodynamics) anchor to
-   their own per-slice pins.
+The original three options remain readable in the ADR for context:
 
-**[OPEN]** ADR 0003 to resolve. Stewardship preference is recorded
-under "Working notes" in the ADR; not committed in this scaffold.
+1. ~~Re-anchor to breakout-note v0.3 if/when it lands~~ — blocked,
+   upstream had not landed by Phase 26 opening (2026-05-06).
+2. **Stay anchored to breakout-note v0.2 commit `3b7b18af`** —
+   chosen.
+3. ~~Hybrid~~ — rejected for per-slice bookkeeping cost.
 
-**Re-pin policy** if upstream movement happens mid-cycle: ADR 0001
-/ ADR 0002 precedent — the cycle's release phase picks up the new
-pin, not earlier phases. Mid-cycle re-pinning would invalidate
+**Consequence for §1.** Items that require a physics-scope expansion
+beyond the v0.2 envelope (S1 aggregation, S6 wall hydrodynamics, S7
+thermal control as first-class) are *not* in v0.4 scope; they are
+parallel-breakout candidates or v0.5-and-later items. §1 reshape
+(Phase 26 continuation) marks each item accordingly.
+
+**Re-pin policy** if breakout-note v0.3 lands mid-cycle: ADR 0001 /
+ADR 0002 precedent — the cycle's release phase picks up the new pin,
+not earlier phases. Mid-cycle re-pinning would invalidate the
 in-flight slices' reviewability anchor.
 
 ---
 
-## 1. Scope candidates [OPEN]
+## 1. Scope candidates [OPEN — first slice fixed]
 
 Each item below is a **candidate** drawn from
 [`program-context.md` §3.1](program-context.md) (the L1 slice menu)
 and from v0.3 audit-gap pins still open after Phase 24. Format per
 item: motivation, source, rough effort, blast radius, decision
 needed.
+
+**First slice fixed: item B (S3 — Hydrodynamic-shell calibration
+per FND class)** per [ADR 0003 Decision 2](adr/0003-v0.4-spec-anchoring.md).
+The other items remain `[OPEN]` and are resolved during the §1
+reshape (Phase 26 continuation).
 
 The S-slice nomenclature follows [`program-context.md` §3.1](program-context.md)
 as the authoritative source. The list in
@@ -233,19 +237,19 @@ tempo. Will tighten after §1 is reshaped.
 
 | Id | Question | Status |
 |---|---|---|
-| D1 | Spec anchoring (§0 options 1 / 2 / 3) | **[OPEN]** — ADR 0003 to resolve. |
-| D2 | Forward-compat baseline (§3 option 1 / 2) | **[OPEN]** — resolved per in-scope item once §1 reshape happens. |
-| D3 | S1 in scope as first slice if upstream lands? Or as audit-gap-pin local spec? Or deferred? (item A / program-context S1) | **[OPEN]** — gated on `Deep-Relaxation-Ordering/diamonds_in_water` v0.3 status at cycle open. |
-| D4 | S3 hydrodynamic-shell calibration in scope? (item B) | **[OPEN]** — strong default expectation: yes. |
-| D5 | `lambda_se` → §5 scan axis (item C) | **[OPEN]** — gated on S2 calibration result in the FND band. |
-| D6 | S5 concentration-weighted polydispersity kernel in scope? (item E) | **[OPEN]** — strong default expectation: yes. |
-| D7 | Doc-fix scope (item L): correct `deliverable-index.md` and `release-notes/v0.3.md` S-slice lists in v0.4? | **[OPEN]** — strong default expectation: yes. |
+| D1 | Spec anchoring (§0 options 1 / 2 / 3) | **Resolved — Option 2** ([ADR 0003 Decision 1](adr/0003-v0.4-spec-anchoring.md)). |
+| D2 | Forward-compat baseline (§3 option 1 / 2) | **[OPEN]** — resolved per in-scope item once §1 reshape happens (Phase 26 continuation). |
+| D3 | S1 in scope as first slice if upstream lands? Or as audit-gap-pin local spec? Or deferred? (item A / program-context S1) | **[OPEN]** — under Option 2, default expectation: deferred to v0.5 (upstream had not landed by Phase 26 opening). Confirmed in §1 reshape. |
+| D4 | S3 hydrodynamic-shell calibration in scope? (item B) | **Resolved — first slice** ([ADR 0003 Decision 2](adr/0003-v0.4-spec-anchoring.md)). |
+| D5 | `lambda_se` → §5 scan axis (item C) | **[OPEN]** — gated on S2 calibration result in the FND band; default expectation: defer to v0.5. Confirmed in §1 reshape. |
+| D6 | S5 concentration-weighted polydispersity kernel in scope? (item E) | **[OPEN]** — strong default expectation: yes. Confirmed in §1 reshape. |
+| D7 | Doc-fix scope (item L): correct `deliverable-index.md` and `release-notes/v0.3.md` S-slice lists in v0.4? | **[OPEN]** — strong default expectation: yes. Confirmed in §1 reshape. |
 | D8 | DOI mint at v0.4, or hold to v1.0 per Phase 16.1? | **Resolved — hold to v1.0** ([Phase 16.1 lab note](../lab_notes/2026-04-30-phase16-1-defer-doi-to-v1-0.md)). The deferral chain extends through v0.4 by precedent. |
-| D9 | First v0.4 implementation slice | **[OPEN]** — ADR 0003 to resolve, coupled to D1. |
+| D9 | First v0.4 implementation slice | **Resolved — item B (S3)** ([ADR 0003 Decision 2](adr/0003-v0.4-spec-anchoring.md)). |
 
-D8 carries forward as resolved. D1, D9 are the load-bearing
-decisions for ADR 0003. D3–D7 are scope-shaping decisions that
-ripen during the §1 reshape ceremony.
+D1, D4, D8, D9 are settled. D2 / D3 / D5 / D6 / D7 remain on the
+table for the §1 reshape (Phase 26 continuation), with the strong
+default expectations recorded above.
 
 ---
 

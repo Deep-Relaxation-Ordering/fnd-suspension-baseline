@@ -16,7 +16,7 @@ they are accepted, so that `Proposed` stubs hold their final number.
 |---|---|---|---|---|
 | [0001](0001-v0.2-spec-anchoring.md) | `pilot-v0.2` spec-anchoring | Accepted | 2026-04-28 | 10 |
 | [0002](0002-v0.3-spec-anchoring.md) | `pilot-v0.3` spec-anchoring and first-slice selection | Accepted | 2026-04-30 | 17 |
-| [0003](0003-v0.4-spec-anchoring.md) | `pilot-v0.4` spec-anchoring and first-slice selection | Proposed (stub) | 2026-05-05 | 25 |
+| [0003](0003-v0.4-spec-anchoring.md) | `pilot-v0.4` spec-anchoring and first-slice selection | Accepted | 2026-05-06 | 26 |
 
 ## Conventions
 
