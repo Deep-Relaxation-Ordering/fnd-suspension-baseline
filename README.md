@@ -161,6 +161,9 @@ notebook regeneration commands.
 | 21 | items C + F — mesh-convergence audit confirms current 120/240-cell strategy (bmf drift < 0.006 % at 30 cells; ratio < 0.4 % at 240); `δ_shell` literature calibration table (provisional, marked as audit-gap pin pending campaign DLS) | done — [phase-21 note](lab_notes/2026-05-01-phase21-mesh-convergence-and-shell-calibration.md) |
 | 22 | item J — continuous time-evolution channel (`time_series`, `crossing_time` with PCHIP + Brent); design-table generator for crossing times | done — [phase-22 note](lab_notes/2026-05-01-phase22-continuous-time-evolution.md) |
 | 23 | Integration audit — focused cache-subset byte-identical verification; module smoke tests; full 171-test suite | done — [phase-23 note](lab_notes/2026-05-01-phase23-integration-audit.md) |
+| 24 | `pilot-v0.3` release tag; release notes; deliverable-index v0.3 update | done — [phase-24 note](lab_notes/2026-05-01-phase24-pilot-v0-3-release.md) |
+| **`pilot-v0.4` deliberation cycle** | | |
+| 25 | v0.4 deliberation surfaces ([work-plan-v0-4 scaffold](docs/work-plan-v0-4.md), [ADR 0003 stub](docs/adr/0003-v0.4-spec-anchoring.md), [ADR index](docs/adr/README.md)) | done — [phase-25 note](lab_notes/2026-05-05-phase25-v0-4-deliberation-surfaces.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in
