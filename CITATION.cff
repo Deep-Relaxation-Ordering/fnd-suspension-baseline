@@ -11,12 +11,13 @@ abstract: >-
   Numerical pilot implementing analytical, Langevin, and Smoluchowski
   finite-volume models for Brownian motion and gravitational
   sedimentation of diamond particles in aqueous suspension. The
-  pilot-v0.3 artefact adds Stokes–Einstein correction factors at
-  sub-150-nm radii, continuous regime thresholds via root-finding,
-  a mesh-convergence fidelity envelope, a provisional δ_shell
-  calibration table, parallel grid walks, and a continuous
-  time-evolution channel — all forward-compatible with v0.2
-  (zero-default paths reproduce v0.2 arithmetic to machine precision).
+  pilot-v0.4 artefact closes program-context slices S3 (citation-
+  anchored hydrodynamic-shell calibration per FND class) and S5
+  (concentration-weighted polydispersity kernel with per-regime
+  conditional radius moments), hardens parallel grid walks under
+  macOS spawn-context, and adds a parameter-sweep root-finder
+  (`crossing_parameter`) — all forward-compatible with v0.3
+  (zero-default paths reproduce v0.3 arithmetic to machine precision).
 keywords:
   - Brownian motion
   - sedimentation
@@ -28,7 +29,7 @@ keywords:
 license: MIT
 repository-code: "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline"
 url: "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline"
-version: 0.3.0
-date-released: 2026-05-01
+version: 0.4.0
+date-released: 2026-05-06
 # DOI is intentionally deferred to the pilot-v1.0 release. Until then, cite
-# the GitHub repository URL and tag (pilot-v0.2.1). See Phase 16.1 lab note.
+# the GitHub repository URL and tag (pilot-v0.4). See Phase 16.1 lab note.

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>fnd-suspension-baseline — diamonds in water, open to correction</title>
-<meta name="description" content="Numerical pilot for the Brownian motion and gravitational sedimentation of nano- to micrometre diamond particles in water. Programme overview, current status (pilot-v0.3), key findings, and implications for the surrounding programme." />
+<meta name="description" content="Numerical pilot for the Brownian motion and gravitational sedimentation of nano- to micrometre diamond particles in water. Programme overview, current status (pilot-v0.4), key findings, and implications for the surrounding programme." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="tokens.css" />
@@ -404,7 +404,7 @@
 
   <section class="hero" id="top" aria-labelledby="hero-title">
     <div class="reveal">
-      <p class="eyebrow">Numerical pilot &middot; pilot-v0.3</p>
+      <p class="eyebrow">Numerical pilot &middot; pilot-v0.4</p>
       <h1 id="hero-title">Diamonds in water, open to correction.</h1>
       <p class="hero-intro">
         A simulator that answers the prior question every fluorescent-nanodiamond experiment
@@ -412,7 +412,7 @@
       </p>
       <p>
         Three independent solvers cross-validated across a 6300-cell parameter sweep,
-        anchored to a frozen physics spec, kept honest by 171 tests. The implementation
+        anchored to a frozen physics spec, kept honest by 199 tests. The implementation
         is the first layer of a three-layer programme; the page below sketches what that
         layer found, and what the next two have to do.
       </p>
@@ -424,19 +424,22 @@
 
     <aside class="hero-panel reveal reveal-delay-1" aria-labelledby="hero-panel-title">
       <p class="label">Release pin</p>
-      <h2 id="hero-panel-title">pilot-v0.3 anchored to breakout-note v0.2.</h2>
+      <h2 id="hero-panel-title">pilot-v0.4 anchored to breakout-note v0.2.</h2>
       <p>
-        Seven additive tightenings landed without changing the v0.2.1 cache numerics at
-        compatibility defaults. The §5 cache is byte-identical; the new surfaces sit on top.
+        Two L1 housekeeping slices closed (S3 hydrodynamic-shell calibration per FND class,
+        S5 concentration-weighted polydispersity kernel) plus tactical tightenings
+        (`spawn`-context macOS parallelism, `crossing_parameter` parameter-sweep root-finder).
+        The v0.3 §5 cache reproduces byte-identical at compatibility defaults; the new
+        surfaces sit on top.
       </p>
       <dl class="hero-metrics" aria-label="Release metrics">
         <div>
           <dt>Tag</dt>
-          <dd><code>pilot-v0.3</code></dd>
+          <dd><code>pilot-v0.4</code></dd>
         </div>
         <div>
           <dt>Tests</dt>
-          <dd>171 passed</dd>
+          <dd>199 passed</dd>
         </div>
         <div>
           <dt>Cells</dt>
@@ -537,17 +540,19 @@
     <div class="section-header reveal">
       <div>
         <p class="section-heading">Current release</p>
-        <h2 id="status-title">pilot-v0.3 ships seven additive tightenings against the v0.2 spec anchor.</h2>
+        <h2 id="status-title">pilot-v0.4 closes two L1 housekeeping slices on top of the v0.3 baseline.</h2>
       </div>
       <p>
-        Implementation-side improvements only — the breakout-note physics scope is unchanged
-        and the v0.2.1 cache reproduces byte-identical at compatibility defaults. Full
-        narrative in the <a href="release-notes/v0.3.md" class="body-copy">v0.3 release notes</a>.
+        Implementation-side improvements only &mdash; the breakout-note physics scope is
+        unchanged and the v0.3 cache reproduces byte-identical at compatibility defaults.
+        Full narrative in the <a href="release-notes/v0.4.md" class="body-copy">v0.4 release notes</a>;
+        the v0.3 carry-forward narrative is in the
+        <a href="release-notes/v0.3.md" class="body-copy">v0.3 release notes</a>.
       </p>
     </div>
 
     <div class="demonstrator-table reveal reveal-delay-1">
-      <span class="table-caption" id="status-table-caption">Scope delta vs pilot-v0.2</span>
+      <span class="table-caption" id="status-table-caption">Scope delta vs pilot-v0.3</span>
       <div class="table-wrap" role="region" aria-labelledby="status-table-caption" tabindex="0">
         <table class="stackable">
           <thead>
@@ -559,39 +564,34 @@
           </thead>
           <tbody>
             <tr>
-              <td data-label="Item"><code>K (S2)</code></td>
-              <td data-label="What it adds">Stokes&ndash;Einstein corrections at sub-150&nbsp;nm radii.</td>
-              <td data-label="Surface"><code>parameters.lambda_se</code> + provisional flag</td>
+              <td data-label="Item"><code>B (S3)</code></td>
+              <td data-label="What it adds">Citation-anchored hydrodynamic-shell defaults per FND class.</td>
+              <td data-label="Surface"><code>ParticleGeometry.from_fnd_class</code> + <code>delta_shell_calibration.md</code></td>
             </tr>
             <tr>
-              <td data-label="Item"><code>A</code></td>
-              <td data-label="What it adds">Audit-gap pins formally resolved against the v0.2 spec.</td>
-              <td data-label="Surface"><code>scan_grid.T_OBS_S</code>, <code>DEPTHS_M</code></td>
+              <td data-label="Item"><code>E (S5)</code></td>
+              <td data-label="What it adds">Concentration-weighted polydispersity kernel; per-regime <code>E[r│R]</code> / <code>E[r²│R]</code>.</td>
+              <td data-label="Surface"><code>lognormal_smear(weighting="number_density")</code></td>
             </tr>
             <tr>
-              <td data-label="Item"><code>H</code></td>
-              <td data-label="What it adds">Parallel grid walk; serial path stays byte-identical.</td>
-              <td data-label="Surface"><code>walk_grid(n_workers=&hellip;)</code></td>
-            </tr>
-            <tr>
-              <td data-label="Item"><code>B</code></td>
-              <td data-label="What it adds">Continuous regime thresholds via root-finding.</td>
-              <td data-label="Surface"><code>continuous_thresholds.find_*</code></td>
-            </tr>
-            <tr>
-              <td data-label="Item"><code>C</code></td>
-              <td data-label="What it adds">Mesh-convergence audit: bmf drift &lt; 0.006&nbsp;%; ratio &lt; 0.4&nbsp;%.</td>
-              <td data-label="Surface"><code>notebooks/07_mesh_convergence_audit.py</code></td>
-            </tr>
-            <tr>
-              <td data-label="Item"><code>F</code></td>
-              <td data-label="What it adds">Citation-anchored &delta;<sub>shell</sub> defaults for four FND classes.</td>
-              <td data-label="Surface"><code>docs/delta_shell_calibration.md</code></td>
+              <td data-label="Item"><code>I</code></td>
+              <td data-label="What it adds">macOS-safe parallel <code>walk_grid</code> via <code>spawn</code>-context.</td>
+              <td data-label="Surface"><code>regime_map.walk_grid(n_workers=&hellip;)</code></td>
             </tr>
             <tr>
               <td data-label="Item"><code>J</code></td>
-              <td data-label="What it adds">Continuous time-evolution channel via PCHIP + Brent.</td>
-              <td data-label="Surface"><code>time_evolution.crossing_time</code></td>
+              <td data-label="What it adds">Parameter-sweep root-finder for <code>delta_shell_m</code> / <code>lambda_se</code> at fixed <code>t_obs</code>.</td>
+              <td data-label="Surface"><code>time_evolution.crossing_parameter</code></td>
+            </tr>
+            <tr>
+              <td data-label="Item"><code>L + H</code></td>
+              <td data-label="What it adds">S-slice nomenclature reconciliation against <code>program-context.md</code> &sect;3.1; v0.3 review residue swept.</td>
+              <td data-label="Surface"><code>deliverable-index.md</code>, <code>release-notes/v0.3.md</code></td>
+            </tr>
+            <tr>
+              <td data-label="Item"><code>K</code></td>
+              <td data-label="What it adds">Release-criterion gap audit against <code>program-context.md</code> &sect;4.1.</td>
+              <td data-label="Surface">Phase 31 lab note + extended <code>09_integration_audit.py</code></td>
             </tr>
           </tbody>
         </table>
@@ -601,10 +601,11 @@
     <div class="research-callout research-callout--signal reveal reveal-delay-2">
       <span class="research-callout__label">Open repair channel</span>
       <p>
-        The &delta;<sub>shell</sub> calibration table now has citation-anchored class
-        defaults, but campaign batches are still unverified until same-buffer DLS
-        measurements exist. See <a href="delta_shell_calibration.md">docs/delta_shell_calibration.md</a>
-        for the source register and override path.
+        v0.4 closes S3 + S5 of the seven program-context L1 slices. S1 (DLVO aggregation),
+        S4 (capsule geometry), S6 (wall hydrodynamics), and S7 (thermal control as first-class)
+        remain open v1.0 gates, alongside the campaign-measurement dependency D-PC-1.
+        Full punch list in the
+        <a href="../lab_notes/2026-05-06-phase31-integration-audit-and-release-gap.md">Phase&nbsp;31 release-criterion gap audit</a>.
       </p>
     </div>
   </section>
@@ -789,15 +790,15 @@
       </article>
       <article class="evidence-card">
         <h3>Release tag</h3>
-        <p><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/releases/tag/pilot-v0.3"><code>pilot-v0.3</code></a> — current snapshot.</p>
+        <p><a href="https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline/releases/tag/pilot-v0.4"><code>pilot-v0.4</code></a> — current snapshot.</p>
       </article>
       <article class="evidence-card">
         <h3>Programme context</h3>
         <p><a href="program-context.md">program-context.md</a> — long-horizon goal, L1–L3 layers, open decisions.</p>
       </article>
       <article class="evidence-card">
-        <h3>v0.3 release notes</h3>
-        <p><a href="release-notes/v0.3.md">release-notes/v0.3.md</a> — what changed since v0.2.</p>
+        <h3>v0.4 release notes</h3>
+        <p><a href="release-notes/v0.4.md">release-notes/v0.4.md</a> — what changed since v0.3.</p>
       </article>
       <article class="evidence-card">
         <h3>Findings &mdash; physics</h3>
@@ -831,7 +832,7 @@
   </section>
 
   <footer class="colophon reveal reveal-delay-2">
-    <p class="status">Page status: active specimen, anchored to <code>pilot-v0.3</code>.</p>
+    <p class="status">Page status: active specimen, anchored to <code>pilot-v0.4</code>.</p>
     <p class="maxim">A survey marker that knows it is fallible and has encoded how to find truth again.</p>
     <p class="meta">
       Local stewardship — U. Warring, AG&nbsp;Schätz, Physikalisches Institut Freiburg.

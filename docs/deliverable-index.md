@@ -1,8 +1,8 @@
-# Deliverable index — `pilot-v0.3`
+# Deliverable index — `pilot-v0.4`
 
 This file is the cumulative §6 closeout document. The `pilot-v0.2`
-section is preserved below the `pilot-v0.3` delta so readers can see
-the full artefact history in one place.
+and `pilot-v0.3` sections are preserved below the `pilot-v0.4` delta
+so readers can see the full artefact history in one place.
 
 *Endorsement Marker: Local stewardship — U. Warring, AG Schätz, Physikalisches
 Institut Freiburg.*
@@ -17,14 +17,24 @@ they can paste the rows below directly.
 | Field | Value |
 |---|---|
 | Repository | `Deep-Relaxation-Ordering/fnd-suspension-baseline` |
-| Pilot tag | `pilot-v0.3` |
-| FAIR metadata patch | `0.3.0` |
+| Pilot tag | `pilot-v0.4` |
+| Package version | `0.4.0` |
 | Spec | breakout-note v0.2, pinned to `Deep-Relaxation-Ordering/diamonds_in_water` commit `3b7b18af7bd1739f3cb7b3360d2b75264dd5ad07` (see [`conventions.md`](conventions.md) §"Pilot-spec pin") |
 | cd-rules | pinned to `threehouse-plus-ec/cd-rules` commit `ee01c80352dd8446f189c3159a3d9e347463902c` (see [`conventions.md`](conventions.md) §"Inherited rules") |
-| Test suite at metadata patch | `171 passed, 0 skipped` (`pytest -q`) |
-| Lint at metadata patch | `ruff check .` clean |
+| Test suite at tag | `199 passed, 0 skipped` (`pytest -q`) |
+| Lint at tag | `ruff check .` clean |
 
-## §6 deliverable mapping — `pilot-v0.3` additions
+## §6 deliverable mapping — `pilot-v0.4` additions
+
+| # | Deliverable | Artefact | Regen command |
+|---|---|---|---|
+| 11 | Citation-anchored hydrodynamic-shell calibration table per FND class (S3) | [`docs/delta_shell_calibration.md`](delta_shell_calibration.md), `DeltaShellCalibration` / `DELTA_SHELL_CALIBRATIONS` / `ParticleGeometry.from_fnd_class` in [`src/parameters.py`](../src/parameters.py) | n/a — implementation source + literature pin document |
+| 12 | Concentration-weighted polydispersity kernel (S5) — per-regime `E[r│R]` and `E[r²│R]` arrays under `weighting="number_density"` | `lognormal_smear(weighting=…)` and `expected_radius_by_regime` / `expected_radius_sq_by_regime` fields on `SmearedGrid` in [`src/polydispersity.py`](../src/polydispersity.py) | n/a — implementation source; new tests in [`tests/test_polydispersity.py`](../tests/test_polydispersity.py) |
+| 13 | Parameter-sweep root-finder for `delta_shell_m` / `lambda_se` at fixed `t_obs` | `crossing_parameter` in [`src/time_evolution.py`](../src/time_evolution.py) | n/a — implementation source; new tests in [`tests/test_time_evolution.py`](../tests/test_time_evolution.py) |
+| 14 | macOS-safe parallel `walk_grid` under `multiprocessing.get_context("spawn")` with stdin/heredoc guard | [`src/regime_map.py`](../src/regime_map.py) | n/a — infrastructure tightening; pinned by `tests/test_regime_map.py::test_walk_grid_parallel_byte_identical_to_serial` and `…_spawn_rejects_stdin_main_with_clear_error` |
+| 15 | Integration audit extended for v0.4 surfaces (Phase 27 / 28 / 30 smoke tests + Phase 31 release-criterion gap audit) | [`notebooks/09_integration_audit.py`](../notebooks/09_integration_audit.py); release-criterion gap recorded in [`lab_notes/2026-05-06-phase31-integration-audit-and-release-gap.md`](../lab_notes/2026-05-06-phase31-integration-audit-and-release-gap.md) | `PYTHONPATH=src python notebooks/09_integration_audit.py` |
+
+## §6 deliverable mapping — `pilot-v0.3` additions (preserved)
 
 | # | Deliverable | Artefact | Regen command |
 |---|---|---|---|
@@ -185,39 +195,48 @@ Phase 16. The v0.2 scope was anchored in
 - **`equilibrium_cell` `t_factor = 50` magic constant** — works for
   every cell tested; not formally derived.
 
-## What `pilot-v0.4` would change
+## What `pilot-v0.5` would change
 
 Candidate tightenings for the next pilot slice. The S1–S7 labels and
 descriptions below match [`program-context.md` §3.1](program-context.md)
-verbatim — the authoritative L1 slice menu. The corresponding
-in-scope / out-of-scope decisions for v0.4 live in
-[`work-plan-v0-4.md` §1](work-plan-v0-4.md) (Phase 26 continuation):
+verbatim — the authoritative L1 slice menu. v0.4 closed S2 (carry-
+forward from v0.3), S3, and S5; the entries below are the open v1.0
+gates that v0.5 (or later) is a candidate for closing.
 
 - **S1 — DLVO aggregation pre-screen** (cell trustworthiness flag).
-  Out of v0.4 — gated on the upstream `Deep-Relaxation-Ordering/diamonds_in_water`
-  v0.3 breakout note that has not yet landed. v0.5+ candidate.
-- **S3 — Hydrodynamic-shell calibration per FND class.** Replace
-  `delta_shell_m` from its v0.3 user-supplied-knob status with a
-  citation-anchored default per FND class. **In v0.4 (Phase 27).**
+  Open; gated on the upstream `Deep-Relaxation-Ordering/diamonds_in_water`
+  v0.3 breakout note. Closing S1 also retires the
+  `provisional = True` API contract from
+  [ADR 0002](adr/0002-v0.3-spec-anchoring.md).
 - **S4 — Capsule-geometry port (1-D radial in spherical coordinates).**
-  Sealed micro-cells at d = 10–100 µm; sibling-repo breakout note
-  required first. Out of v0.4 — its own pilot cycle, post-v1.0.
-- **S5 — Concentration-weighted polydispersity kernel.** Bounded
-  change to `lognormal_smear`'s weighting kernel; per-regime
-  conditional radius moments. **In v0.4 (Phase 28).**
-- **S6 — Wall-hydrodynamic Faxén/Brenner corrections.** Position-
-  dependent corrections to drag and diffusivity near sealed-cell
-  boundaries. Out of v0.4 — defer to v0.5 / v1.1.
-- **S7 — Thermal control as a first-class axis.** Promote
-  `delta_T_assumed` from side-channel to first-class axis;
-  sealed-cell only. Out of v0.4 — defer to v0.5 / v1.0; gated on
-  D-PC-1 campaign protocol.
+  Open; sealed micro-cells at d = 10–100 µm; sibling-repo breakout
+  note required first. Likely its own pilot cycle, post-v1.0.
+- **S6 — Wall-hydrodynamic Faxén/Brenner corrections.** Open;
+  position-dependent corrections to drag and diffusivity near
+  sealed-cell boundaries. Layer-defining; sibling-repo breakout note
+  likely required. Defer to v0.5 / v1.1.
+- **S7 — Thermal control as a first-class axis.** Open; promote
+  `delta_T_assumed` from side-channel to first-class axis; sealed-
+  cell only. Gated on D-PC-1 campaign protocol existence.
 
 Plus tactical follow-ups outside the S-slice menu:
 
 - Promote `lambda_se` to a §5 scan axis if calibrated working values
   in the FND band are ≤ 0.3. Conditional v0.5 candidate; the
   calibration prerequisite has not been run yet.
+- Concentration-weighted design-table notebook (post-Phase-28
+  follow-up). Promote the `weighting="number_density"` output into
+  a published design table for downstream tracking-experiment
+  consumers.
+- `crossing_parameter` design table (post-Phase-30 follow-up). Same
+  shape — promote the kernel into a published design table once a
+  campaign provides target metrics.
+
+The Phase 31 release-criterion gap audit
+([lab note](../lab_notes/2026-05-06-phase31-integration-audit-and-release-gap.md))
+records the full v1.0 punch list (S1, S4, S6, S7 plus the campaign
+measurement D-PC-1, tolerance threshold D-PC-3, acceptance metric
+set D-PC-6, calibration ADR).
 
 For the per-item v0.4 decision rationale (in-scope / out-of-scope /
 parallel-breakout), see [`work-plan-v0-4.md` §1](work-plan-v0-4.md)
