@@ -12,11 +12,11 @@ changes later.
 
 | ID | Tutorial | Status | Target phase | Planned path | Canonical inputs | Smoke command | Linked from |
 |---|---|---|---|---|---|---|---|
-| TUT-01 | Quick-start regime map | proposed | v0.5 | `notebooks/tutorials/01_quick_start_regime_map.py` | `notebooks/data/regime_map_grid.csv` | `PYTHONPATH=src python notebooks/tutorials/01_quick_start_regime_map.py` | README / Pages |
-| TUT-02 | Geometry + shell calibration | proposed | v0.5 | `notebooks/tutorials/02_geometry_and_shell_calibration.py` | `src/parameters.py`, `docs/delta_shell_calibration.md` | `PYTHONPATH=src python notebooks/tutorials/02_geometry_and_shell_calibration.py` | release notes / envelope |
-| TUT-03 | Polydispersity intuition | proposed | v0.5 | `notebooks/tutorials/03_polydispersity_intuition.py` | `notebooks/data/regime_map_grid.csv`, `src/polydispersity.py` | `PYTHONPATH=src python notebooks/tutorials/03_polydispersity_intuition.py` | deliverable index |
-| TUT-04 | Time + parameter crossings | proposed | v0.5 | `notebooks/tutorials/04_time_and_parameter_crossings.py` | `src/time_evolution.py`, `src/fokker_planck.py` | `PYTHONPATH=src python notebooks/tutorials/04_time_and_parameter_crossings.py` | API docs / README |
-| TUT-05 | Experimental envelope | proposed | v0.5 | `notebooks/tutorials/05_experimental_envelope.py` | `docs/experimental-envelope.md`, `docs/program-context.md` | `PYTHONPATH=src python notebooks/tutorials/05_experimental_envelope.py` | Pages / envelope |
+| TUT-01 | Quick-start regime map | ready | v0.5 | `notebooks/tutorials/01_quick_start_regime_map.py` | `notebooks/data/regime_map_grid.csv` | `PYTHONPATH=src python notebooks/tutorials/01_quick_start_regime_map.py` | README / Pages |
+| TUT-02 | Geometry + shell calibration | ready | v0.5 | `notebooks/tutorials/02_geometry_and_shell_calibration.py` | `src/parameters.py`, `docs/delta_shell_calibration.md` | `PYTHONPATH=src python notebooks/tutorials/02_geometry_and_shell_calibration.py` | release notes / envelope |
+| TUT-03 | Polydispersity intuition | ready | v0.5 | `notebooks/tutorials/03_polydispersity_intuition.py` | `notebooks/data/regime_map_grid.csv`, `src/polydispersity.py` | `PYTHONPATH=src python notebooks/tutorials/03_polydispersity_intuition.py` | deliverable index |
+| TUT-04 | Time + parameter crossings | ready | v0.5 | `notebooks/tutorials/04_time_and_parameter_crossings.py` | `src/time_evolution.py`, `src/fokker_planck.py` | `PYTHONPATH=src python notebooks/tutorials/04_time_and_parameter_crossings.py` | API docs / README |
+| TUT-05 | Experimental envelope | ready | v0.5 | `notebooks/tutorials/05_experimental_envelope.py` | `docs/experimental-envelope.md`, `docs/program-context.md` | `PYTHONPATH=src python notebooks/tutorials/05_experimental_envelope.py` | Pages / envelope |
 
 ## Legend
 
@@ -24,6 +24,8 @@ changes later.
 - **draft** — notebook exists on a branch, not merged.
 - **ready** — merged to `main`, smoke-tested at the current tag.
 - **stale** — smoke-test fails or content is out of date with the release tag.
+
+*Note: Tutorials TUT-01 through TUT-05 have been implemented and successfully smoke-tested against the `pilot-v0.4` tag.*
 
 ## FAIR tracking
 
