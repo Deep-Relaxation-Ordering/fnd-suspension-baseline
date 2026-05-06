@@ -28,8 +28,8 @@ predict the radius distribution given an observed regime label.
 - **Extended [`src/polydispersity.py`](../src/polydispersity.py).**
   - Added a `weighting: Literal["classification", "number_density"]`
     keyword argument to `lognormal_smear(...)`. Default
-    `"classification"` reproduces the v0.3 kernel byte-identically
-    (Pattern 14 zero-default extension).
+    `"classification"` reproduces the v0.3 numeric marginal
+    channels byte-identically (Pattern 14 zero-default extension).
   - Added two new fields to `SmearedGrid`:
     `expected_radius_by_regime` and `expected_radius_sq_by_regime`,
     each shape `(3, n_r, n_sigma, n_T, n_h, n_t)`. The first axis
@@ -51,8 +51,8 @@ predict the radius distribution given an observed regime label.
   2. Number-density kernel reproduces the classification marginals
      (`p_homogeneous / p_stratified / p_sedimented /
      expected_top_to_bottom_ratio / expected_bottom_mass_fraction`)
-     byte-identically — confirms R-E1 mitigation: the new kernel
-     does not flip §5.1 regime labels.
+     byte-identically — confirms R-E1 mitigation: the opt-in
+     kernel does not flip §5.1 regime labels.
   3. Law of total expectation:
      `sum_R p_R · E[r | regime=R] == E[r]_unconditional`
      to `rtol=1e-12`. Verifies the conditional moments are
@@ -72,7 +72,7 @@ predict the radius distribution given an observed regime label.
 |---|---|
 | Per-regime conditional radius moments are the right output for "number-density distribution within each band" | Program-context S5 frames the v0.4 deliverable as "for each regime band, what is the radius distribution?" The first two moments (`E[r | R]`, `E[r² | R]`) characterise the band-conditional distribution sufficiently for design-tool consumption (mean radius and variance). Returning a discrete kernel (per-bin conditional density) was considered but adds an entire radius axis to every cell — wasteful when the design-tool consumer only ever wants summary statistics. |
 | Pack moments into `(3, ...)` arrays rather than six separate fields | The existing `SmearedGrid` keeps one field per channel (`p_homogeneous` / `p_stratified` / `p_sedimented`), which works for 3 channels. Phase 28 doubles that to 6; six explicit fields is verbose. The packed form matches the natural mathematical shape (regime-indexed) and exposes `REGIME_INDEX_*` constants for callers, keeping the API clean. |
-| Default kernel is `classification`, not `number_density` | D2 = Option 1 from [`docs/work-plan-v0-4.md` §3](../docs/work-plan-v0-4.md): every in-scope item must reproduce `pilot-v0.3` byte-identically at compatibility-mode defaults. Switching the default to `number_density` would change the `weighting` field on `SmearedGrid`, which a strict consumer could observe. Keeping the default at `classification` preserves v0.3's `SmearedGrid(weighting="classification", ..., expected_radius_by_regime=None)` shape exactly. |
+| Default kernel is `classification`, not `number_density` | D2 = Option 1 from [`docs/work-plan-v0-4.md` §3](../docs/work-plan-v0-4.md): every in-scope item must reproduce `pilot-v0.3` numeric outputs byte-identically at compatibility-mode defaults. Switching the default to `number_density` would alter the default marginal weighting semantics. Keeping the default at `classification` preserves the v0.3 numeric marginal channels; the `SmearedGrid` dataclass surface is visibly extended with Phase 28 fields. |
 | Empty bands return `NaN`, not 0.0 | `E[r \| regime=R]` is mathematically undefined when the band is empty (`p_R = 0`). Returning `NaN` makes that explicit; consumers that mask on `p_R > 0` get correct behaviour, and consumers that incorrectly broadcast see a propagated `NaN` rather than a silently-wrong 0.0. |
 | No notebook 05 update | Notebook 05 uses the default kernel only and produces v0.3-anchor figures and design tables. Updating it to consume the new kernel would change figures and CSVs that ship under the v0.3 reproduction contract. The number-density payload is exposed for downstream tracking-experiment consumers; surfacing it in a notebook is deferred to a v0.4 release-notes example or a future tracking-pipeline notebook (see "Next step"). |
 | No deliverable-index v0.4 mention yet | The deliverable-index "What `pilot-v0.4` would change" section is forward-looking from v0.3's perspective. Recording S5 closure as a release-time event lives in the v0.4 release notes (Phase 32), not here. |
@@ -95,9 +95,9 @@ HEAD before Phase 28: `3a11dc8` (Phase 27 — S3 calibration).
 ## Risk register entries this phase activated
 
 - **R-E1 (concentration-weighted kernel might flip §5.1 regime
-  labels).** Mitigation honoured: the new kernel reproduces the
-  classification kernel's marginal channels byte-identically; the
-  per-regime conditional moments are *additional* output, not a
+  labels).** Mitigation honoured: the opt-in kernel reproduces the
+  classification kernel's numeric marginal channels byte-identically;
+  the per-regime conditional moments are *additional* output, not a
   replacement. Test
   `test_number_density_kernel_reproduces_classification_marginals`
   pins this with `np.testing.assert_array_equal`.

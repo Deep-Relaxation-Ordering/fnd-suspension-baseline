@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import csv
 import math
+import sys
 from pathlib import Path
 
 import pytest
@@ -276,6 +277,20 @@ def test_walk_grid_parallel_byte_identical_to_serial() -> None:
     assert len(parallel) == len(serial) == 24
     for i, (s, p) in enumerate(zip(serial, parallel, strict=True)):
         assert s == p, f"cell {i} differs: serial={s} parallel={p}"
+
+
+def test_walk_grid_spawn_rejects_stdin_main_with_clear_error(monkeypatch) -> None:
+    """Spawn cannot re-import a ``<stdin>`` main; fail before pool creation."""
+    monkeypatch.setattr(sys.modules["__main__"], "__file__", "<stdin>", raising=False)
+
+    with pytest.raises(RuntimeError, match="requires an importable __main__"):
+        walk_grid(
+            radii=(5e-9,),
+            temperatures=(298.15,),
+            depths=(1e-4,),
+            t_obs=(60.0,),
+            n_workers=2,
+        )
 
 
 # ---------------------------------------------------------------------------

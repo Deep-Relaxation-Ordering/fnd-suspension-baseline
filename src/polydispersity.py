@@ -142,12 +142,12 @@ def lognormal_smear(
     Parameters
     ----------
     weighting
-        ``"classification"`` (default) reproduces the v0.3 kernel
-        byte-identically and leaves the Phase 28 per-regime conditional
-        moment arrays unset. ``"number_density"`` additionally returns
-        ``E[r | regime]`` and ``E[r² | regime]`` for each regime band,
-        computed against the number-density log-normal kernel
-        (program-context S5).
+        ``"classification"`` (default) reproduces the v0.3 numeric
+        marginal channels byte-identically and leaves the Phase 28
+        per-regime conditional moment arrays unset.
+        ``"number_density"`` additionally returns ``E[r | regime]``
+        and ``E[r² | regime]`` for each regime band, computed against
+        the number-density log-normal kernel (program-context S5).
     """
     if not (0.0 < min_covered_mass <= 1.0):
         raise ValueError("min_covered_mass must be in (0, 1].")

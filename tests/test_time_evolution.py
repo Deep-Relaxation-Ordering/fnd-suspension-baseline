@@ -169,7 +169,7 @@ def test_crossing_parameter_lambda_se_brackets_and_verifies() -> None:
     reproduce the target bmf at t_obs_s when re-run through solve_cell."""
     r, T, h = _STRATIFIED_CELL
     t_obs_s = 3600.0
-    target = 0.30
+    target = 0.25
 
     p_cross = crossing_parameter(
         r, T, h,
@@ -180,8 +180,8 @@ def test_crossing_parameter_lambda_se_brackets_and_verifies() -> None:
         target=target,
         n_points=10,
     )
-    if p_cross is None:
-        pytest.skip("target not bracketed on lambda_se in [0.1, 1.0]")
+    assert p_cross is not None
+    assert 0.1 <= p_cross <= 1.0
 
     from fokker_planck import solve_cell
 
@@ -189,6 +189,32 @@ def test_crossing_parameter_lambda_se_brackets_and_verifies() -> None:
     actual = result.bottom_mass_fraction(0.05)
     # PCHIP + brentq on a coarse 10-point sweep: ~5 % relative tolerance
     assert math.isclose(actual, target, rel_tol=0.05, abs_tol=0.005)
+
+
+@pytest.mark.slow
+def test_crossing_parameter_lambda_se_ratio_brackets_and_verifies() -> None:
+    """Parameter sweeps also support the ratio criterion shipped in Phase 22."""
+    r, T, h = _STRATIFIED_CELL
+    t_obs_s = 3600.0
+    target = 1e-4
+
+    p_cross = crossing_parameter(
+        r, T, h,
+        parameter="lambda_se",
+        t_obs_s=t_obs_s,
+        p_min=0.1, p_max=1.0,
+        criterion="ratio",
+        target=target,
+        n_points=10,
+    )
+    assert p_cross is not None
+    assert 0.1 <= p_cross <= 1.0
+
+    from fokker_planck import solve_cell
+
+    result = solve_cell(r, T, h, t_total=t_obs_s, lambda_se=p_cross)
+    actual = result.top_to_bottom_ratio()
+    assert math.isclose(actual, target, rel_tol=0.05, abs_tol=1e-5)
 
 
 @pytest.mark.slow

@@ -35,16 +35,23 @@ remaining tactical bundle from
   - In `walk_grid`, wrap the executor with
     `mp_context=multiprocessing.get_context("spawn")`. The serial
     path (`n_workers=1`) is unaffected.
+  - Added an early guard for non-importable pseudo-main execution
+    (`__main__.__file__ == "<stdin>"`, missing file paths). Without
+    this guard, `spawn` fails later with `BrokenProcessPool`; the
+    guard raises a direct `RuntimeError` telling the caller to run
+    from a `.py` / `python -m` module or use `n_workers=1`.
   - Updated the docstring's parallel-walk paragraph to call out
     the spawn switch and reference the v0.3 release note's
     fork-safety caveat.
-- **No new test added** — the existing
-  `test_walk_grid_parallel_byte_identical_to_serial` in
+- **Extended [`tests/test_regime_map.py`](../tests/test_regime_map.py).**
+  The existing `test_walk_grid_parallel_byte_identical_to_serial` in
   [`tests/test_regime_map.py`](../tests/test_regime_map.py) walks a
   24-cell slice with `n_workers=2` and confirms equality with the
   serial walk. After the spawn switch, the same test exercises the
   spawn path; passing it now means parallel walks are byte-identical
-  under the new start method.
+  under the new start method. A review-fix regression test,
+  `test_walk_grid_spawn_rejects_stdin_main_with_clear_error`, pins
+  the stdin/heredoc guard.
 
 ### Item J — crossing_parameter
 
@@ -70,7 +77,7 @@ remaining tactical bundle from
   - The module docstring is updated to describe both Phase 22 and
     Phase 30 surfaces.
 - **Extended [`tests/test_time_evolution.py`](../tests/test_time_evolution.py).**
-  Seven new tests:
+  Nine `crossing_parameter` tests:
   1. `test_crossing_parameter_rejects_unknown_parameter` — input
      validation.
   2. `test_crossing_parameter_validates_interval` — `p_min >= p_max`
@@ -84,14 +91,15 @@ remaining tactical bundle from
   6. `test_crossing_parameter_lambda_se_brackets_and_verifies`
      (`@pytest.mark.slow`) — sweep `lambda_se` for a stratified
      cell, then re-run `solve_cell` at the returned value and check
-     the criterion is at the target. **Skips gracefully** with
-     `pytest.skip` if the target isn't bracketed by the sweep
-     (the target / cell / `n_points` combination is heuristic; the
-     skip path correctly exercises the "bracket-or-skip" contract).
-  7. `test_crossing_parameter_delta_shell_returns_none_when_unreachable`
+     the bmf criterion is at the target. The target is deliberately
+     bracketed and the test is non-skippable.
+  7. `test_crossing_parameter_lambda_se_ratio_brackets_and_verifies`
+     (`@pytest.mark.slow`) — same positive-path assertion for the
+     `criterion="ratio"` surface.
+  8. `test_crossing_parameter_delta_shell_returns_none_when_unreachable`
      (`@pytest.mark.slow`) — homogeneous cell never crosses bmf=0.5
      for any `delta_shell_m`, so `crossing_parameter` returns `None`.
-  8. `test_crossing_parameter_lambda_se_returns_none_for_unreachable_target`
+  9. `test_crossing_parameter_lambda_se_returns_none_for_unreachable_target`
      (`@pytest.mark.slow`) — target=0.999 above any plausible
      equilibrium bmf returns `None`.
 
@@ -100,19 +108,18 @@ remaining tactical bundle from
 | Decision | Rationale |
 |---|---|
 | Always-spawn, no kwarg toggle | The work plan §1 item I describes the change as "switch to spawn context," not "make the start method configurable." A kwarg toggle would be feature creep and add a configuration surface to test. The cost of spawn over fork is per-worker startup time (~tens of ms) plus re-import overhead, which is amortised over the 6300-cell `walk_grid` call by orders of magnitude. |
-| No new test for spawn-context (existing parallel test suffices) | `test_walk_grid_parallel_byte_identical_to_serial` already pins serial-vs-parallel equality. Once `walk_grid` uses spawn, the same test exercises spawn-context behaviour. Adding a test that asserts `mp_context._name == 'spawn'` would test the implementation, not the contract. |
+| Test the spawn contract, not the private executor object | `test_walk_grid_parallel_byte_identical_to_serial` pins serial-vs-parallel equality under the spawn path. The review-fix stdin guard test pins the user-facing failure mode for non-importable pseudo-main execution. A test that asserts `mp_context._name == 'spawn'` would test the implementation, not the contract. |
 | `crossing_parameter` API: required `p_min` / `p_max`, no parameter-specific defaults | Symmetry with the `crossing_time` API (which requires `t_min` and `t_max`). Parameter-specific defaults (e.g., `lambda_se` defaulting to `[0.1, 1.0]`) leak knowledge that would change as v0.5 calibration data lands. Forcing the caller to be explicit avoids surprise. |
 | `crossing_parameter` linear spacing, not log | `crossing_time` uses log-spaced bracketing because `t_obs` spans many decades. The parameters here span at most one decade (`lambda_se ∈ (0, 1]`) or vary near zero (`delta_shell_m ∈ [0, ~50 nm]`); linear spacing is uniformly informative. |
-| Bracket-or-skip is the right contract for `crossing_parameter` | The function returns `None` when the target is genuinely unreachable on the interval. Tests must distinguish "unreachable target" from "implementation bug": for unreachable cases, `None` is asserted; for reachable cases, the test skips gracefully if the heuristic bracket fails (the target / cell / interval combination wasn't tight enough), which is fine — the alternative would be coupling the test to specific numerical values that could drift. |
+| Positive crossing tests are non-skippable | `crossing_parameter` returns `None` when the target is genuinely unreachable on the interval; those paths are asserted separately. Positive tests use bracketed targets and must return a parameter value that reproduces the target when re-run through `solve_cell`. |
 | Ratio-criterion crossings already in v0.3 | The work-plan-v0-4 §1 item J description was slightly imprecise; the ratio criterion was shipped in v0.3 Phase 22's `crossing_time(criterion='ratio')`. Phase 30 reduces to the parameter-sweep extension. Item J's intent is captured by the new `crossing_parameter` function plus the existing `crossing_time(criterion='ratio')`. |
 
 ## Verification
 
 ```sh
 .venv/bin/python -m pytest -q
-# 196 passed, 1 skipped (189 → 196: six new validation tests + one
-# bracket-or-skip parametric test that triggered its skip branch on
-# this run).
+# 199 passed, 0 skipped (189 → 199: nine crossing_parameter tests
+# plus one spawn stdin-guard test).
 
 .venv/bin/python -m ruff check .
 # All checks passed!
@@ -129,8 +136,9 @@ HEAD before Phase 30: `3bbdd55` (Phase 29).
   regime_map module).** Mitigation: the integration test
   `test_walk_grid_parallel_byte_identical_to_serial` exercises the
   spawn path against the serial path; equality holds → no
-  fork-unsafe behaviour was being relied upon. No additional
-  Phase 30.1 fix triggered.
+  fork-unsafe behaviour was being relied upon. The stdin/heredoc
+  review finding is handled by an early importability guard, not by
+  falling back to fork.
 - **R-J1 (extending time_evolution introduces a backward-
   incompatible signature change).** Mitigation: `crossing_time`'s
   v0.3 signature is unchanged. `crossing_parameter` is a new

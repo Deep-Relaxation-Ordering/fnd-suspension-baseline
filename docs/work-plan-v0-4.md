@@ -288,7 +288,8 @@ In-scope risks:
   weighting. **Mitigation:** keep the v0.3 classification kernel
   as the default (`weighting='classification'`); the new kernel
   is opt-in (`weighting='number_density'`). Pattern 14 zero-default
-  preserves v0.3 byte-identical reproduction.
+  preserves v0.3 byte-identical reproduction for the numeric
+  marginal channels.
 - **R-H1.** v0.3 review residue sweep surfaces an issue large
   enough to warrant a `.1` follow-up. **Mitigation:** triage at
   Phase 29 open; if a substantive issue lands, escalate to a

@@ -37,6 +37,7 @@ from __future__ import annotations
 import csv
 import math
 import multiprocessing
+import sys
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, fields
 from pathlib import Path
@@ -367,6 +368,22 @@ def _classify_cell_unpack(
     return classify_cell(r, t, h, t_obs_val, **kwargs)
 
 
+def _ensure_spawn_can_import_main() -> None:
+    """Raise early when spawn would fail re-importing a pseudo ``__main__``."""
+    main_module = sys.modules.get("__main__")
+    main_file = getattr(main_module, "__file__", None)
+    if main_file is None:
+        return
+
+    main_path = Path(main_file)
+    if main_file.startswith("<") or not main_path.exists():
+        raise RuntimeError(
+            "walk_grid(n_workers > 1) uses multiprocessing spawn and requires "
+            f"an importable __main__; current __main__.__file__ is {main_file!r}. "
+            "Run from a .py file / python -m module, or use n_workers=1."
+        )
+
+
 def walk_grid(
     *,
     radii: tuple[float, ...] | None = None,
@@ -397,6 +414,8 @@ def walk_grid(
     worker count. The spawn context removes the macOS fork-safety
     footgun documented in the v0.3 release notes §H — fork() with
     pre-imported numerics libraries can deadlock at worker creation.
+    Spawn requires an importable ``__main__``; stdin/heredoc execution
+    should use ``n_workers=1`` or move the call into a ``.py`` module.
     Per ADR 0001 the §5 cache contract is byte-identical at
     compatibility defaults — the integration test in
     ``tests/test_regime_map.py`` pins this for parallel walks.
@@ -426,6 +445,7 @@ def walk_grid(
         return [_classify_cell_unpack((cell, cell_kwargs)) for cell in cells]
 
     payloads = [(cell, cell_kwargs) for cell in cells]
+    _ensure_spawn_can_import_main()
     mp_context = multiprocessing.get_context("spawn")
     with ProcessPoolExecutor(
         max_workers=n_workers, mp_context=mp_context,
