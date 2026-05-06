@@ -24,9 +24,22 @@ MIN_COVERED_MASS: Final[float] = 0.95
 """Minimum log-normal probability mass covered by the §5 radius support."""
 
 
+REGIME_INDEX_HOMOGENEOUS: Final[int] = 0
+REGIME_INDEX_STRATIFIED: Final[int] = 1
+REGIME_INDEX_SEDIMENTED: Final[int] = 2
+"""Index ordering for the Phase 28 per-regime conditional moment arrays."""
+
+
 @dataclass(frozen=True)
 class SmearedGrid:
-    """Polydispersity-smoothed regime probabilities on cache coordinates."""
+    """Polydispersity-smoothed regime probabilities on cache coordinates.
+
+    The Phase 28 ``expected_radius_by_regime`` and
+    ``expected_radius_sq_by_regime`` fields populate only when the
+    kernel is invoked with ``weighting="number_density"``. Their first
+    axis indexes regime in (H, S, SED) order — see
+    ``REGIME_INDEX_HOMOGENEOUS / _STRATIFIED / _SEDIMENTED``.
+    """
 
     r_geom_mean_axis: tuple[float, ...]
     sigma_geom_axis: tuple[float, ...]
@@ -40,6 +53,9 @@ class SmearedGrid:
     expected_bottom_mass_fraction: NDArray[np.float64]
     truncation_loss: NDArray[np.float64]
     accepted: NDArray[np.bool_]
+    weighting: Literal["classification", "number_density"] = "classification"
+    expected_radius_by_regime: NDArray[np.float64] | None = None
+    expected_radius_sq_by_regime: NDArray[np.float64] | None = None
 
 
 def _validate_lognormal_params(r_geom_mean: float, sigma_geom: float) -> None:
@@ -119,12 +135,26 @@ def lognormal_smear(
     *,
     min_covered_mass: float = MIN_COVERED_MASS,
     on_truncation: Literal["raise", "mask"] = "raise",
+    weighting: Literal["classification", "number_density"] = "classification",
 ) -> SmearedGrid:
-    """Smear a sharp-radius `RegimeGrid` against log-normal radius distributions."""
+    """Smear a sharp-radius `RegimeGrid` against log-normal radius distributions.
+
+    Parameters
+    ----------
+    weighting
+        ``"classification"`` (default) reproduces the v0.3 kernel
+        byte-identically and leaves the Phase 28 per-regime conditional
+        moment arrays unset. ``"number_density"`` additionally returns
+        ``E[r | regime]`` and ``E[r² | regime]`` for each regime band,
+        computed against the number-density log-normal kernel
+        (program-context S5).
+    """
     if not (0.0 < min_covered_mass <= 1.0):
         raise ValueError("min_covered_mass must be in (0, 1].")
     if on_truncation not in {"raise", "mask"}:
         raise ValueError("on_truncation must be 'raise' or 'mask'.")
+    if weighting not in {"classification", "number_density"}:
+        raise ValueError("weighting must be 'classification' or 'number_density'.")
 
     radii = np.asarray(grid.r_material, dtype=np.float64)
     r_axis_source = radii if r_geom_mean_axis is None else r_geom_mean_axis
@@ -156,6 +186,16 @@ def lognormal_smear(
     is_s = (grid.regime == 1).astype(np.float64)
     is_sed = (grid.regime == 2).astype(np.float64)
 
+    if weighting == "number_density":
+        moment_shape = (3, *shape)
+        e_r_by_regime = np.full(moment_shape, np.nan, dtype=np.float64)
+        e_r_sq_by_regime = np.full(moment_shape, np.nan, dtype=np.float64)
+        r_broadcast = radii[:, None, None, None]
+        r_sq_broadcast = r_broadcast * r_broadcast
+    else:
+        e_r_by_regime = None
+        e_r_sq_by_regime = None
+
     for ri, r_mean in enumerate(r_axis):
         for si, sigma in enumerate(sigma_axis):
             weights, covered_mass = _bin_weights(radii, r_mean, sigma)
@@ -179,6 +219,22 @@ def lognormal_smear(
             expected_ratio[ri, si] = np.sum(w * grid.ratio, axis=0)
             expected_bmf[ri, si] = np.sum(w * grid.bmf, axis=0)
 
+            if weighting == "number_density":
+                p_by_regime = (p_h[ri, si], p_s[ri, si], p_sed[ri, si])
+                indicators = (is_h, is_s, is_sed)
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    for regime_idx, (p_regime, indicator) in enumerate(
+                        zip(p_by_regime, indicators, strict=True),
+                    ):
+                        m1 = np.sum(w * r_broadcast * indicator, axis=0)
+                        m2 = np.sum(w * r_sq_broadcast * indicator, axis=0)
+                        e_r_by_regime[regime_idx, ri, si] = np.where(
+                            p_regime > 0.0, m1 / p_regime, np.nan,
+                        )
+                        e_r_sq_by_regime[regime_idx, ri, si] = np.where(
+                            p_regime > 0.0, m2 / p_regime, np.nan,
+                        )
+
     return SmearedGrid(
         r_geom_mean_axis=r_axis,
         sigma_geom_axis=sigma_axis,
@@ -192,4 +248,7 @@ def lognormal_smear(
         expected_bottom_mass_fraction=expected_bmf,
         truncation_loss=truncation_loss,
         accepted=accepted,
+        weighting=weighting,
+        expected_radius_by_regime=e_r_by_regime,
+        expected_radius_sq_by_regime=e_r_sq_by_regime,
     )
