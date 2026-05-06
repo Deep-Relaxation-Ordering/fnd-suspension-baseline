@@ -37,7 +37,7 @@ $ git diff --check
 | Field | Value |
 |---|---|
 | Tag | `pilot-v0.3` |
-| Commit | `TBD` |
+| Commit | `ad48b0b` |
 | Package version | `0.3.0` |
 | Test suite | `171 passed, 0 skipped` |
 | Lint | `ruff check .` clean |

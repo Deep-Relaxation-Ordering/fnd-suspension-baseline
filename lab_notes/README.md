@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-05-06 | [Phase 29 — doc-fix bundle (S-slice nomenclature) + v0.3 review residue](2026-05-06-phase29-doc-fix-and-review-residue.md) | 29 |
 | 2026-05-06 | [Phase 28 — S5 number-density polydispersity kernel](2026-05-06-phase28-s5-number-density-kernel.md) | 28 |
 | 2026-05-06 | [Phase 27 — S3 hydrodynamic-shell calibration per FND class](2026-05-06-phase27-s3-hydrodynamic-shell-calibration.md) | 27 |
 | 2026-05-06 | [Phase 26 (continuation) — v0.4 work-plan contract acceptance](2026-05-06-phase26-continuation-contract-acceptance.md) | 26 |

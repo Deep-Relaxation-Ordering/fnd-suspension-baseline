@@ -172,6 +172,7 @@ notebook regeneration commands.
 | 26 (continuation) | v0.4 work-plan contract acceptance — §1 reshape; D2 / D3 / D5 / D6 / D7 resolved; §3 / §4 / §6 / §7 filled; SCAFFOLD → contract | done — [phase-26 (continuation) note](lab_notes/2026-05-06-phase26-continuation-contract-acceptance.md) |
 | 27 | S3 — hydrodynamic-shell calibration per FND class (`DeltaShellCalibration`, class-default helper, citation-anchored `delta_shell_m` table) | done — [phase-27 note](lab_notes/2026-05-06-phase27-s3-hydrodynamic-shell-calibration.md) |
 | 28 | S5 — number-density polydispersity kernel (`weighting='number_density'` opt-in; per-regime `E[r \| R]` and `E[r² \| R]` on `SmearedGrid`; classification kernel byte-identical) | done — [phase-28 note](lab_notes/2026-05-06-phase28-s5-number-density-kernel.md) |
+| 29 | Doc-fix bundle (item L) + v0.3 review residue (item H) — S-slice labels in [`deliverable-index.md`](docs/deliverable-index.md) and [`release-notes/v0.3.md`](docs/release-notes/v0.3.md) reconciled against [`program-context.md` §3.1](docs/program-context.md); release-notes / Phase-24 `Commit | TBD` placeholders backfilled with `ad48b0b` | done — [phase-29 note](lab_notes/2026-05-06-phase29-doc-fix-and-review-residue.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in

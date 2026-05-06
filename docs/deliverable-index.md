@@ -187,25 +187,42 @@ Phase 16. The v0.2 scope was anchored in
 
 ## What `pilot-v0.4` would change
 
-Candidate tightenings for the next pilot slice (from
-[`program-context.md`](program-context.md) §3.1):
+Candidate tightenings for the next pilot slice. The S1–S7 labels and
+descriptions below match [`program-context.md` §3.1](program-context.md)
+verbatim — the authoritative L1 slice menu. The corresponding
+in-scope / out-of-scope decisions for v0.4 live in
+[`work-plan-v0-4.md` §1](work-plan-v0-4.md) (Phase 26 continuation):
 
-- S1 — DLVO aggregation pre-screen (waiting on upstream breakout
-  note).
-- S3 — Salinity / ionic-strength correction to diffusivity.
-- S4 — pH-dependent surface-charge effects on hydrodynamic radius.
-- S5 — Multi-particle interaction (concentration-dependent
-  sedimentation).
-- S6 — Viscosity temperature-dependence beyond the current Tanaka
-  fit.
-- S7 — Full 3-D convection simulation (beyond Rayleigh threshold).
-- Aggregation and wall-hydrodynamic correction models, or at least
-  quantified validity limits for them.
-- Calibrate `delta_shell_m` against representative functionalised FND
-  hydrodynamic measurements instead of leaving it as a user-supplied
-  geometry knob.
+- **S1 — DLVO aggregation pre-screen** (cell trustworthiness flag).
+  Out of v0.4 — gated on the upstream `Deep-Relaxation-Ordering/diamonds_in_water`
+  v0.3 breakout note that has not yet landed. v0.5+ candidate.
+- **S3 — Hydrodynamic-shell calibration per FND class.** Replace
+  `delta_shell_m` from its v0.3 user-supplied-knob status with a
+  citation-anchored default per FND class. **In v0.4 (Phase 27).**
+- **S4 — Capsule-geometry port (1-D radial in spherical coordinates).**
+  Sealed micro-cells at d = 10–100 µm; sibling-repo breakout note
+  required first. Out of v0.4 — its own pilot cycle, post-v1.0.
+- **S5 — Concentration-weighted polydispersity kernel.** Bounded
+  change to `lognormal_smear`'s weighting kernel; per-regime
+  conditional radius moments. **In v0.4 (Phase 28).**
+- **S6 — Wall-hydrodynamic Faxén/Brenner corrections.** Position-
+  dependent corrections to drag and diffusivity near sealed-cell
+  boundaries. Out of v0.4 — defer to v0.5 / v1.1.
+- **S7 — Thermal control as a first-class axis.** Promote
+  `delta_T_assumed` from side-channel to first-class axis;
+  sealed-cell only. Out of v0.4 — defer to v0.5 / v1.0; gated on
+  D-PC-1 campaign protocol.
+
+Plus tactical follow-ups outside the S-slice menu:
+
 - Promote `lambda_se` to a §5 scan axis if calibrated working values
-  are ≤ 0.3.
+  in the FND band are ≤ 0.3. Conditional v0.5 candidate; the
+  calibration prerequisite has not been run yet.
+
+For the per-item v0.4 decision rationale (in-scope / out-of-scope /
+parallel-breakout), see [`work-plan-v0-4.md` §1](work-plan-v0-4.md)
+items A / B / D / E / F / G; the doc-fix that introduced this
+section's S-slice corrections is recorded as item L.
 
 None of these are v0.3 correctness fixes; they are the next layer of
 experimental realism and consumer convenience.
