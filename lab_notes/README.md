@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-05-06 | [Tutorial phase 1 — TUT-01…TUT-05 first batch (backfill against governance + implementation commits)](2026-05-06-phase1-tutorials.md) | TUT-1 |
 | 2026-05-06 | [Phase 32 — `pilot-v0.4` release](2026-05-06-phase32-pilot-v0-4-release.md) | 32 |
 | 2026-05-06 | [Phase 31 — integration audit + release-criterion gap audit (item K)](2026-05-06-phase31-integration-audit-and-release-gap.md) | 31 |
 | 2026-05-06 | [Phase 30 — tactical bundle: spawn-context (item I) + crossing_parameter (item J)](2026-05-06-phase30-spawn-context-and-crossing-parameter.md) | 30 |
