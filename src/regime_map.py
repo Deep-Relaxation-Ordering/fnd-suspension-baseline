@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import csv
 import math
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, fields
 from pathlib import Path
@@ -390,10 +391,14 @@ def walk_grid(
     ``n_workers`` controls parallelism. Default ``1`` runs the serial
     nested loop unchanged (preserves v0.2 behaviour byte-identical to
     machine precision). ``n_workers > 1`` distributes cells across a
-    ``ProcessPoolExecutor``; deterministic input order is preserved
-    via ``executor.map``, so the returned list is identical regardless
-    of worker count. Per ADR 0001 the §5 cache contract is byte-
-    identical at compatibility defaults — the integration test in
+    ``ProcessPoolExecutor`` using a ``spawn`` start method (Phase 30 —
+    item I); deterministic input order is preserved via
+    ``executor.map``, so the returned list is identical regardless of
+    worker count. The spawn context removes the macOS fork-safety
+    footgun documented in the v0.3 release notes §H — fork() with
+    pre-imported numerics libraries can deadlock at worker creation.
+    Per ADR 0001 the §5 cache contract is byte-identical at
+    compatibility defaults — the integration test in
     ``tests/test_regime_map.py`` pins this for parallel walks.
     """
     rs = tuple(radii_m()) if radii is None else radii
@@ -421,7 +426,10 @@ def walk_grid(
         return [_classify_cell_unpack((cell, cell_kwargs)) for cell in cells]
 
     payloads = [(cell, cell_kwargs) for cell in cells]
-    with ProcessPoolExecutor(max_workers=n_workers) as executor:
+    mp_context = multiprocessing.get_context("spawn")
+    with ProcessPoolExecutor(
+        max_workers=n_workers, mp_context=mp_context,
+    ) as executor:
         return list(executor.map(_classify_cell_unpack, payloads))
 
 

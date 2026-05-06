@@ -1,16 +1,21 @@
-"""Continuous time-evolution channel (Phase 22 — item J).
+"""Continuous time-evolution channel (Phase 22 — item J + Phase 30 extension).
 
 Provides time-series evaluation and crossing-time root-finding for a
 single (r, T, h) cell, treating ``t_obs`` as a continuous variable rather
 than the six discrete points of the §5 cache.
 
-The implementation evaluates ``solve_cell`` at a modest number of
-log-spaced times and interpolates with a monotonicity-preserving spline
-(PCHIP).  This is accurate enough for design-table work while keeping
-the per-cell cost tractable (~1–2 s for short-circuit cells, ~10–30 s
-for resolved Method-C cells).
+The Phase 22 implementation evaluates ``solve_cell`` at a modest number
+of log-spaced times and interpolates with a monotonicity-preserving
+spline (PCHIP).  This is accurate enough for design-table work while
+keeping the per-cell cost tractable (~1–2 s for short-circuit cells,
+~10–30 s for resolved Method-C cells).
 
-Spec: work-plan-v0-3 §1 item J.
+Phase 30 (work-plan-v0-4 item J) adds ``crossing_parameter`` — the
+parameter-sweep counterpart to ``crossing_time``. Given a fixed cell
+and observation time, it root-finds the value of ``delta_shell_m`` or
+``lambda_se`` at which a regime metric crosses a target threshold.
+
+Spec: work-plan-v0-3 §1 item J; work-plan-v0-4 §1 item J extension.
 """
 
 from __future__ import annotations
@@ -189,5 +194,139 @@ def crossing_time(
     except ValueError:
         # PCHIP may not bracket exactly — fall back to linear interpolation
         root = t_lo - y_lo * (t_hi - t_lo) / (y_hi - y_lo)
+
+    return float(root)
+
+
+# ---------------------------------------------------------------------------
+# Phase 30 (work-plan-v0-4 item J) — parameter-sweep root finder
+# ---------------------------------------------------------------------------
+
+
+_PARAMETER_KEYS = ("delta_shell_m", "lambda_se")
+
+
+def _solve_with_parameter(
+    radius_m: float,
+    temperature_kelvin: float,
+    sample_depth_m: float,
+    t_obs_s: float,
+    parameter: Literal["delta_shell_m", "lambda_se"],
+    p_value: float,
+    solve_kwargs: dict,
+):
+    if parameter == "delta_shell_m":
+        geom = ParticleGeometry(r_material_m=radius_m, delta_shell_m=p_value)
+        return solve_cell(
+            geom,
+            temperature_kelvin,
+            sample_depth_m,
+            t_total=t_obs_s,
+            **solve_kwargs,
+        )
+    return solve_cell(
+        radius_m,
+        temperature_kelvin,
+        sample_depth_m,
+        t_total=t_obs_s,
+        lambda_se=p_value,
+        **solve_kwargs,
+    )
+
+
+def crossing_parameter(
+    radius_m: float,
+    temperature_kelvin: float,
+    sample_depth_m: float,
+    *,
+    parameter: Literal["delta_shell_m", "lambda_se"],
+    t_obs_s: float,
+    p_min: float,
+    p_max: float,
+    criterion: Literal["bmf", "ratio"] = "bmf",
+    target: float = 0.5,
+    n_points: int = 15,
+    **solve_kwargs,
+) -> float | None:
+    """Return the parameter value at which ``criterion`` crosses ``target``.
+
+    Counterpart to :func:`crossing_time`: instead of varying ``t_obs``
+    and root-finding on time, this function fixes ``t_obs_s`` and
+    root-finds on a physical parameter (``delta_shell_m`` or
+    ``lambda_se``) over the inclusive search interval ``[p_min, p_max]``.
+
+    Returns ``None`` when the criterion does not cross the target on the
+    interval (no sign change in the bracketing sweep).
+
+    Parameters
+    ----------
+    parameter
+        Which parameter to sweep. Must be one of ``"delta_shell_m"`` or
+        ``"lambda_se"``.
+    t_obs_s
+        Observation time at which to evaluate the cell, in seconds.
+    p_min, p_max
+        Inclusive search interval. Must satisfy ``0 ≤ p_min < p_max``.
+        For ``lambda_se`` the natural range is ``(0, 1]``; for
+        ``delta_shell_m`` it is non-negative metres.
+    criterion
+        ``"bmf"`` searches for ``bottom_mass_fraction(parameter) = target``.
+        ``"ratio"`` searches for ``top_to_bottom_ratio(parameter) = target``.
+    target
+        The threshold to cross.
+    n_points
+        Number of linearly-spaced bracketing samples on
+        ``[p_min, p_max]``.
+    """
+    if parameter not in _PARAMETER_KEYS:
+        raise ValueError(
+            f"parameter must be one of {_PARAMETER_KEYS}; got {parameter!r}.",
+        )
+    if not (p_min >= 0.0 and p_max > p_min):
+        raise ValueError("require 0 <= p_min < p_max.")
+    if parameter == "lambda_se" and (p_min < 0.0 or p_max > 1.0):
+        raise ValueError("lambda_se must lie in [0, 1].")
+    if t_obs_s <= 0.0:
+        raise ValueError("t_obs_s must be positive.")
+    if criterion not in ("bmf", "ratio"):
+        raise ValueError("criterion must be 'bmf' or 'ratio'.")
+    if n_points < 4:
+        raise ValueError("n_points must be at least 4 to bracket reliably.")
+
+    p_vals = np.linspace(p_min, p_max, n_points)
+    y_vals = np.empty(n_points)
+    for i, p_value in enumerate(p_vals):
+        result = _solve_with_parameter(
+            radius_m,
+            temperature_kelvin,
+            sample_depth_m,
+            t_obs_s,
+            parameter,
+            float(p_value),
+            solve_kwargs,
+        )
+        if criterion == "bmf":
+            y_vals[i] = result.bottom_mass_fraction(0.05) - target
+        else:
+            y_vals[i] = result.top_to_bottom_ratio() - target
+
+    sign_changes = np.where(np.sign(y_vals[:-1]) != np.sign(y_vals[1:]))[0]
+    if sign_changes.size == 0:
+        return None
+
+    idx = int(sign_changes[0])
+    p_lo, p_hi = float(p_vals[idx]), float(p_vals[idx + 1])
+    y_lo, y_hi = float(y_vals[idx]), float(y_vals[idx + 1])
+
+    if abs(y_lo) < 1e-12:
+        return p_lo
+    if abs(y_hi) < 1e-12:
+        return p_hi
+
+    interpolator = PchipInterpolator(p_vals, y_vals)
+    try:
+        root = brentq(interpolator, p_lo, p_hi)
+    except ValueError:
+        root = p_lo - y_lo * (p_hi - p_lo) / (y_hi - y_lo)
 
     return float(root)
