@@ -1,14 +1,18 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:percent
+#     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.19.1
 # ---
 
 # %% [markdown]
 # # TUT-01 — Quick-start regime map
+#
+# [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/notebooks/tutorials/01_quick_start_regime_map.ipynb)
 #
 # **Tutorial ID**: TUT-01
 # **Purpose**: Load the §5 cache, select a slice, and inspect a single cell.
@@ -24,20 +28,46 @@
 # **Citation/reuse**: Please see `CITATION.cff`, `codemeta.json`, `LICENCE`, and `pyproject.toml` in the repository root.
 
 # %%
+# Colab bootstrap — clones the repo on first run so cache + src are available.
+# No-op outside Colab (the if-guard short-circuits before any IPython magic).
+import os
+import sys
+
+if "google.colab" in sys.modules:
+    REPO_DIR = "/content/fnd-suspension-baseline"
+    if not os.path.exists(REPO_DIR):
+        import subprocess
+        subprocess.run(
+            [
+                "git", "clone", "-q",
+                "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline.git",
+                REPO_DIR,
+            ],
+            check=True,
+        )
+    os.chdir(REPO_DIR)
+    if "src" not in sys.path:
+        sys.path.insert(0, "src")
+
+# %%
 from pathlib import Path
-import matplotlib.pyplot as plt
+
 import numpy as np
 
 from regime_map import results_from_csv
 
-# Load cache
-cache_path = Path(__file__).resolve().parent.parent / "data" / "regime_map_grid.csv"
+# Load cache (fall back to a repo-relative path in Colab / Jupyter, where
+# `__file__` is not defined; the bootstrap cell sets cwd to the repo root).
+try:
+    cache_path = Path(__file__).resolve().parent.parent / "data" / "regime_map_grid.csv"
+except NameError:
+    cache_path = Path("notebooks/data/regime_map_grid.csv")
 results = list(results_from_csv(cache_path))
 print(f"Loaded {len(results)} cells from cache.")
 
 # Select slice at Room Temperature (298.15 K) and t_obs = 1 h (3600 s)
 slice_results = [
-    r for r in results 
+    r for r in results
     if np.isclose(r.temperature_kelvin, 298.15) and np.isclose(r.t_obs_s, 3600.0)
 ]
 
@@ -50,7 +80,7 @@ available_radii = np.array(sorted({r.r_material_m for r in slice_results}))
 nearest_r = available_radii[np.argmin(np.abs(available_radii - target_r))]
 
 cell = next(
-    r for r in slice_results 
+    r for r in slice_results
     if np.isclose(r.r_material_m, nearest_r) and np.isclose(r.sample_depth_m, target_h)
 )
 

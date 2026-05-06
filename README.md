@@ -109,17 +109,21 @@ Visitor-facing tutorials live in [`notebooks/tutorials/`](notebooks/tutorials/)
 and are tracked in [`docs/tutorial-roadmap.md`](docs/tutorial-roadmap.md).
 They are accessibility surfaces, not release artefacts — a release does not
 have to ship new tutorials, but any tutorial it claims must be runnable and
-carry enough FAIR metadata to be found, cited, and re-run.
+carry enough FAIR metadata to be found, cited, and re-run. Each tutorial
+ships as a paired jupytext `.py` + `.ipynb`; the `.py` is canonical for
+review, and the `.ipynb` exists so external readers can launch the
+tutorial in Google Colab one-click via the badges below.
 
-Planned tutorials for the v0.5 cycle:
+Tutorials shipped against `pilot-v0.4`:
 
-| ID | Tutorial | What it covers | Target |
+| ID | Tutorial | What it covers | Launch |
 |---|---|---|---|
-| TUT-01 | Quick-start regime map | Load the §5 cache and plot a single (r, h) slice. | v0.5 |
-| TUT-02 | Geometry + shell calibration | Pick an FND class and see the hydrodynamic-radius shift. | v0.5 |
-| TUT-03 | Polydispersity intuition | Compare classification vs number-density weighting. | v0.5 |
-| TUT-04 | Time + parameter crossings | Find the radius that crosses a regime boundary at a chosen time. | v0.5 |
-| TUT-05 | Experimental envelope | Walk the validity caveats that every consumer should know. | v0.5 |
+| TUT-01 | Quick-start regime map | Load the §5 cache and inspect a single (r, h) slice. | [Colab](https://colab.research.google.com/github/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/notebooks/tutorials/01_quick_start_regime_map.ipynb) |
+| TUT-02 | Geometry + shell calibration | Pick an FND class and see the hydrodynamic-radius shift. | [Colab](https://colab.research.google.com/github/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/notebooks/tutorials/02_geometry_and_shell_calibration.ipynb) |
+| TUT-03 | Polydispersity intuition | Compare classification vs number-density weighting. | [Colab](https://colab.research.google.com/github/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/notebooks/tutorials/03_polydispersity_intuition.ipynb) |
+| TUT-04 | Time + parameter crossings | Find the radius that crosses a regime boundary at a chosen time. | [Colab](https://colab.research.google.com/github/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/notebooks/tutorials/04_time_and_parameter_crossings.ipynb) |
+| TUT-05 | Experimental envelope | Walk the validity caveats that every consumer should know. | [Colab](https://colab.research.google.com/github/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/notebooks/tutorials/05_experimental_envelope.ipynb) |
+| TUT-06 | Interactive cache explorer | Slice the §5 cache live with ipywidgets sliders (static fallback for plain `python`). | [Colab](https://colab.research.google.com/github/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/notebooks/tutorials/06_cache_explorer.ipynb) |
 
 Every tutorial is smoke-tested before release.  See
 [`docs/conventions.md`](docs/conventions.md) §"Tutorial notebooks" for the

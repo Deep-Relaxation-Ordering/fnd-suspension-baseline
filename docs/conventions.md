@@ -115,6 +115,20 @@ coverage must have smoke-tested it.
   `notebooks/tutorials/` as jupytext `.py` files. Each tutorial has a
   stable roadmap identifier (`TUT-01`, `TUT-02`, ...); renames keep the
   identifier and record the path change in `docs/tutorial-roadmap.md`.
+- **Paired `.ipynb` files (tutorial-only carve-out).** Tutorials may
+  ship a paired `.ipynb` alongside the `.py` (jupytext format
+  `ipynb,py:percent`) so external readers can launch them in
+  Colab / Binder via a one-click badge. The `.py` remains canonical
+  for review and merge-conflict resolution; the `.ipynb` is
+  regenerated via `jupytext --sync` whenever the `.py` changes. This
+  carve-out applies *only* to `notebooks/tutorials/`; deliverable
+  notebooks under `notebooks/` stay `.py`-only per the rule above.
+- **Colab bootstrap cell.** Every tutorial begins (after the front
+  matter) with a no-op-locally bootstrap that clones the repo when
+  `'google.colab' in sys.modules`, sets `cwd` to the repo root, and
+  prepends `src/` to `sys.path`. This gives Colab readers cache + src
+  access without any per-tutorial setup; running the `.py` under
+  plain `python` skips the block entirely.
 - **Data policy.** Tutorials must use committed cache or data files
   (`notebooks/data/`) unless the notebook is explicitly marked
   `<!-- EXPENSIVE -->` in its opening docstring and in the roadmap.

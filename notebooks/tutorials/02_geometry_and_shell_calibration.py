@@ -1,14 +1,18 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:percent
+#     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.19.1
 # ---
 
 # %% [markdown]
 # # TUT-02 — Geometry + shell calibration
+#
+# [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Deep-Relaxation-Ordering/fnd-suspension-baseline/blob/main/notebooks/tutorials/02_geometry_and_shell_calibration.ipynb)
 #
 # **Tutorial ID**: TUT-02
 # **Purpose**: Instantiate FND classes and inspect hydrodynamic radius shifts.
@@ -24,8 +28,28 @@
 # **Citation/reuse**: Please see `CITATION.cff`, `codemeta.json`, `LICENCE`, and `pyproject.toml` in the repository root.
 
 # %%
-from pathlib import Path
-import matplotlib.pyplot as plt
+# Colab bootstrap — clones the repo on first run so `src` is importable.
+# No-op outside Colab.
+import os
+import sys
+
+if "google.colab" in sys.modules:
+    REPO_DIR = "/content/fnd-suspension-baseline"
+    if not os.path.exists(REPO_DIR):
+        import subprocess
+        subprocess.run(
+            [
+                "git", "clone", "-q",
+                "https://github.com/Deep-Relaxation-Ordering/fnd-suspension-baseline.git",
+                REPO_DIR,
+            ],
+            check=True,
+        )
+    os.chdir(REPO_DIR)
+    if "src" not in sys.path:
+        sys.path.insert(0, "src")
+
+# %%
 
 from parameters import ParticleGeometry
 

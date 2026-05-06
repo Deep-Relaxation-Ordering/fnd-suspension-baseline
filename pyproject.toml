@@ -72,6 +72,15 @@ markers = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+# Generated `.ipynb` mirrors of tutorial `.py` files are not linted directly:
+# the canonical `.py` source is. See docs/conventions.md §"Tutorial notebooks".
+extend-exclude = ["notebooks/tutorials/*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tutorial front-matter markdown cells legitimately carry long lines
+# (citation URLs, smoke-command paths, narrative comments). Keep the rest
+# of the lint discipline; relax line length only.
+"notebooks/tutorials/*.py" = ["E501"]
