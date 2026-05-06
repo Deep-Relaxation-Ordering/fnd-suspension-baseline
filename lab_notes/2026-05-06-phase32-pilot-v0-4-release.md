@@ -48,7 +48,7 @@ $ git diff --check
 | Field | Value |
 |---|---|
 | Tag | `pilot-v0.4` |
-| Commit | `TBD` (set in the release-note table after the tag lands) |
+| Commit | `pilot-v0.4` tag target (`git rev-list -n 1 pilot-v0.4`) |
 | Package version | `0.4.0` |
 | Test suite | `199 passed, 0 skipped` |
 | Lint | `ruff check .` clean |
@@ -86,7 +86,7 @@ Phase 28 / 30 byte-identity smoke tests).
 | Replace the v0.3 scope-delta table on the Pages page rather than appending | The "Scope delta vs pilot-v0.3" framing is what readers want at v0.4 release time. The v0.3 narrative is preserved via the `release-notes/v0.3.md` link. Leaving both tables would be visually noisy on a page already constrained by the cd-rules visual register. |
 | Update `deliverable-index.md` "What `pilot-v0.5` would change" header rather than adding a new section | The previous heading was "What `pilot-v0.4` would change" — now that v0.4 is shipping, the same forward-looking section needs a renamed heading and updated bullets. The "preserved" v0.3 / v0.2 sections below it stay intact as historical reference. |
 | Keep the codemeta.json `isBasedOn` pin at the v0.2 breakout-note commit | ADR 0003 D1 = Option 2 (stay on `3b7b18af`) carries forward through v0.4. The `isBasedOn` field reflects the spec anchor, not the implementation tag. Updating it would imply a re-anchor that did not happen. |
-| Defer the actual `git tag pilot-v0.4` invocation to a Bash step inside Phase 32 (not the user) | Phase 24 precedent: the release ceremony's tag is part of the phase's automated checklist. The tag lives only locally until the user pushes; pushing remains the user's explicit action. |
+| Defer the actual `git tag pilot-v0.4` invocation to a Bash step inside Phase 32 (not the user) | Phase 24 precedent: the release ceremony's tag is part of the phase's automated checklist. The tag starts locally and is published only after the release-review findings are fixed. |
 | Use the 2026-05-06 release date | Matches Phase 27–31 calendar dates; v0.4 cycle ran 2026-05-05 (Phase 25) → 2026-05-06 (Phases 26 → 32) — single working day for the implementation phases, consistent with the v0.3 working-tempo pattern. |
 
 ## What was not done
@@ -102,9 +102,9 @@ Phase 28 / 30 byte-identity smoke tests).
 - **No new ADR.** Phase 32 is mechanical; the spec-anchoring and
   first-slice decisions for v0.4 were recorded in
   [ADR 0003](../docs/adr/0003-v0.4-spec-anchoring.md) (Phase 26).
-- **No push to origin.** The branch is committed and tagged
-  locally; the user pushes manually. Per the v0.3 cycle precedent,
-  pushing is an explicit user action.
+- **No push during the initial Phase 32 ceremony.** The branch was
+  committed and tagged locally first; publication happens after the
+  release-review findings are resolved.
 - **No release-criterion ADR.** v1.0 release criterion 4 (calibration
   ADR) is gated on the campaign existing (D-PC-1); it is in the
   v1.0 release path, not v0.4.

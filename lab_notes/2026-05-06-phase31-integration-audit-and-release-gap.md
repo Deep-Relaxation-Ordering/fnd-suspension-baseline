@@ -41,9 +41,9 @@ Following the Phase 23 / Phase 12.1 regression-audit pattern:
      byte-identically.
    - Phase 30 item I: `walk_grid(n_workers=2)` under spawn is
      byte-identical to `n_workers=1`.
-   - Phase 30 item J: `crossing_parameter` returns a finite (or
-     `None`) value on a bracketed `lambda_se` sweep and rejects
-     invalid parameter names.
+   - Phase 30 item J: `crossing_parameter` returns a finite value
+     on a known-bracketed `lambda_se` sweep and rejects invalid
+     parameter names.
 4. **Full test suite.** `pytest -q` — 199 tests must pass.
 
 ## Results
@@ -66,6 +66,7 @@ Polydispersity number-density compat smoke test (Phase 28)... PASS
 walk_grid spawn-context byte-identity smoke test (Phase 30 item I)... PASS
   serial == parallel (6 cells)
 crossing_parameter smoke test (Phase 30 item J)... PASS
+  lambda_se @ ratio=1e-4: 0.403338
 
 Overall: PASS
 ```

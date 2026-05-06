@@ -19,7 +19,7 @@ Phase 31 (v0.4) extends it with smoke tests for the v0.4 surfaces:
 - Phase 30 item I: ``walk_grid(n_workers=2)`` under the spawn start
   method is byte-identical to ``walk_grid(n_workers=1)``.
 - Phase 30 item J: ``crossing_parameter`` returns a finite value for
-  a bracketed lambda_se sweep on a stratified cell.
+  a known-bracketed lambda_se sweep on a stratified cell.
 
 Usage:
     cd /path/to/repo
@@ -256,7 +256,7 @@ def audit_walk_grid_spawn_compat() -> bool:
             t_obs=subset_tobs,
             n_workers=2,
         )
-        if len(serial) != len(parallel) != 6:
+        if not (len(serial) == len(parallel) == 6):
             print(f"FAIL: cell-count mismatch (serial={len(serial)}, parallel={len(parallel)})")
             return False
         for i, (s, p) in enumerate(zip(serial, parallel, strict=True)):
@@ -292,23 +292,23 @@ def audit_crossing_parameter_smoke() -> bool:
         else:
             print("FAIL: invalid parameter name was not rejected")
             return False
-        # Positive-path: bracketed sweep returns a finite value or None.
+        # Positive-path: known-bracketed sweep must return a finite value.
         result = crossing_parameter(
             1e-7, 298.15, 1e-3,
             parameter="lambda_se",
             t_obs_s=3600.0,
             p_min=0.1, p_max=1.0,
             criterion="ratio",
-            target=0.5,
+            target=1e-4,
             n_points=8,
         )
         if result is None:
-            print("  ratio target not bracketed in this smoke window — acceptable")
-        else:
-            if not (0.1 <= result <= 1.0) or not math.isfinite(result):
-                print(f"FAIL: returned value {result} out of [0.1, 1.0] or non-finite")
-                return False
-            print(f"  lambda_se @ ratio=0.5: {result:.6f}")
+            print("FAIL: known-bracketed ratio target returned None")
+            return False
+        if not (0.1 <= result <= 1.0) or not math.isfinite(result):
+            print(f"FAIL: returned value {result} out of [0.1, 1.0] or non-finite")
+            return False
+        print(f"  lambda_se @ ratio=1e-4: {result:.6f}")
         print("PASS")
         return True
     except Exception as exc:
