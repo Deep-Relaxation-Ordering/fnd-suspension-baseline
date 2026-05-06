@@ -103,3 +103,49 @@ A short, pilot-specific layer on top of cd-rules:
   `PYTHONPATH=src python notebooks/<notebook>.py` from the repo root,
   or open the `.py` in VS Code / PyCharm / Jupyter for cell-by-cell
   execution.
+
+## Tutorial notebooks
+
+Tutorials are a tracked documentation layer — visitor-facing notebooks that
+teach the API by example. They are **not** release artefacts; a missing
+tutorial does not block a physics release, but a release that claims tutorial
+coverage must have smoke-tested it.
+
+- **Location and identifiers.** Tutorials live under
+  `notebooks/tutorials/` as jupytext `.py` files. Each tutorial has a
+  stable roadmap identifier (`TUT-01`, `TUT-02`, ...); renames keep the
+  identifier and record the path change in `docs/tutorial-roadmap.md`.
+- **Data policy.** Tutorials must use committed cache or data files
+  (`notebooks/data/`) unless the notebook is explicitly marked
+  `<!-- EXPENSIVE -->` in its opening docstring and in the roadmap.
+- **Runtime budget.** Under 60 seconds on the reference machine when run
+  with `PYTHONPATH=src python notebooks/tutorials/<stem>.py`.
+- **No full grid walks.** Tutorials must not call `walk_grid()`;
+  they load the committed cache via `results_from_csv()` or use small
+  synthetic parameter sets.
+- **Generated files.** PNG figure outputs may be committed as reviewable
+  artefacts under `notebooks/figures/<stem>/`. PDFs and ad-hoc CSVs are
+  gitignored; commit them only after intentional review.
+- **Front matter.** Every tutorial starts with a docstring / markdown cell
+  containing:
+  - Tutorial ID (matching `docs/tutorial-roadmap.md`)
+  - Purpose (one sentence)
+  - Expected runtime
+  - Release tag it reflects
+  - Canonical input files used
+  - Smoke-test command
+  - Links to canonical docs (breakout note, API docs, findings)
+  - Citation / reuse note pointing to `CITATION.cff`, `codemeta.json`,
+    `LICENCE`, and the license metadata in `pyproject.toml`
+- **Back matter.** Every tutorial ends with a "Where to go next" cell that
+  links to the next tutorial in the learning path and to the relevant
+  deliverable / findings surface.
+- **FAIR floor.** Ready tutorials must be findable via
+  `docs/tutorial-roadmap.md`, accessible without network-only inputs,
+  interoperable with the repo's jupytext `.py` notebook convention, and
+  reusable by naming the release tag, canonical inputs, citation metadata,
+  `LICENCE`, and license metadata. Any generated output committed with
+  a tutorial must state its source command and input data in the
+  tutorial front matter.
+- **Smoke test.** Before a release tag is pushed, every tutorial in the
+  roadmap with status `ready` is executed once and must exit 0.

@@ -65,3 +65,13 @@ Index, reverse-chronological:
 | 2026-04-27 | [Repo scaffold](2026-04-27-scaffold.md) | 0 |
 
 When adding a note, prepend a row above; do not edit prior rows.
+
+## Tutorial phases
+
+Tutorial work is tracked like implementation phases: one lab note per
+tutorial batch, named `YYYY-MM-DD-phase<t>-tutorials.md`.  The tutorial
+roadmap lives in [`../docs/tutorial-roadmap.md`](../docs/tutorial-roadmap.md)
+and the ruleset is in [`../docs/conventions.md`](../docs/conventions.md)
+§"Tutorial notebooks". Tutorial lab notes should cite the stable tutorial
+IDs (`TUT-01`, `TUT-02`, ...) from the roadmap and record the smoke-test
+commands run for every tutorial promoted to `ready`.

@@ -103,6 +103,28 @@ forward-compatible with v0.1. The `0.2.1` patch added FAIR citation,
 CodeMeta, and data-schema metadata only. v0.1 (tag `pilot-v0.1` at
 `9a0fc76`) shipped the original five §6 deliverables.
 
+## Learning path
+
+Visitor-facing tutorials live in [`notebooks/tutorials/`](notebooks/tutorials/)
+and are tracked in [`docs/tutorial-roadmap.md`](docs/tutorial-roadmap.md).
+They are accessibility surfaces, not release artefacts — a release does not
+have to ship new tutorials, but any tutorial it claims must be runnable and
+carry enough FAIR metadata to be found, cited, and re-run.
+
+Planned tutorials for the v0.5 cycle:
+
+| ID | Tutorial | What it covers | Target |
+|---|---|---|---|
+| TUT-01 | Quick-start regime map | Load the §5 cache and plot a single (r, h) slice. | v0.5 |
+| TUT-02 | Geometry + shell calibration | Pick an FND class and see the hydrodynamic-radius shift. | v0.5 |
+| TUT-03 | Polydispersity intuition | Compare classification vs number-density weighting. | v0.5 |
+| TUT-04 | Time + parameter crossings | Find the radius that crosses a regime boundary at a chosen time. | v0.5 |
+| TUT-05 | Experimental envelope | Walk the validity caveats that every consumer should know. | v0.5 |
+
+Every tutorial is smoke-tested before release.  See
+[`docs/conventions.md`](docs/conventions.md) §"Tutorial notebooks" for the
+full ruleset.
+
 ## How to cite
 
 Use [`CITATION.cff`](CITATION.cff) for citation metadata. A Zenodo DOI

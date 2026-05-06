@@ -34,6 +34,22 @@ they can paste the rows below directly.
 | 14 | macOS-safe parallel `walk_grid` under `multiprocessing.get_context("spawn")` with stdin/heredoc guard | [`src/regime_map.py`](../src/regime_map.py) | n/a — infrastructure tightening; pinned by `tests/test_regime_map.py::test_walk_grid_parallel_byte_identical_to_serial` and `…_spawn_rejects_stdin_main_with_clear_error` |
 | 15 | Integration audit extended for v0.4 surfaces (Phase 27 / 28 / 30 smoke tests + Phase 31 release-criterion gap audit) | [`notebooks/09_integration_audit.py`](../notebooks/09_integration_audit.py); release-criterion gap recorded in [`lab_notes/2026-05-06-phase31-integration-audit-and-release-gap.md`](../lab_notes/2026-05-06-phase31-integration-audit-and-release-gap.md) | `PYTHONPATH=src python notebooks/09_integration_audit.py` |
 
+## Tutorial accessibility surfaces
+
+Tutorials are visitor-facing notebooks that teach the API by example.
+They are **not** §6 deliverables; they are governed by the ruleset in
+[`conventions.md`](conventions.md) §"Tutorial notebooks" and tracked
+in [`tutorial-roadmap.md`](tutorial-roadmap.md). The roadmap owns the
+stable tutorial IDs, canonical inputs, and smoke commands.
+
+| ID | Tutorial | Status | Target phase | Verifies | Linked from |
+|---|---|---|---|---|---|
+| TUT-01 | Quick-start regime map | proposed | v0.5 | cache load + simple plot | README / Pages |
+| TUT-02 | Geometry + shell calibration | proposed | v0.5 | `from_fnd_class` examples | release notes / envelope |
+| TUT-03 | Polydispersity intuition | proposed | v0.5 | classification vs number-density | deliverable index |
+| TUT-04 | Time + parameter crossings | proposed | v0.5 | `crossing_time`, `crossing_parameter` | API docs / README |
+| TUT-05 | Experimental envelope | proposed | v0.5 | validity caveats | Pages / envelope |
+
 ## §6 deliverable mapping — `pilot-v0.3` additions (preserved)
 
 | # | Deliverable | Artefact | Regen command |
