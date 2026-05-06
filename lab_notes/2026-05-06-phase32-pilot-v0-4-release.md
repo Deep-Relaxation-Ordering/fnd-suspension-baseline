@@ -48,7 +48,7 @@ $ git diff --check
 | Field | Value |
 |---|---|
 | Tag | `pilot-v0.4` |
-| Commit | `pilot-v0.4` tag target (`git rev-list -n 1 pilot-v0.4`) |
+| Commit | `9118cd2` (`pilot-v0.4` tag target) |
 | Package version | `0.4.0` |
 | Test suite | `199 passed, 0 skipped` |
 | Lint | `ruff check .` clean |

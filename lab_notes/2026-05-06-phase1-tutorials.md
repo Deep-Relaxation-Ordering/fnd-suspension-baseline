@@ -5,8 +5,9 @@ Institut Freiburg.*
 
 ## Context
 
-`pilot-v0.4` shipped (commit `a3b6107`, tag `pilot-v0.4`) with seven
-implementation items but no visitor-facing tutorial layer. The
+`pilot-v0.4` shipped (tag target `9118cd2`, after the Phase 32
+release-review fix) with seven implementation items but no
+visitor-facing tutorial layer. The
 post-release work introduces tutorials as an accessibility surface
 separate from §6 deliverables, governed by the new
 [`docs/conventions.md` §"Tutorial notebooks"](../docs/conventions.md)

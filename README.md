@@ -212,6 +212,7 @@ notebook regeneration commands.
 | 30 | Tactical bundle (items I + J) — `walk_grid` `ProcessPoolExecutor` switched to `multiprocessing.get_context('spawn')` for macOS fork-safety, with a clear stdin/heredoc guard; new `crossing_parameter()` parameter-sweep root-finder for `delta_shell_m` / `lambda_se` at fixed `t_obs` | done — [phase-30 note](lab_notes/2026-05-06-phase30-spawn-context-and-crossing-parameter.md) |
 | 31 | Integration audit (cache reproducibility + smoke tests for Phase 27 / 28 / 30 surfaces; full 199-test suite) + item K release-criterion gap audit against [`program-context.md` §4.1](docs/program-context.md) — v0.4 closes S2 (carry) + S3 + S5; S1 / S4 / S6 / S7 + campaign D-PC-1 remain open | done — [phase-31 note](lab_notes/2026-05-06-phase31-integration-audit-and-release-gap.md) |
 | 32 | `pilot-v0.4` release tag; release notes; deliverable-index v0.4 update; package-version + CITATION.cff + codemeta.json bumps to `0.4.0` | done — [phase-32 note](lab_notes/2026-05-06-phase32-pilot-v0-4-release.md) |
+| 32.1 | post-release doc fixes — v0.4 release-pin commit backfill; tutorial roadmap / deliverable-index status reconciliation for TUT-01 through TUT-06; duplicated preserved-tail removal | done — [phase-32.1 note](lab_notes/2026-05-06-phase32-1-post-release-doc-fixes.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in

@@ -42,13 +42,14 @@ They are **not** §6 deliverables; they are governed by the ruleset in
 in [`tutorial-roadmap.md`](tutorial-roadmap.md). The roadmap owns the
 stable tutorial IDs, canonical inputs, and smoke commands.
 
-| ID | Tutorial | Status | Target phase | Verifies | Linked from |
+| ID | Tutorial | Status | Shipped at | Verifies | Linked from |
 |---|---|---|---|---|---|
-| TUT-01 | Quick-start regime map | proposed | v0.5 | cache load + simple plot | README / Pages |
-| TUT-02 | Geometry + shell calibration | proposed | v0.5 | `from_fnd_class` examples | release notes / envelope |
-| TUT-03 | Polydispersity intuition | proposed | v0.5 | classification vs number-density | deliverable index |
-| TUT-04 | Time + parameter crossings | proposed | v0.5 | `crossing_time`, `crossing_parameter` | API docs / README |
-| TUT-05 | Experimental envelope | proposed | v0.5 | validity caveats | Pages / envelope |
+| TUT-01 | Quick-start regime map | ready | `pilot-v0.4` | cache load + simple plot | README / Pages |
+| TUT-02 | Geometry + shell calibration | ready | `pilot-v0.4` | `from_fnd_class` examples | release notes / envelope |
+| TUT-03 | Polydispersity intuition | ready | `pilot-v0.4` | classification vs number-density | deliverable index |
+| TUT-04 | Time + parameter crossings | ready | `pilot-v0.4` | `crossing_time`, `crossing_parameter` | API docs / README |
+| TUT-05 | Experimental envelope | ready | `pilot-v0.4` | validity caveats | Pages / envelope |
+| TUT-06 | Interactive cache explorer | ready | `pilot-v0.4` | live ipywidgets slicing of §5 cache | README / Pages |
 
 ## §6 deliverable mapping — `pilot-v0.3` additions (preserved)
 
@@ -398,68 +399,6 @@ Phase 16. The v0.2 scope was anchored in
 - ~~**`scan_grid.DEPTHS_M` audit-gap pin**~~ — **resolved in Phase 19.**
   Same logic for the 10 mm cuvette: v0.2 spec is the authority and
   does not override.
-- **§5 grid-snap in design tables** — the §5 r-axis is 30 log-spaced
-  points (~10 % bin spacing), so design-table radius entries are
-  grid-snapped, not interpolated thresholds.
-- **Method-C regime-map fidelity envelope** — resolved transient cells
-  use a 120-cell first pass, with 240-cell refinement for cells near
-  the `c(h)/c(0)` thresholds. The high-Pe bottom-mass boundary is still
-  governed by the 10-nm regime-map fallback policy, not by a full
-  1-nm resolved-mesh convergence sweep.
-- **`delta_shell_m = 0` in the shipped §5 cache** — the v0.2 schema can
-  carry distinct material and hydrodynamic radii, but the committed
-  §5 cache intentionally preserves the v0.1 physics surface with
-  `r_material_m == r_hydro_m`. Phase 27 adds opt-in FND-class defaults
-  while keeping this compatibility path unchanged.
-- **`delta_T_assumed` split** — programmatic `classify_cell()` and
-  `walk_grid()` default to `0.0 K` so legacy labels and booleans
-  reproduce v0.1; notebooks pass
-  `DEFAULT_EXPERIMENTAL_DELTA_T_K = 0.1 K` explicitly when drawing
-  convection overlays.
-- **Convection side channel only** — `convection_flag` never changes
-  the §5.1 regime label. It warns that the 1-D transport assumption
-  may be experimentally invalid under the supplied thermal gradient.
-- **`SIGMA_GEOM_AXIS` pin** — deliverable 6 uses
-  `{1.05, 1.10, 1.20, 1.40, 1.60}`. Broad distributions at the §5
-  radius-axis edges are marked with `truncation_loss` and `accepted`
-  diagnostics instead of being silently omitted.
-- **Aggregation, adsorption, surfactants, and wall corrections** —
-  not modelled in v0.2. See
-  [`experimental-envelope.md`](experimental-envelope.md).
-- **DOI deferred to `pilot-v1.0`** — `CITATION.cff` and `codemeta.json`
-  carry no DOI; Zenodo minting is intentionally postponed to the v1.0
-  release because pre-v1.0 pilots have a moving physics scope. See
-  [`../lab_notes/2026-04-30-phase16-1-defer-doi-to-v1-0.md`](../lab_notes/2026-04-30-phase16-1-defer-doi-to-v1-0.md).
-- **`equilibrium_cell` `t_factor = 50` magic constant** — works for
-  every cell tested; not formally derived.
-
-## What `pilot-v0.3` would change
-
-Candidate tightenings for the next pilot slice:
-
-- ~~Resolve the `T_OBS_S` and `DEPTHS_M` audit-gap pins against the
-  next frozen breakout-note §5 table.~~ — **done in Phase 19**
-  (resolved against ADR 0002 D1 / breakout-note v0.2 commit
-  `3b7b18af`; values stand as v0.3 defaults).
-- Replace grid-snapped design-table entries with continuous
-  interpolated thresholds via root-finding on `top_to_bottom_ratio
-  = 0.95`, `bottom_mass_fraction = 0.95`, and the smeared
-  `p_stratified` suitability criterion.
-- Add a formal mesh-convergence audit around the finite-time
-  bottom-mass threshold.
-- Add aggregation and wall-hydrodynamic correction models, or at
-  least quantified validity limits for them.
-- Calibrate `delta_shell_m` against representative functionalised FND
-  hydrodynamic measurements instead of leaving it as a user-supplied
-  geometry knob.
-- Refine thermal-convection modelling beyond a single Rayleigh
-  threshold: measured gradients, boundary-condition uncertainty,
-  water thermal diffusivity vs T, and optional open-cell evaporation.
-- Reduce the §5 grid walk wall time via parallel walks or a stronger
-  analytic short-circuit on the remaining Method-C-resolved cells.
-
-None of these are v0.2 correctness fixes; they are the next layer of
-experimental realism and consumer convenience.
 - **§5 grid-snap in design tables** — the §5 r-axis is 30 log-spaced
   points (~10 % bin spacing), so design-table radius entries are
   grid-snapped, not interpolated thresholds.

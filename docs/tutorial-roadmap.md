@@ -10,14 +10,14 @@ covered by the convention in [`conventions.md`](conventions.md)
 smoke-test logs, and lab notes can refer to it even if the file name
 changes later.
 
-| ID | Tutorial | Status | Colab | Target phase | Planned path | Canonical inputs | Smoke command | Linked from |
+| ID | Tutorial | Status | Colab | Shipped at | Planned path | Canonical inputs | Smoke command | Linked from |
 |---|---|---|---|---|---|---|---|---|
-| TUT-01 | Quick-start regime map | ready | yes | v0.5 | `notebooks/tutorials/01_quick_start_regime_map.py` (paired `.ipynb`) | `notebooks/data/regime_map_grid.csv` | `PYTHONPATH=src python notebooks/tutorials/01_quick_start_regime_map.py` | README / Pages |
-| TUT-02 | Geometry + shell calibration | ready | yes | v0.5 | `notebooks/tutorials/02_geometry_and_shell_calibration.py` (paired `.ipynb`) | `src/parameters.py`, `docs/delta_shell_calibration.md` | `PYTHONPATH=src python notebooks/tutorials/02_geometry_and_shell_calibration.py` | release notes / envelope |
-| TUT-03 | Polydispersity intuition | ready | yes | v0.5 | `notebooks/tutorials/03_polydispersity_intuition.py` (paired `.ipynb`) | `notebooks/data/regime_map_grid.csv`, `src/polydispersity.py` | `PYTHONPATH=src python notebooks/tutorials/03_polydispersity_intuition.py` | deliverable index |
-| TUT-04 | Time + parameter crossings | ready | yes | v0.5 | `notebooks/tutorials/04_time_and_parameter_crossings.py` (paired `.ipynb`) | `src/time_evolution.py`, `src/fokker_planck.py` | `PYTHONPATH=src python notebooks/tutorials/04_time_and_parameter_crossings.py` | API docs / README |
-| TUT-05 | Experimental envelope | ready | yes | v0.5 | `notebooks/tutorials/05_experimental_envelope.py` (paired `.ipynb`) | `docs/experimental-envelope.md`, `docs/program-context.md` | `PYTHONPATH=src python notebooks/tutorials/05_experimental_envelope.py` | Pages / envelope |
-| TUT-06 | Interactive cache explorer | ready | yes | v0.5 | `notebooks/tutorials/06_cache_explorer.py` (paired `.ipynb`) | `notebooks/data/regime_map_grid.csv` | `PYTHONPATH=src python notebooks/tutorials/06_cache_explorer.py` | README / Pages |
+| TUT-01 | Quick-start regime map | ready | yes | `pilot-v0.4` | `notebooks/tutorials/01_quick_start_regime_map.py` (paired `.ipynb`) | `notebooks/data/regime_map_grid.csv` | `PYTHONPATH=src python notebooks/tutorials/01_quick_start_regime_map.py` | README / Pages |
+| TUT-02 | Geometry + shell calibration | ready | yes | `pilot-v0.4` | `notebooks/tutorials/02_geometry_and_shell_calibration.py` (paired `.ipynb`) | `src/parameters.py`, `docs/delta_shell_calibration.md` | `PYTHONPATH=src python notebooks/tutorials/02_geometry_and_shell_calibration.py` | release notes / envelope |
+| TUT-03 | Polydispersity intuition | ready | yes | `pilot-v0.4` | `notebooks/tutorials/03_polydispersity_intuition.py` (paired `.ipynb`) | `notebooks/data/regime_map_grid.csv`, `src/polydispersity.py` | `PYTHONPATH=src python notebooks/tutorials/03_polydispersity_intuition.py` | deliverable index |
+| TUT-04 | Time + parameter crossings | ready | yes | `pilot-v0.4` | `notebooks/tutorials/04_time_and_parameter_crossings.py` (paired `.ipynb`) | `src/time_evolution.py`, `src/fokker_planck.py` | `PYTHONPATH=src python notebooks/tutorials/04_time_and_parameter_crossings.py` | API docs / README |
+| TUT-05 | Experimental envelope | ready | yes | `pilot-v0.4` | `notebooks/tutorials/05_experimental_envelope.py` (paired `.ipynb`) | `docs/experimental-envelope.md`, `docs/program-context.md` | `PYTHONPATH=src python notebooks/tutorials/05_experimental_envelope.py` | Pages / envelope |
+| TUT-06 | Interactive cache explorer | ready | yes | `pilot-v0.4` | `notebooks/tutorials/06_cache_explorer.py` (paired `.ipynb`) | `notebooks/data/regime_map_grid.csv` | `PYTHONPATH=src python notebooks/tutorials/06_cache_explorer.py` | README / Pages |
 
 ## Legend
 

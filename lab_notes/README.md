@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-05-06 | [Phase 32.1 — post-release doc fixes (v0.4 release pin + tutorial status reconciliation)](2026-05-06-phase32-1-post-release-doc-fixes.md) | 32.1 |
 | 2026-05-06 | [Tutorial phase 2 — Colab launch path + TUT-06 cache explorer](2026-05-06-phase2-tutorials.md) | TUT-2 |
 | 2026-05-06 | [Tutorial phase 1 — TUT-01…TUT-05 first batch (backfill against governance + implementation commits)](2026-05-06-phase1-tutorials.md) | TUT-1 |
 | 2026-05-06 | [Phase 32 — `pilot-v0.4` release](2026-05-06-phase32-pilot-v0-4-release.md) | 32 |
