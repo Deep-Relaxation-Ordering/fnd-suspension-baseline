@@ -156,7 +156,9 @@ Phase 16. The v0.2 scope was anchored in
   carry distinct material and hydrodynamic radii, but the committed
   §5 cache intentionally preserves the v0.1 physics surface with
   `r_material_m == r_hydro_m`. The `delta_shell_m` calibration table
-  (v0.3 item F) provides provisional literature estimates.
+  was upgraded in Phase 27 (v0.4 item B / S3) to citation-anchored
+  FND-class defaults; campaign-specific batches remain unverified until
+  same-buffer DLS / TEM measurements exist.
 - **`delta_T_assumed` split** — programmatic `classify_cell()` and
   `walk_grid()` default to `0.0 K` so legacy labels and booleans
   reproduce v0.1; notebooks pass
@@ -355,7 +357,8 @@ Phase 16. The v0.2 scope was anchored in
 - **`delta_shell_m = 0` in the shipped §5 cache** — the v0.2 schema can
   carry distinct material and hydrodynamic radii, but the committed
   §5 cache intentionally preserves the v0.1 physics surface with
-  `r_material_m == r_hydro_m`.
+  `r_material_m == r_hydro_m`. Phase 27 adds opt-in FND-class defaults
+  while keeping this compatibility path unchanged.
 - **`delta_T_assumed` split** — programmatic `classify_cell()` and
   `walk_grid()` default to `0.0 K` so legacy labels and booleans
   reproduce v0.1; notebooks pass
@@ -416,7 +419,8 @@ experimental realism and consumer convenience.
 - **`delta_shell_m = 0` in the shipped §5 cache** — the v0.2 schema can
   carry distinct material and hydrodynamic radii, but the committed
   §5 cache intentionally preserves the v0.1 physics surface with
-  `r_material_m == r_hydro_m`.
+  `r_material_m == r_hydro_m`. Phase 27 adds opt-in FND-class defaults
+  while keeping this compatibility path unchanged.
 - **`delta_T_assumed` split** — programmatic `classify_cell()` and
   `walk_grid()` default to `0.0 K` so legacy labels and booleans
   reproduce v0.1; notebooks pass

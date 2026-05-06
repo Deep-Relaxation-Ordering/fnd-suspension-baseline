@@ -70,16 +70,20 @@ fnd-suspension-baseline/
 
 ## Status
 
-**`pilot-v0.3` released.** v0.3 (tag `pilot-v0.3`, release package
-version `0.3.0`) adds Stokes–Einstein corrections at sub-150-nm
-radii (`lambda_se`), continuous regime thresholds via root-finding, a
-mesh-convergence fidelity envelope, a provisional `delta_shell_m`
-literature calibration table, parallel `walk_grid`, and a continuous
-time-evolution channel (`time_series`, `crossing_time`) — all
-forward-compatible with v0.2 (zero-default paths reproduce v0.2
-arithmetic to machine precision). The spec-anchoring decision is
-recorded in [ADR 0002](docs/adr/0002-v0.3-spec-anchoring.md).
-Release suite: `171 passed, 0 skipped`, `ruff check .` clean.
+**`pilot-v0.4` active under contract; `pilot-v0.3` is the latest
+release tag.** v0.4 has opened with S3 hydrodynamic-shell calibration
+per FND class, while v0.3 (tag `pilot-v0.3`, release package version
+`0.3.0`) remains the released baseline. v0.3 adds Stokes–Einstein
+corrections at sub-150-nm radii (`lambda_se`), continuous regime
+thresholds via root-finding, a mesh-convergence fidelity envelope, the
+first `delta_shell_m` literature calibration table, parallel
+`walk_grid`, and a continuous time-evolution channel (`time_series`,
+`crossing_time`) — all forward-compatible with v0.2 (zero-default paths
+reproduce v0.2 arithmetic to machine precision). The v0.3
+spec-anchoring decision is recorded in
+[ADR 0002](docs/adr/0002-v0.3-spec-anchoring.md); the v0.4 decision is
+recorded in [ADR 0003](docs/adr/0003-v0.4-spec-anchoring.md). Release
+suite at `pilot-v0.3`: `171 passed, 0 skipped`, `ruff check .` clean.
 
 v0.2 (tag `pilot-v0.2`, release package version `0.2.0`) added the
 Rayleigh-number convection gate, a hydrodynamic-vs-material radius
@@ -162,10 +166,11 @@ notebook regeneration commands.
 | 22 | item J — continuous time-evolution channel (`time_series`, `crossing_time` with PCHIP + Brent); design-table generator for crossing times | done — [phase-22 note](lab_notes/2026-05-01-phase22-continuous-time-evolution.md) |
 | 23 | Integration audit — focused cache-subset byte-identical verification; module smoke tests; full 171-test suite | done — [phase-23 note](lab_notes/2026-05-01-phase23-integration-audit.md) |
 | 24 | `pilot-v0.3` release tag; release notes; deliverable-index v0.3 update | done — [phase-24 note](lab_notes/2026-05-01-phase24-pilot-v0-3-release.md) |
-| **`pilot-v0.4` deliberation cycle** | | |
+| **`pilot-v0.4` cycle (S3 + S5 housekeeping slices)** | | |
 | 25 | v0.4 deliberation surfaces ([work-plan-v0-4 scaffold](docs/work-plan-v0-4.md), [ADR 0003 stub](docs/adr/0003-v0.4-spec-anchoring.md), [ADR index](docs/adr/README.md)) | done — [phase-25 note](lab_notes/2026-05-05-phase25-v0-4-deliberation-surfaces.md) |
 | 26 (opening) | [ADR 0003](docs/adr/0003-v0.4-spec-anchoring.md) promoted to `Accepted`; D1 = Option 2 (stay on `3b7b18af`); D9 = item B (S3 — Hydrodynamic-shell calibration per FND class) as first slice; [`docs/work-plan-v0-4.md`](docs/work-plan-v0-4.md) §0 / §5 updated | done — [phase-26 (opening) note](lab_notes/2026-05-06-phase26-opening-adr-0003-and-work-plan-v0-4.md) |
 | 26 (continuation) | v0.4 work-plan contract acceptance — §1 reshape; D2 / D3 / D5 / D6 / D7 resolved; §3 / §4 / §6 / §7 filled; SCAFFOLD → contract | done — [phase-26 (continuation) note](lab_notes/2026-05-06-phase26-continuation-contract-acceptance.md) |
+| 27 | S3 — hydrodynamic-shell calibration per FND class (`DeltaShellCalibration`, class-default helper, citation-anchored `delta_shell_m` table) | done — [phase-27 note](lab_notes/2026-05-06-phase27-s3-hydrodynamic-shell-calibration.md) |
 
 The 12-day effort estimate and phase plan live in breakout-note §9.
 A reverse-chronological index of session lab notes is in

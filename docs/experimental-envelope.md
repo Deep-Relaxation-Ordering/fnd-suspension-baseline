@@ -39,6 +39,23 @@ At `delta_shell_m = 0.0`, the v0.2 equations reproduce the scalar
 v0.1 physics to machine precision. The committed §5 cache uses this
 zero-shell path.
 
+For nominal FND surface classes without batch-specific DLS data, v0.4
+adds citation-anchored defaults:
+
+```python
+from parameters import ParticleGeometry
+
+geom = ParticleGeometry.from_fnd_class(
+    r_material_m=50e-9,
+    fnd_class="peg_functionalised",
+)
+```
+
+The class defaults are documented in
+[`docs/delta_shell_calibration.md`](delta_shell_calibration.md). Passing
+`delta_shell_m` explicitly remains authoritative; class defaults are
+planning aids, not campaign measurements.
+
 ### `delta_T_assumed`
 
 Use this when interpreting a real vertical cell with nonzero thermal
@@ -76,8 +93,9 @@ size distribution, use the model in this order:
 1. Check the monodisperse regime label in the §5 cache or notebook 02.
 2. Check the convection overlay for the actual cell depth and expected
    `delta_T`.
-3. If the FND has a coating, rerun the relevant cells with
-   nonzero `delta_shell_m`.
+3. If the FND has a coating, rerun the relevant cells with either a
+   measured `delta_shell_m` or a class default from
+   `ParticleGeometry.from_fnd_class(...)`.
 4. If the batch is polydisperse, use notebook 05's probability table
    rather than the single-radius label.
 5. Treat aggregation, sticking, wall drag, and chemistry changes as

@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-05-06 | [Phase 27 — S3 hydrodynamic-shell calibration per FND class](2026-05-06-phase27-s3-hydrodynamic-shell-calibration.md) | 27 |
 | 2026-05-06 | [Phase 26 (continuation) — v0.4 work-plan contract acceptance](2026-05-06-phase26-continuation-contract-acceptance.md) | 26 |
 | 2026-05-06 | [Phase 26 (opening) — ADR 0003 promoted; work-plan-v0-4 D1 / D9 resolved](2026-05-06-phase26-opening-adr-0003-and-work-plan-v0-4.md) | 26 |
 | 2026-05-05 | [Phase 25 — `pilot-v0.4` deliberation surfaces (work-plan scaffold + ADR 0003 stub)](2026-05-05-phase25-v0-4-deliberation-surfaces.md) | 25 |

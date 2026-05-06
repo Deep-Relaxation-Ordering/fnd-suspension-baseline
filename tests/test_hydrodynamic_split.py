@@ -18,8 +18,12 @@ from analytical import (
 from fokker_planck import solve_cell
 from langevin import simulate_cell
 from parameters import (
+    DELTA_SHELL_CALIBRATIONS,
     ParticleGeometry,
     buoyant_mass_geom,
+    canonical_fnd_class,
+    delta_shell_calibration_for_fnd_class,
+    delta_shell_for_fnd_class,
     diffusivity_geom,
     gamma_stokes_geom,
 )
@@ -43,6 +47,71 @@ def test_from_radius_is_v01_compatibility_constructor() -> None:
     geom = ParticleGeometry.from_radius(5e-9)
 
     assert geom == ParticleGeometry(r_material_m=5e-9, delta_shell_m=0.0)
+
+
+def test_delta_shell_calibrations_cover_v04_fnd_classes() -> None:
+    assert set(DELTA_SHELL_CALIBRATIONS) == {
+        "bare",
+        "carboxylated",
+        "hydroxylated",
+        "peg_functionalised",
+    }
+    for key, calibration in DELTA_SHELL_CALIBRATIONS.items():
+        assert calibration.key == key
+        assert calibration.range_m[0] <= calibration.delta_shell_m <= calibration.range_m[1]
+        assert calibration.status
+        assert calibration.source
+
+
+@pytest.mark.parametrize(
+    "alias, canonical",
+    [
+        ("bare", "bare"),
+        ("oxidized", "bare"),
+        ("COOH", "carboxylated"),
+        ("hydroxylated", "hydroxylated"),
+        ("PEG-functionalized", "peg_functionalised"),
+    ],
+)
+def test_fnd_class_aliases_resolve(alias: str, canonical: str) -> None:
+    assert canonical_fnd_class(alias) == canonical
+    assert delta_shell_calibration_for_fnd_class(alias).key == canonical
+
+
+@pytest.mark.parametrize(
+    "fnd_class, expected_delta_shell_m",
+    [
+        ("bare", 0.0),
+        ("carboxylated", 5e-9),
+        ("hydroxylated", 0.0),
+        ("peg_functionalised", 7e-9),
+    ],
+)
+def test_particle_geometry_from_fnd_class_uses_calibrated_default(
+    fnd_class: str,
+    expected_delta_shell_m: float,
+) -> None:
+    geom = ParticleGeometry.from_fnd_class(50e-9, fnd_class)
+
+    assert geom.r_material_m == 50e-9
+    assert geom.delta_shell_m == expected_delta_shell_m
+    assert geom.r_hydro_m == 50e-9 + expected_delta_shell_m
+    assert delta_shell_for_fnd_class(fnd_class) == expected_delta_shell_m
+
+
+def test_user_supplied_delta_shell_overrides_fnd_class_default() -> None:
+    geom = ParticleGeometry.from_fnd_class(
+        50e-9,
+        "peg_functionalised",
+        delta_shell_m=0.0,
+    )
+
+    assert geom == ParticleGeometry(r_material_m=50e-9, delta_shell_m=0.0)
+
+
+def test_unknown_fnd_class_is_rejected() -> None:
+    with pytest.raises(ValueError, match="Unknown FND class"):
+        ParticleGeometry.from_fnd_class(50e-9, "partially fluorinated")
 
 
 def test_delta_shell_adds_to_hydrodynamic_radius() -> None:

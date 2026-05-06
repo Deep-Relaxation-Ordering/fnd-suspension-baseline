@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Final
 
 # ---------------------------------------------------------------------------
 # Physical constants (CODATA 2019, SI)
@@ -50,6 +51,18 @@ G: float = 9.806_65
 
 RHO_P_DIAMOND: float = 3510.0
 """Bulk-diamond density, kg/m³ (breakout-note §3, §7g caveat for HPHT FNDs)."""
+
+
+@dataclass(frozen=True)
+class DeltaShellCalibration:
+    """Citation-anchored default for one nominal FND surface class."""
+
+    key: str
+    label: str
+    delta_shell_m: float
+    range_m: tuple[float, float]
+    status: str
+    source: str
 
 
 @dataclass(frozen=True)
@@ -83,6 +96,109 @@ class ParticleGeometry:
     def from_radius(cls, radius_m: float) -> ParticleGeometry:
         """Construct the v0.1-compatible zero-shell geometry."""
         return cls(r_material_m=radius_m, delta_shell_m=0.0)
+
+    @classmethod
+    def from_fnd_class(
+        cls,
+        r_material_m: float,
+        fnd_class: str,
+        *,
+        delta_shell_m: float | None = None,
+    ) -> ParticleGeometry:
+        """Construct a geometry using the Phase-27 FND-class shell default.
+
+        Passing ``delta_shell_m`` explicitly keeps the user-supplied knob
+        authoritative.  Omitting it applies the citation-anchored default for
+        the nominal FND class.
+        """
+        shell_m = (
+            delta_shell_for_fnd_class(fnd_class)
+            if delta_shell_m is None
+            else delta_shell_m
+        )
+        return cls(r_material_m=r_material_m, delta_shell_m=shell_m)
+
+
+DELTA_SHELL_CALIBRATIONS: Final[dict[str, DeltaShellCalibration]] = {
+    "bare": DeltaShellCalibration(
+        key="bare",
+        label="Bare / oxidised HPHT FND",
+        delta_shell_m=0.0,
+        range_m=(0.0, 5e-9),
+        status="open-literature default; campaign-unverified",
+        source="Adamas FND product data + HPHT ND DLS survey",
+    ),
+    "carboxylated": DeltaShellCalibration(
+        key="carboxylated",
+        label="Carboxylated FND",
+        delta_shell_m=5e-9,
+        range_m=(0.0, 10e-9),
+        status="open-literature default; aggregation-sensitive",
+        source="FND-COOH DLS / zeta-potential studies",
+    ),
+    "hydroxylated": DeltaShellCalibration(
+        key="hydroxylated",
+        label="Hydroxylated / hydrogen-terminated HPHT FND",
+        delta_shell_m=0.0,
+        range_m=(0.0, 5e-9),
+        status="open-literature default; sparse direct data",
+        source="hydrogen/hydroxyl HPHT ND DLS survey",
+    ),
+    "peg_functionalised": DeltaShellCalibration(
+        key="peg_functionalised",
+        label="PEG-functionalised FND",
+        delta_shell_m=7e-9,
+        range_m=(5e-9, 10e-9),
+        status="open-literature default for dispersed aqueous PEG-FND",
+        source="PEG22 FND DLS increment + ND-PEG stability data",
+    ),
+}
+"""Phase-27 calibrated ``delta_shell_m`` defaults by nominal FND class."""
+
+FND_CLASS_ALIASES: Final[dict[str, str]] = {
+    "bare": "bare",
+    "oxidised": "bare",
+    "oxidized": "bare",
+    "unmodified": "bare",
+    "carboxylated": "carboxylated",
+    "carboxylate": "carboxylated",
+    "cooh": "carboxylated",
+    "hydroxylated": "hydroxylated",
+    "hydroxyl": "hydroxylated",
+    "oh": "hydroxylated",
+    "hydrogenated": "hydroxylated",
+    "peg": "peg_functionalised",
+    "pegylated": "peg_functionalised",
+    "peg_functionalised": "peg_functionalised",
+    "peg_functionalized": "peg_functionalised",
+}
+"""Accepted aliases for the four Phase-27 FND-class defaults."""
+
+
+def _normalise_fnd_class(fnd_class: str) -> str:
+    return fnd_class.strip().lower().replace("-", "_").replace(" ", "_")
+
+
+def canonical_fnd_class(fnd_class: str) -> str:
+    """Return the canonical key for a nominal FND surface class."""
+    key = _normalise_fnd_class(fnd_class)
+    try:
+        return FND_CLASS_ALIASES[key]
+    except KeyError as exc:
+        valid = ", ".join(DELTA_SHELL_CALIBRATIONS)
+        raise ValueError(
+            f"Unknown FND class {fnd_class!r}; expected one of {valid}."
+        ) from exc
+
+
+def delta_shell_calibration_for_fnd_class(fnd_class: str) -> DeltaShellCalibration:
+    """Return the Phase-27 calibration record for a nominal FND class."""
+    return DELTA_SHELL_CALIBRATIONS[canonical_fnd_class(fnd_class)]
+
+
+def delta_shell_for_fnd_class(fnd_class: str) -> float:
+    """Return the calibrated default ``delta_shell_m`` for an FND class."""
+    return delta_shell_calibration_for_fnd_class(fnd_class).delta_shell_m
 
 
 def as_particle_geometry(radius_or_geom: float | ParticleGeometry) -> ParticleGeometry:
