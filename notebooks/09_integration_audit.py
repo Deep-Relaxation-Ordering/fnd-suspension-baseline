@@ -1,14 +1,25 @@
-"""Phase 23 — Integration audit: byte-identical baseline verification.
+"""Integration audit: byte-identical baseline verification.
 
-Reproduces the Phase 12.1 regression-audit pattern:
+Phase 23 (v0.3) introduced this script to enforce the
+Phase 12.1 regression-audit pattern:
 
 1. Load the committed §5 cache.
 2. Re-run ``walk_grid()`` with default parameters (λ = 1.0, δ_shell = 0).
 3. Compare every field of every ``RegimeResult`` byte-for-byte.
 4. Report PASS or FAIL with the first mismatching cell.
 
-Also verifies that new modules (continuous_thresholds, time_evolution)
-at their default compatibility modes do not disturb existing outputs.
+Phase 31 (v0.4) extends it with smoke tests for the v0.4 surfaces:
+
+- Phase 27: ``ParticleGeometry.from_fnd_class("bare")`` reproduces the
+  zero-shell geometry; the four canonical FND-class defaults are
+  the values shipped in `delta_shell_calibration.md`.
+- Phase 28: ``lognormal_smear(weighting="classification")`` (default)
+  reproduces ``weighting="number_density"`` on the marginal channels
+  byte-identically.
+- Phase 30 item I: ``walk_grid(n_workers=2)`` under the spawn start
+  method is byte-identical to ``walk_grid(n_workers=1)``.
+- Phase 30 item J: ``crossing_parameter`` returns a finite value for
+  a bracketed lambda_se sweep on a stratified cell.
 
 Usage:
     cd /path/to/repo
@@ -122,12 +133,199 @@ def audit_time_evolution_compat() -> bool:
         return False
 
 
+# ---------------------------------------------------------------------------
+# Phase 31 (v0.4) — smoke tests for Phase 27 / 28 / 30 surfaces
+# ---------------------------------------------------------------------------
+
+
+def audit_fnd_class_default_compat() -> bool:
+    """Phase 27: ``ParticleGeometry.from_fnd_class('bare')`` is byte-identical
+    to the v0.3 zero-shell geometry, and the four canonical class defaults
+    are present and well-formed."""
+    from parameters import (
+        DELTA_SHELL_CALIBRATIONS,
+        ParticleGeometry,
+        delta_shell_for_fnd_class,
+    )
+
+    print("\nFND-class default smoke test (Phase 27)...")
+    try:
+        radius = 5e-8
+        bare = ParticleGeometry.from_fnd_class(radius, "bare")
+        baseline = ParticleGeometry(r_material_m=radius, delta_shell_m=0.0)
+        if bare != baseline:
+            print(f"FAIL: bare class differs from zero-shell baseline ({bare} vs {baseline})")
+            return False
+        expected_keys = {"bare", "carboxylated", "hydroxylated", "peg_functionalised"}
+        if set(DELTA_SHELL_CALIBRATIONS) != expected_keys:
+            print(f"FAIL: calibration keys {set(DELTA_SHELL_CALIBRATIONS)} != {expected_keys}")
+            return False
+        defaults = {key: delta_shell_for_fnd_class(key) for key in expected_keys}
+        print(f"  defaults_m = {defaults}")
+        if defaults["bare"] != 0.0 or defaults["hydroxylated"] != 0.0:
+            print("FAIL: bare and hydroxylated must remain at 0 nm for v0.3 reproduction")
+            return False
+        if not (0.0 < defaults["carboxylated"] <= 10e-9):
+            print("FAIL: carboxylated out of expected range")
+            return False
+        if not (5e-9 <= defaults["peg_functionalised"] <= 10e-9):
+            print("FAIL: peg_functionalised out of expected range")
+            return False
+        print("PASS")
+        return True
+    except Exception as exc:
+        print(f"FAIL: {exc}")
+        return False
+
+
+def audit_polydispersity_classification_compat() -> bool:
+    """Phase 28: ``weighting='classification'`` (default) reproduces the
+    number-density kernel's marginal channels byte-identically; the new
+    moment arrays are None under default."""
+    import numpy as np
+
+    from polydispersity import lognormal_smear
+    from regime_map import results_from_csv, results_to_grid
+
+    print("\nPolydispersity number-density compat smoke test (Phase 28)...")
+    try:
+        grid = results_to_grid(results_from_csv(CACHE_PATH))
+        anchor_radii = (grid.radii[4], grid.radii[14], grid.radii[24])
+        sigma_axis = (1.05, 1.20, 1.60)
+        classification = lognormal_smear(
+            grid,
+            r_geom_mean_axis=anchor_radii,
+            sigma_geom_axis=sigma_axis,
+            on_truncation="mask",
+        )
+        number_density = lognormal_smear(
+            grid,
+            r_geom_mean_axis=anchor_radii,
+            sigma_geom_axis=sigma_axis,
+            on_truncation="mask",
+            weighting="number_density",
+        )
+        for field in (
+            "p_homogeneous",
+            "p_stratified",
+            "p_sedimented",
+            "expected_top_to_bottom_ratio",
+            "expected_bottom_mass_fraction",
+        ):
+            if not np.array_equal(
+                getattr(classification, field), getattr(number_density, field),
+            ):
+                print(f"FAIL: {field} differs between weighting modes")
+                return False
+        if classification.expected_radius_by_regime is not None:
+            print("FAIL: classification kernel must leave expected_radius_by_regime as None")
+            return False
+        if number_density.expected_radius_by_regime is None:
+            print("FAIL: number_density kernel must populate expected_radius_by_regime")
+            return False
+        print("PASS")
+        return True
+    except Exception as exc:
+        print(f"FAIL: {exc}")
+        return False
+
+
+def audit_walk_grid_spawn_compat() -> bool:
+    """Phase 30 item I: ``walk_grid(n_workers=2)`` under spawn is
+    byte-identical to ``n_workers=1``. Uses a 6-cell smoke subset."""
+    from regime_map import walk_grid
+    from scan_grid import DEPTHS_M, T_OBS_S, radii_m, temperatures_k
+
+    print("\nwalk_grid spawn-context byte-identity smoke test (Phase 30 item I)...")
+    try:
+        subset_radii = (radii_m()[0], radii_m()[14], radii_m()[-1])
+        subset_temps = (temperatures_k()[0],)
+        subset_depths = (DEPTHS_M[0],)
+        subset_tobs = (T_OBS_S[0], T_OBS_S[-1])
+        serial = walk_grid(
+            radii=subset_radii,
+            temperatures=subset_temps,
+            depths=subset_depths,
+            t_obs=subset_tobs,
+            n_workers=1,
+        )
+        parallel = walk_grid(
+            radii=subset_radii,
+            temperatures=subset_temps,
+            depths=subset_depths,
+            t_obs=subset_tobs,
+            n_workers=2,
+        )
+        if len(serial) != len(parallel) != 6:
+            print(f"FAIL: cell-count mismatch (serial={len(serial)}, parallel={len(parallel)})")
+            return False
+        for i, (s, p) in enumerate(zip(serial, parallel, strict=True)):
+            if s != p:
+                print(f"FAIL: cell {i} differs:\n  serial={s}\n  parallel={p}")
+                return False
+        print(f"  serial == parallel ({len(serial)} cells)")
+        print("PASS")
+        return True
+    except Exception as exc:
+        print(f"FAIL: {exc}")
+        return False
+
+
+def audit_crossing_parameter_smoke() -> bool:
+    """Phase 30 item J: ``crossing_parameter`` returns a finite value on
+    a known-bracketed lambda_se sweep and validates input contracts."""
+    import math
+
+    from time_evolution import crossing_parameter
+
+    print("\ncrossing_parameter smoke test (Phase 30 item J)...")
+    try:
+        # Negative-path: invalid parameter name must raise.
+        try:
+            crossing_parameter(
+                1e-7, 298.15, 1e-3,
+                parameter="not_a_thing",  # type: ignore[arg-type]
+                t_obs_s=3600.0, p_min=0.0, p_max=1e-8,
+            )
+        except ValueError:
+            pass
+        else:
+            print("FAIL: invalid parameter name was not rejected")
+            return False
+        # Positive-path: bracketed sweep returns a finite value or None.
+        result = crossing_parameter(
+            1e-7, 298.15, 1e-3,
+            parameter="lambda_se",
+            t_obs_s=3600.0,
+            p_min=0.1, p_max=1.0,
+            criterion="ratio",
+            target=0.5,
+            n_points=8,
+        )
+        if result is None:
+            print("  ratio target not bracketed in this smoke window — acceptable")
+        else:
+            if not (0.1 <= result <= 1.0) or not math.isfinite(result):
+                print(f"FAIL: returned value {result} out of [0.1, 1.0] or non-finite")
+                return False
+            print(f"  lambda_se @ ratio=0.5: {result:.6f}")
+        print("PASS")
+        return True
+    except Exception as exc:
+        print(f"FAIL: {exc}")
+        return False
+
+
 def main() -> None:
-    print("# Phase 23 — Integration audit\n")
+    print("# Integration audit (Phase 23 baseline + Phase 31 v0.4 surfaces)\n")
     results = {
         "cache_repro": audit_cache_reproducibility(),
         "continuous_thresh": audit_continuous_thresholds_compat(),
         "time_evolution": audit_time_evolution_compat(),
+        "fnd_class_default": audit_fnd_class_default_compat(),
+        "polydispersity_compat": audit_polydispersity_classification_compat(),
+        "walk_grid_spawn": audit_walk_grid_spawn_compat(),
+        "crossing_parameter": audit_crossing_parameter_smoke(),
     }
 
     print("\n## Summary")

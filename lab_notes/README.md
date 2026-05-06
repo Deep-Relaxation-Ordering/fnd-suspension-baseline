@@ -12,6 +12,7 @@ Index, reverse-chronological:
 
 | Date | Topic | Phase |
 |---|---|---|
+| 2026-05-06 | [Phase 31 — integration audit + release-criterion gap audit (item K)](2026-05-06-phase31-integration-audit-and-release-gap.md) | 31 |
 | 2026-05-06 | [Phase 30 — tactical bundle: spawn-context (item I) + crossing_parameter (item J)](2026-05-06-phase30-spawn-context-and-crossing-parameter.md) | 30 |
 | 2026-05-06 | [Phase 29 — doc-fix bundle (S-slice nomenclature) + v0.3 review residue](2026-05-06-phase29-doc-fix-and-review-residue.md) | 29 |
 | 2026-05-06 | [Phase 28 — S5 number-density polydispersity kernel](2026-05-06-phase28-s5-number-density-kernel.md) | 28 |
